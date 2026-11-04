@@ -1,0 +1,544 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000a1"
+  },
+  "codigoInvitacion": "K7P2QX",
+  "nombre": "Mesa del viernes",
+  "estado": "EN_JUEGO",
+  "anfitrionId": {
+    "$oid": "000000000000000000000101"
+  },
+  "configuracion": {
+    "modalidad": "apuntado",
+    "plugin": {
+      "id": "apuntado",
+      "version": "1.0.0"
+    },
+    "cupo": 3,
+    "apuestaPorJugador": 20,
+    "visibilidad": "PRIVADA",
+    "tipoEscalera": "CON_VUELTA",
+    "comodinesActivos": false,
+    "reengancheActivo": true,
+    "victoriaNegativaActiva": true,
+    "parametros": {
+      "limiteEliminacion": 101,
+      "umbralTocar": 5,
+      "castigoCierreInvalido": 2,
+      "bonificacionCierre": -10,
+      "umbralVictoriaNegativa": -51,
+      "valorComodin": 20,
+      "comodinesPorBaraja": 2,
+      "jugadoresDobleBaraja": 4,
+      "graciaDesconexionSeg": 120,
+      "ventanaResultadosSeg": 20
+    }
+  },
+  "jugadores": [
+    {
+      "jugadorId": "j1",
+      "usuarioId": {
+        "$oid": "000000000000000000000101"
+      },
+      "nombreUsuario": "santi",
+      "posicion": 1,
+      "estado": "ACTIVO",
+      "puntaje": 27,
+      "usoReenganche": false,
+      "conectado": true,
+      "desconectadoDesde": null
+    },
+    {
+      "jugadorId": "j2",
+      "usuarioId": {
+        "$oid": "000000000000000000000102"
+      },
+      "nombreUsuario": "sergio",
+      "posicion": 2,
+      "estado": "ACTIVO",
+      "puntaje": -8,
+      "usoReenganche": false,
+      "conectado": true,
+      "desconectadoDesde": null
+    },
+    {
+      "jugadorId": "j3",
+      "usuarioId": {
+        "$oid": "000000000000000000000103"
+      },
+      "nombreUsuario": "andres",
+      "posicion": 3,
+      "estado": "ACTIVO",
+      "puntaje": 28,
+      "usoReenganche": false,
+      "conectado": false,
+      "desconectadoDesde": {
+        "$date": "2026-10-26T23:41:05Z"
+      }
+    }
+  ],
+  "pozo": {
+    "total": 60,
+    "aportes": [
+      {
+        "usuarioId": {
+          "$oid": "000000000000000000000101"
+        },
+        "tipo": "APUESTA",
+        "monto": 20,
+        "asientoId": {
+          "$oid": "0000000000000000000000e1"
+        }
+      },
+      {
+        "usuarioId": {
+          "$oid": "000000000000000000000102"
+        },
+        "tipo": "APUESTA",
+        "monto": 20,
+        "asientoId": {
+          "$oid": "0000000000000000000000e2"
+        }
+      },
+      {
+        "usuarioId": {
+          "$oid": "000000000000000000000103"
+        },
+        "tipo": "APUESTA",
+        "monto": 20,
+        "asientoId": {
+          "$oid": "0000000000000000000000e3"
+        }
+      }
+    ]
+  },
+  "rondaActual": {
+    "numero": 3,
+    "estado": "EN_TURNOS",
+    "posicionInicial": 3,
+    "turno": {
+      "jugadorId": "j1",
+      "fase": "CON_11_CARTAS",
+      "intentoCierre": false,
+      "numero": 7
+    },
+    "mazo": [
+      {
+        "valor": "J",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "CUATRO",
+        "palo": "CORAZONES",
+        "baraja": 1
+      },
+      {
+        "valor": "NUEVE",
+        "palo": "CORAZONES",
+        "baraja": 1
+      },
+      {
+        "valor": "Q",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "OCHO",
+        "palo": "PICAS",
+        "baraja": 1
+      },
+      {
+        "valor": "SIETE",
+        "palo": "DIAMANTES",
+        "baraja": 1
+      },
+      {
+        "valor": "DIEZ",
+        "palo": "CORAZONES",
+        "baraja": 1
+      },
+      {
+        "valor": "CINCO",
+        "palo": "DIAMANTES",
+        "baraja": 1
+      },
+      {
+        "valor": "J",
+        "palo": "PICAS",
+        "baraja": 1
+      },
+      {
+        "valor": "SEIS",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "Q",
+        "palo": "PICAS",
+        "baraja": 1
+      },
+      {
+        "valor": "OCHO",
+        "palo": "DIAMANTES",
+        "baraja": 1
+      },
+      {
+        "valor": "TRES",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "DOS",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "K",
+        "palo": "TREBOLES",
+        "baraja": 1
+      },
+      {
+        "valor": "DIEZ",
+        "palo": "DIAMANTES",
+        "baraja": 1
+      },
+      {
+        "valor": "SEIS",
+        "palo": "CORAZONES",
+        "baraja": 1
+      },
+      {
+        "valor": "NUEVE",
+        "palo": "DIAMANTES",
+        "baraja": 1
+      }
+    ],
+    "pozoDescarte": [
+      {
+        "valor": "K",
+        "palo": "DIAMANTES",
+        "baraja": 1,
+        "disenoId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      },
+      {
+        "valor": "DIEZ",
+        "palo": "PICAS",
+        "baraja": 1,
+        "disenoId": {
+          "$oid": "0000000000000000000000d2"
+        }
+      },
+      {
+        "valor": "CUATRO",
+        "palo": "TREBOLES",
+        "baraja": 1,
+        "disenoId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      }
+    ],
+    "manos": [
+      {
+        "jugadorId": "j1",
+        "cartas": [
+          {
+            "valor": "SIETE",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "SIETE",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "SIETE",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "DOS",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "TRES",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "CUATRO",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "J",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "Q",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "K",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "AS",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "NUEVE",
+            "palo": "PICAS",
+            "baraja": 1
+          }
+        ],
+        "grupos": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ],
+          [
+            6,
+            7,
+            8,
+            9
+          ]
+        ]
+      },
+      {
+        "jugadorId": "j2",
+        "cartas": [
+          {
+            "valor": "CINCO",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "CINCO",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "CINCO",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "OCHO",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "NUEVE",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "DIEZ",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "DOS",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "DOS",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "SEIS",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "K",
+            "palo": "PICAS",
+            "baraja": 1
+          }
+        ],
+        "grupos": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ]
+        ]
+      },
+      {
+        "jugadorId": "j3",
+        "cartas": [
+          {
+            "valor": "AS",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "AS",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "AS",
+            "palo": "TREBOLES",
+            "baraja": 1
+          },
+          {
+            "valor": "TRES",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "CUATRO",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "SEIS",
+            "palo": "PICAS",
+            "baraja": 1
+          },
+          {
+            "valor": "Q",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "J",
+            "palo": "DIAMANTES",
+            "baraja": 1
+          },
+          {
+            "valor": "OCHO",
+            "palo": "CORAZONES",
+            "baraja": 1
+          },
+          {
+            "valor": "TRES",
+            "palo": "CORAZONES",
+            "baraja": 1
+          }
+        ],
+        "grupos": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ]
+        ]
+      }
+    ],
+    "rondaExtra": null
+  },
+  "marcador": [
+    {
+      "numeroRonda": 1,
+      "ganadorId": "j2",
+      "tipoCierre": "GANAR_4_3_3",
+      "cerradaEn": {
+        "$date": "2026-10-26T23:12:40Z"
+      },
+      "puntos": [
+        {
+          "jugadorId": "j1",
+          "puntosRonda": 19,
+          "castigos": 0,
+          "acumulado": 19,
+          "eliminado": false,
+          "reenganchado": false
+        },
+        {
+          "jugadorId": "j2",
+          "puntosRonda": -10,
+          "castigos": 0,
+          "acumulado": -10,
+          "eliminado": false,
+          "reenganchado": false
+        },
+        {
+          "jugadorId": "j3",
+          "puntosRonda": 23,
+          "castigos": 2,
+          "acumulado": 25,
+          "eliminado": false,
+          "reenganchado": false
+        }
+      ]
+    },
+    {
+      "numeroRonda": 2,
+      "ganadorId": "j3",
+      "tipoCierre": "TOCAR",
+      "cerradaEn": {
+        "$date": "2026-10-26T23:30:02Z"
+      },
+      "puntos": [
+        {
+          "jugadorId": "j1",
+          "puntosRonda": 8,
+          "castigos": 0,
+          "acumulado": 27,
+          "eliminado": false,
+          "reenganchado": false
+        },
+        {
+          "jugadorId": "j2",
+          "puntosRonda": 0,
+          "castigos": 0,
+          "acumulado": -10,
+          "eliminado": false,
+          "reenganchado": false
+        },
+        {
+          "jugadorId": "j3",
+          "puntosRonda": 3,
+          "castigos": 0,
+          "acumulado": 28,
+          "eliminado": false,
+          "reenganchado": false
+        }
+      ]
+    }
+  ],
+  "ganadorId": null,
+  "ventanaHasta": null,
+  "comandosRecientes": [
+    "c-0153",
+    "c-0154",
+    "c-0155"
+  ],
+  "version": 156,
+  "creadaEn": {
+    "$date": "2026-10-26T22:58:00Z"
+  },
+  "actualizadaEn": {
+    "$date": "2026-10-26T23:41:30Z"
+  },
+  "finalizadaEn": null
+}

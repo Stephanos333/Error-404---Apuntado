@@ -1,0 +1,14 @@
+{
+  "_id": { "$oid": "000000000000000000000101" },
+  "nombreUsuario": "santi",
+  "hashContrasena": "$argon2id$v=19$m=65536,t=3,p=4$c2FsdGVqZW1wbG8$Zm9vYmFyYmF6cXV4ZWplbXBsbw",
+  "rol": "JUGADOR",
+  "icono": "ICON3",
+  "disenoActivoId": { "$oid": "0000000000000000000000d1" },
+  "disenosAdquiridos": [{ "$oid": "0000000000000000000000d2" }],
+  "saldoTokens": 50,
+  "partidaActivaId": { "$oid": "0000000000000000000000a1" },
+  "estadisticas": { "partidasJugadas": 7, "partidasGanadas": 2, "tokensGanados": 90 },
+  "version": 12,
+  "creadoEn": { "$date": "2026-09-30T15:00:00Z" }
+}

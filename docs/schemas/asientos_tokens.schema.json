@@ -1,0 +1,64 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "usuarioId": {
+        "bsonType": "objectId"
+      },
+      "tipo": {
+        "bsonType": "string",
+        "enum": [
+          "SALDO_INICIAL",
+          "APUESTA",
+          "REEMBOLSO",
+          "PREMIO_POZO",
+          "REENGANCHE",
+          "COMPRA_DISENO",
+          "RECARGA"
+        ]
+      },
+      "monto": {
+        "bsonType": "int",
+        "description": "positivo = crédito, negativo = débito"
+      },
+      "referencia": {
+        "bsonType": "string",
+        "description": "clave de idempotencia única, p. ej. APUESTA:<partidaId>:<usuarioId>"
+      },
+      "partidaId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "solicitudId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "disenoId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "en": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "usuarioId",
+      "tipo",
+      "monto",
+      "referencia",
+      "en"
+    ],
+    "description": "Libro de tokens: asientos inmutables (append-only)"
+  }
+}

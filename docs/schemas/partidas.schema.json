@@ -1,0 +1,916 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "codigoInvitacion": {
+        "bsonType": "string",
+        "pattern": "^[A-Z0-9]{6}$",
+        "description": "código para salas privadas"
+      },
+      "nombre": {
+        "bsonType": "string",
+        "minLength": 3,
+        "maxLength": 30,
+        "description": "PP-01"
+      },
+      "estado": {
+        "bsonType": "string",
+        "enum": [
+          "EN_ESPERA",
+          "EN_JUEGO",
+          "MOSTRANDO_RESULTADOS",
+          "FINALIZADA",
+          "CANCELADA"
+        ]
+      },
+      "anfitrionId": {
+        "bsonType": "objectId"
+      },
+      "configuracion": {
+        "anyOf": [
+          {
+            "bsonType": "object",
+            "properties": {
+              "plugin": {
+                "bsonType": "object",
+                "properties": {
+                  "id": {
+                    "bsonType": "string",
+                    "enum": [
+                      "clasica",
+                      "apuntado"
+                    ]
+                  },
+                  "version": {
+                    "bsonType": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "description": "Plug-in de reglas y versión con que se creó (ADR-03)"
+              },
+              "cupo": {
+                "bsonType": "int",
+                "minimum": 2,
+                "maximum": 6,
+                "description": "PP-03"
+              },
+              "apuestaPorJugador": {
+                "bsonType": "int",
+                "minimum": 1,
+                "description": "PP-04"
+              },
+              "visibilidad": {
+                "bsonType": "string",
+                "enum": [
+                  "PUBLICA",
+                  "PRIVADA"
+                ],
+                "description": "PP-05"
+              },
+              "tipoEscalera": {
+                "bsonType": "string",
+                "enum": [
+                  "CON_VUELTA",
+                  "SIN_VUELTA"
+                ],
+                "description": "PP-06"
+              },
+              "comodinesActivos": {
+                "bsonType": "bool",
+                "description": "PP-07"
+              },
+              "parametros": {
+                "bsonType": "object",
+                "properties": {
+                  "limiteEliminacion": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "description": "PS-01, puntaje >= elimina"
+                  },
+                  "umbralTocar": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "PS-02, sobrante estrictamente menor"
+                  },
+                  "castigoCierreInvalido": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-03"
+                  },
+                  "bonificacionCierre": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-04 (negativo)"
+                  },
+                  "umbralVictoriaNegativa": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-05, puntaje <= gana"
+                  },
+                  "valorComodin": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-06"
+                  },
+                  "comodinesPorBaraja": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "description": "PS-07"
+                  },
+                  "jugadoresDobleBaraja": {
+                    "bsonType": "int",
+                    "minimum": 2,
+                    "maximum": 7,
+                    "description": "PS-08"
+                  },
+                  "graciaDesconexionSeg": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-09"
+                  },
+                  "ventanaResultadosSeg": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-10"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "limiteEliminacion",
+                  "umbralTocar",
+                  "castigoCierreInvalido",
+                  "bonificacionCierre",
+                  "umbralVictoriaNegativa",
+                  "valorComodin",
+                  "comodinesPorBaraja",
+                  "jugadoresDobleBaraja",
+                  "graciaDesconexionSeg",
+                  "ventanaResultadosSeg"
+                ],
+                "description": "Copia congelada de los parámetros del sistema al crear la partida (RD-36)"
+              },
+              "modalidad": {
+                "bsonType": "string",
+                "enum": [
+                  "clasica"
+                ],
+                "description": "PP-02"
+              },
+              "reengancheActivo": {
+                "bsonType": "bool",
+                "enum": [
+                  false
+                ],
+                "description": "la Clásica es de una sola ronda: no aplica"
+              },
+              "victoriaNegativaActiva": {
+                "bsonType": "bool",
+                "enum": [
+                  false
+                ],
+                "description": "no aplica en la Clásica"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "modalidad",
+              "plugin",
+              "cupo",
+              "apuestaPorJugador",
+              "visibilidad",
+              "tipoEscalera",
+              "comodinesActivos",
+              "reengancheActivo",
+              "victoriaNegativaActiva",
+              "parametros"
+            ]
+          },
+          {
+            "bsonType": "object",
+            "properties": {
+              "plugin": {
+                "bsonType": "object",
+                "properties": {
+                  "id": {
+                    "bsonType": "string",
+                    "enum": [
+                      "clasica",
+                      "apuntado"
+                    ]
+                  },
+                  "version": {
+                    "bsonType": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "description": "Plug-in de reglas y versión con que se creó (ADR-03)"
+              },
+              "cupo": {
+                "bsonType": "int",
+                "minimum": 2,
+                "maximum": 6,
+                "description": "PP-03"
+              },
+              "apuestaPorJugador": {
+                "bsonType": "int",
+                "minimum": 1,
+                "description": "PP-04"
+              },
+              "visibilidad": {
+                "bsonType": "string",
+                "enum": [
+                  "PUBLICA",
+                  "PRIVADA"
+                ],
+                "description": "PP-05"
+              },
+              "tipoEscalera": {
+                "bsonType": "string",
+                "enum": [
+                  "CON_VUELTA",
+                  "SIN_VUELTA"
+                ],
+                "description": "PP-06"
+              },
+              "comodinesActivos": {
+                "bsonType": "bool",
+                "description": "PP-07"
+              },
+              "parametros": {
+                "bsonType": "object",
+                "properties": {
+                  "limiteEliminacion": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "description": "PS-01, puntaje >= elimina"
+                  },
+                  "umbralTocar": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "PS-02, sobrante estrictamente menor"
+                  },
+                  "castigoCierreInvalido": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-03"
+                  },
+                  "bonificacionCierre": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-04 (negativo)"
+                  },
+                  "umbralVictoriaNegativa": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-05, puntaje <= gana"
+                  },
+                  "valorComodin": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-06"
+                  },
+                  "comodinesPorBaraja": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "description": "PS-07"
+                  },
+                  "jugadoresDobleBaraja": {
+                    "bsonType": "int",
+                    "minimum": 2,
+                    "maximum": 7,
+                    "description": "PS-08"
+                  },
+                  "graciaDesconexionSeg": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-09"
+                  },
+                  "ventanaResultadosSeg": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-10"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "limiteEliminacion",
+                  "umbralTocar",
+                  "castigoCierreInvalido",
+                  "bonificacionCierre",
+                  "umbralVictoriaNegativa",
+                  "valorComodin",
+                  "comodinesPorBaraja",
+                  "jugadoresDobleBaraja",
+                  "graciaDesconexionSeg",
+                  "ventanaResultadosSeg"
+                ],
+                "description": "Copia congelada de los parámetros del sistema al crear la partida (RD-36)"
+              },
+              "modalidad": {
+                "bsonType": "string",
+                "enum": [
+                  "apuntado"
+                ],
+                "description": "PP-02"
+              },
+              "reengancheActivo": {
+                "bsonType": "bool",
+                "description": "PP-08"
+              },
+              "victoriaNegativaActiva": {
+                "bsonType": "bool",
+                "description": "PP-09"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "modalidad",
+              "plugin",
+              "cupo",
+              "apuestaPorJugador",
+              "visibilidad",
+              "tipoEscalera",
+              "comodinesActivos",
+              "reengancheActivo",
+              "victoriaNegativaActiva",
+              "parametros"
+            ]
+          }
+        ]
+      },
+      "jugadores": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "jugadorId": {
+              "bsonType": "string"
+            },
+            "usuarioId": {
+              "bsonType": "objectId"
+            },
+            "nombreUsuario": {
+              "bsonType": "string",
+              "description": "denormalizado para no hacer joins al mostrar la mesa"
+            },
+            "posicion": {
+              "bsonType": "int",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "estado": {
+              "bsonType": "string",
+              "enum": [
+                "EN_SALA",
+                "ACTIVO",
+                "ELIMINADO",
+                "GANADOR",
+                "PERDEDOR"
+              ]
+            },
+            "puntaje": {
+              "bsonType": "int",
+              "description": "acumulado (solo Apuntado; 0 en Clásica)"
+            },
+            "usoReenganche": {
+              "bsonType": "bool"
+            },
+            "conectado": {
+              "bsonType": "bool"
+            },
+            "desconectadoDesde": {
+              "bsonType": [
+                "date",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "jugadorId",
+            "usuarioId",
+            "nombreUsuario",
+            "posicion",
+            "estado",
+            "puntaje",
+            "usoReenganche",
+            "conectado"
+          ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+      },
+      "pozo": {
+        "bsonType": "object",
+        "properties": {
+          "total": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "aportes": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "usuarioId": {
+                  "bsonType": "objectId"
+                },
+                "tipo": {
+                  "bsonType": "string",
+                  "enum": [
+                    "APUESTA",
+                    "REENGANCHE"
+                  ]
+                },
+                "monto": {
+                  "bsonType": "int",
+                  "minimum": 1
+                },
+                "asientoId": {
+                  "bsonType": "objectId"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "usuarioId",
+                "tipo",
+                "monto",
+                "asientoId"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 12
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "total",
+          "aportes"
+        ]
+      },
+      "rondaActual": {
+        "bsonType": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "numero": {
+            "bsonType": "int",
+            "minimum": 1
+          },
+          "estado": {
+            "bsonType": "string",
+            "enum": [
+              "REPARTIENDO",
+              "EN_TURNOS",
+              "RONDA_EXTRA",
+              "LIQUIDANDO",
+              "CERRADA"
+            ]
+          },
+          "posicionInicial": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "turno": {
+            "bsonType": "object",
+            "properties": {
+              "jugadorId": {
+                "bsonType": "string"
+              },
+              "fase": {
+                "bsonType": "string",
+                "enum": [
+                  "ESPERANDO_ROBO",
+                  "CON_11_CARTAS"
+                ]
+              },
+              "intentoCierre": {
+                "bsonType": "bool"
+              },
+              "numero": {
+                "bsonType": "int",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "jugadorId",
+              "fase",
+              "intentoCierre",
+              "numero"
+            ]
+          },
+          "mazo": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "valor": {
+                  "bsonType": "string",
+                  "enum": [
+                    "AS",
+                    "DOS",
+                    "TRES",
+                    "CUATRO",
+                    "CINCO",
+                    "SEIS",
+                    "SIETE",
+                    "OCHO",
+                    "NUEVE",
+                    "DIEZ",
+                    "J",
+                    "Q",
+                    "K",
+                    "COMODIN"
+                  ]
+                },
+                "palo": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "PICAS",
+                    "CORAZONES",
+                    "DIAMANTES",
+                    "TREBOLES",
+                    null
+                  ],
+                  "description": "null solo para COMODIN"
+                },
+                "baraja": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 o 2 (doble baraja desde PS-08 jugadores)"
+                },
+                "disenoId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "diseño de quien la descartó; solo en el pozo"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "valor",
+                "palo",
+                "baraja"
+              ],
+              "description": "Carta (documento embebido, sin _id)"
+            },
+            "minItems": 0,
+            "maxItems": 108
+          },
+          "pozoDescarte": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "valor": {
+                  "bsonType": "string",
+                  "enum": [
+                    "AS",
+                    "DOS",
+                    "TRES",
+                    "CUATRO",
+                    "CINCO",
+                    "SEIS",
+                    "SIETE",
+                    "OCHO",
+                    "NUEVE",
+                    "DIEZ",
+                    "J",
+                    "Q",
+                    "K",
+                    "COMODIN"
+                  ]
+                },
+                "palo": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "PICAS",
+                    "CORAZONES",
+                    "DIAMANTES",
+                    "TREBOLES",
+                    null
+                  ],
+                  "description": "null solo para COMODIN"
+                },
+                "baraja": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 o 2 (doble baraja desde PS-08 jugadores)"
+                },
+                "disenoId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "diseño de quien la descartó; solo en el pozo"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "valor",
+                "palo",
+                "baraja"
+              ],
+              "description": "Carta (documento embebido, sin _id)"
+            },
+            "minItems": 0,
+            "maxItems": 108
+          },
+          "manos": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "jugadorId": {
+                  "bsonType": "string"
+                },
+                "cartas": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "object",
+                    "properties": {
+                      "valor": {
+                        "bsonType": "string",
+                        "enum": [
+                          "AS",
+                          "DOS",
+                          "TRES",
+                          "CUATRO",
+                          "CINCO",
+                          "SEIS",
+                          "SIETE",
+                          "OCHO",
+                          "NUEVE",
+                          "DIEZ",
+                          "J",
+                          "Q",
+                          "K",
+                          "COMODIN"
+                        ]
+                      },
+                      "palo": {
+                        "bsonType": [
+                          "string",
+                          "null"
+                        ],
+                        "enum": [
+                          "PICAS",
+                          "CORAZONES",
+                          "DIAMANTES",
+                          "TREBOLES",
+                          null
+                        ],
+                        "description": "null solo para COMODIN"
+                      },
+                      "baraja": {
+                        "bsonType": "int",
+                        "minimum": 1,
+                        "maximum": 2,
+                        "description": "1 o 2 (doble baraja desde PS-08 jugadores)"
+                      },
+                      "disenoId": {
+                        "bsonType": [
+                          "objectId",
+                          "null"
+                        ],
+                        "description": "diseño de quien la descartó; solo en el pozo"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "valor",
+                      "palo",
+                      "baraja"
+                    ],
+                    "description": "Carta (documento embebido, sin _id)"
+                  },
+                  "minItems": 10,
+                  "maxItems": 11
+                },
+                "grupos": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "array",
+                    "items": {
+                      "bsonType": "int",
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "minItems": 1,
+                    "maxItems": 4
+                  },
+                  "minItems": 0,
+                  "maxItems": 4,
+                  "description": "organización del jugador: índices de 'cartas' por grupo; define la liquidación (RD-24)"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "jugadorId",
+                "cartas",
+                "grupos"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 6
+          },
+          "rondaExtra": {
+            "bsonType": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "tocadorId": {
+                "bsonType": "string"
+              },
+              "pendientes": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "string"
+                },
+                "minItems": 0,
+                "maxItems": 5
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "tocadorId",
+              "pendientes"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "numero",
+          "estado",
+          "posicionInicial",
+          "turno",
+          "mazo",
+          "pozoDescarte",
+          "manos"
+        ]
+      },
+      "marcador": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "numeroRonda": {
+              "bsonType": "int",
+              "minimum": 1
+            },
+            "ganadorId": {
+              "bsonType": "string"
+            },
+            "tipoCierre": {
+              "bsonType": "string",
+              "enum": [
+                "GANAR_4_3_3",
+                "TOCAR"
+              ]
+            },
+            "puntos": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "object",
+                "properties": {
+                  "jugadorId": {
+                    "bsonType": "string"
+                  },
+                  "puntosRonda": {
+                    "bsonType": "int",
+                    "description": "sueltas, bonificación o sobrante de la ronda"
+                  },
+                  "castigos": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "castigos por cierres inválidos en la ronda"
+                  },
+                  "acumulado": {
+                    "bsonType": "int"
+                  },
+                  "eliminado": {
+                    "bsonType": "bool"
+                  },
+                  "reenganchado": {
+                    "bsonType": "bool"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "jugadorId",
+                  "puntosRonda",
+                  "castigos",
+                  "acumulado",
+                  "eliminado",
+                  "reenganchado"
+                ]
+              },
+              "minItems": 2,
+              "maxItems": 6
+            },
+            "cerradaEn": {
+              "bsonType": "date"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "numeroRonda",
+            "ganadorId",
+            "tipoCierre",
+            "puntos",
+            "cerradaEn"
+          ],
+          "description": "Historial de penalizaciones y marcador por ronda (solo Apuntado; vacío en Clásica)"
+        },
+        "minItems": 0,
+        "maxItems": 200
+      },
+      "ganadorId": {
+        "bsonType": [
+          "string",
+          "null"
+        ]
+      },
+      "ventanaHasta": {
+        "bsonType": [
+          "date",
+          "null"
+        ],
+        "description": "fin de la ventana de resultados/reenganche (PS-10); permite re-armar el temporizador tras un reinicio"
+      },
+      "comandosRecientes": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "string"
+        },
+        "minItems": 0,
+        "maxItems": 20,
+        "description": "idComando de las últimas acciones aplicadas (idempotencia)"
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "control de concurrencia optimista"
+      },
+      "creadaEn": {
+        "bsonType": "date"
+      },
+      "actualizadaEn": {
+        "bsonType": "date"
+      },
+      "finalizadaEn": {
+        "bsonType": [
+          "date",
+          "null"
+        ]
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "codigoInvitacion",
+      "nombre",
+      "estado",
+      "anfitrionId",
+      "configuracion",
+      "jugadores",
+      "pozo",
+      "marcador",
+      "comandosRecientes",
+      "version",
+      "creadaEn",
+      "actualizadaEn"
+    ],
+    "description": "Agregado Partida (GameSessionEntity): unidad de consistencia de todo el estado de juego"
+  }
+}

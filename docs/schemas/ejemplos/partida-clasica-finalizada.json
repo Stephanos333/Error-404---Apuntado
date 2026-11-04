@@ -1,0 +1,108 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000b1"
+  },
+  "codigoInvitacion": "Q4M8ZT",
+  "nombre": "Duelo clásico",
+  "estado": "FINALIZADA",
+  "anfitrionId": {
+    "$oid": "000000000000000000000201"
+  },
+  "configuracion": {
+    "modalidad": "clasica",
+    "plugin": {
+      "id": "clasica",
+      "version": "1.0.0"
+    },
+    "cupo": 2,
+    "apuestaPorJugador": 15,
+    "visibilidad": "PUBLICA",
+    "tipoEscalera": "SIN_VUELTA",
+    "comodinesActivos": true,
+    "reengancheActivo": false,
+    "victoriaNegativaActiva": false,
+    "parametros": {
+      "limiteEliminacion": 101,
+      "umbralTocar": 5,
+      "castigoCierreInvalido": 2,
+      "bonificacionCierre": -10,
+      "umbralVictoriaNegativa": -51,
+      "valorComodin": 20,
+      "comodinesPorBaraja": 2,
+      "jugadoresDobleBaraja": 4,
+      "graciaDesconexionSeg": 120,
+      "ventanaResultadosSeg": 20
+    }
+  },
+  "jugadores": [
+    {
+      "jugadorId": "j1",
+      "usuarioId": {
+        "$oid": "000000000000000000000201"
+      },
+      "nombreUsuario": "omar",
+      "posicion": 1,
+      "estado": "GANADOR",
+      "puntaje": 0,
+      "usoReenganche": false,
+      "conectado": true,
+      "desconectadoDesde": null
+    },
+    {
+      "jugadorId": "j2",
+      "usuarioId": {
+        "$oid": "000000000000000000000202"
+      },
+      "nombreUsuario": "ines",
+      "posicion": 2,
+      "estado": "PERDEDOR",
+      "puntaje": 0,
+      "usoReenganche": false,
+      "conectado": true,
+      "desconectadoDesde": null
+    }
+  ],
+  "pozo": {
+    "total": 30,
+    "aportes": [
+      {
+        "usuarioId": {
+          "$oid": "000000000000000000000201"
+        },
+        "tipo": "APUESTA",
+        "monto": 15,
+        "asientoId": {
+          "$oid": "0000000000000000000000f1"
+        }
+      },
+      {
+        "usuarioId": {
+          "$oid": "000000000000000000000202"
+        },
+        "tipo": "APUESTA",
+        "monto": 15,
+        "asientoId": {
+          "$oid": "0000000000000000000000f2"
+        }
+      }
+    ]
+  },
+  "rondaActual": null,
+  "marcador": [],
+  "ganadorId": "j1",
+  "ventanaHasta": null,
+  "comandosRecientes": [
+    "c-0040",
+    "c-0041"
+  ],
+  "version": 42,
+  "creadaEn": {
+    "$date": "2026-10-26T20:00:00Z"
+  },
+  "actualizadaEn": {
+    "$date": "2026-10-26T20:14:09Z"
+  },
+  "finalizadaEn": {
+    "$date": "2026-10-26T20:14:09Z"
+  }
+}

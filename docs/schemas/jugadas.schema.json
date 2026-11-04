@@ -1,0 +1,255 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "partidaId": {
+        "bsonType": "objectId"
+      },
+      "numeroRonda": {
+        "bsonType": "int",
+        "minimum": 1
+      },
+      "cerrada": {
+        "bsonType": "bool"
+      },
+      "conteo": {
+        "bsonType": "int",
+        "minimum": 0,
+        "maximum": 1000
+      },
+      "eventos": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "secuencia": {
+              "bsonType": "int",
+              "minimum": 1
+            },
+            "tipo": {
+              "bsonType": "string",
+              "enum": [
+                "REPARTO",
+                "ROBO_MAZO",
+                "ROBO_POZO",
+                "DESCARTE",
+                "ORGANIZACION",
+                "CIERRE_INTENTO",
+                "CIERRE_VALIDO",
+                "CASTIGO",
+                "RONDA_EXTRA",
+                "TURNO_AUTOMATICO",
+                "MAZO_REABASTECIDO",
+                "ELIMINACION",
+                "REENGANCHE",
+                "DESCONEXION",
+                "RECONEXION"
+              ]
+            },
+            "jugadorId": {
+              "bsonType": [
+                "string",
+                "null"
+              ]
+            },
+            "carta": {
+              "bsonType": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "valor": {
+                  "bsonType": "string",
+                  "enum": [
+                    "AS",
+                    "DOS",
+                    "TRES",
+                    "CUATRO",
+                    "CINCO",
+                    "SEIS",
+                    "SIETE",
+                    "OCHO",
+                    "NUEVE",
+                    "DIEZ",
+                    "J",
+                    "Q",
+                    "K",
+                    "COMODIN"
+                  ]
+                },
+                "palo": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "PICAS",
+                    "CORAZONES",
+                    "DIAMANTES",
+                    "TREBOLES",
+                    null
+                  ],
+                  "description": "null solo para COMODIN"
+                },
+                "baraja": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 o 2 (doble baraja desde PS-08 jugadores)"
+                },
+                "disenoId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "diseño de quien la descartó; solo en el pozo"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "valor",
+                "palo",
+                "baraja"
+              ],
+              "description": "Carta (documento embebido, sin _id)"
+            },
+            "detalle": {
+              "bsonType": [
+                "object",
+                "null"
+              ],
+              "description": "datos propios del tipo de evento (p. ej. motivo del castigo)"
+            },
+            "version": {
+              "bsonType": "int",
+              "minimum": 1,
+              "description": "versión de la partida tras aplicar el evento"
+            },
+            "en": {
+              "bsonType": "date"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "secuencia",
+            "tipo",
+            "version",
+            "en"
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 1000
+      },
+      "manosReveladas": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "jugadorId": {
+              "bsonType": "string"
+            },
+            "cartas": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "object",
+                "properties": {
+                  "valor": {
+                    "bsonType": "string",
+                    "enum": [
+                      "AS",
+                      "DOS",
+                      "TRES",
+                      "CUATRO",
+                      "CINCO",
+                      "SEIS",
+                      "SIETE",
+                      "OCHO",
+                      "NUEVE",
+                      "DIEZ",
+                      "J",
+                      "Q",
+                      "K",
+                      "COMODIN"
+                    ]
+                  },
+                  "palo": {
+                    "bsonType": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "PICAS",
+                      "CORAZONES",
+                      "DIAMANTES",
+                      "TREBOLES",
+                      null
+                    ],
+                    "description": "null solo para COMODIN"
+                  },
+                  "baraja": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 2,
+                    "description": "1 o 2 (doble baraja desde PS-08 jugadores)"
+                  },
+                  "disenoId": {
+                    "bsonType": [
+                      "objectId",
+                      "null"
+                    ],
+                    "description": "diseño de quien la descartó; solo en el pozo"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "valor",
+                  "palo",
+                  "baraja"
+                ],
+                "description": "Carta (documento embebido, sin _id)"
+              },
+              "minItems": 10,
+              "maxItems": 11
+            },
+            "grupos": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "int",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "minItems": 0,
+              "maxItems": 4
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "jugadorId",
+            "cartas",
+            "grupos"
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 6
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "partidaId",
+      "numeroRonda",
+      "cerrada",
+      "conteo",
+      "eventos"
+    ],
+    "description": "Bitácora de jugadas por ronda (patrón bucket): trazabilidad de robos, descartes, castigos y estados"
+  }
+}

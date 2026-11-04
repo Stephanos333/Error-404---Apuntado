@@ -1,0 +1,35 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "nombre": {
+        "bsonType": "string"
+      },
+      "precioTokens": {
+        "bsonType": "int",
+        "minimum": 0
+      },
+      "esGratuito": {
+        "bsonType": "bool"
+      },
+      "esPorDefecto": {
+        "bsonType": "bool"
+      },
+      "activo": {
+        "bsonType": "bool"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "nombre",
+      "precioTokens",
+      "esGratuito",
+      "esPorDefecto",
+      "activo"
+    ]
+  }
+}

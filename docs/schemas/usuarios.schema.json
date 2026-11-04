@@ -1,0 +1,97 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "nombreUsuario": {
+        "bsonType": "string",
+        "minLength": 3,
+        "maxLength": 20
+      },
+      "hashContrasena": {
+        "bsonType": "string",
+        "pattern": "^\\$argon2id\\$",
+        "description": "argon2id con sal"
+      },
+      "rol": {
+        "bsonType": "string",
+        "enum": [
+          "JUGADOR",
+          "ADMIN"
+        ]
+      },
+      "icono": {
+        "bsonType": "string"
+      },
+      "disenoActivoId": {
+        "bsonType": "objectId"
+      },
+      "disenosAdquiridos": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "objectId"
+        },
+        "minItems": 0,
+        "maxItems": 100
+      },
+      "saldoTokens": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "caché de la suma de asientos_tokens; se actualiza en la misma transacción"
+      },
+      "partidaActivaId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ],
+        "description": "RD-31: una sola partida no finalizada"
+      },
+      "estadisticas": {
+        "bsonType": "object",
+        "properties": {
+          "partidasJugadas": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "partidasGanadas": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "tokensGanados": {
+            "bsonType": "int",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "partidasJugadas",
+          "partidasGanadas",
+          "tokensGanados"
+        ]
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 0
+      },
+      "creadoEn": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "nombreUsuario",
+      "hashContrasena",
+      "rol",
+      "icono",
+      "disenoActivoId",
+      "disenosAdquiridos",
+      "saldoTokens",
+      "estadisticas",
+      "version",
+      "creadoEn"
+    ]
+  }
+}

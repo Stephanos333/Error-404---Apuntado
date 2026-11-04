@@ -1,0 +1,117 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 1
+      },
+      "valores": {
+        "bsonType": "object",
+        "properties": {
+          "limiteEliminacion": {
+            "bsonType": "int",
+            "minimum": 1,
+            "description": "PS-01, puntaje >= elimina"
+          },
+          "umbralTocar": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "PS-02, sobrante estrictamente menor"
+          },
+          "castigoCierreInvalido": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-03"
+          },
+          "bonificacionCierre": {
+            "bsonType": "int",
+            "maximum": 0,
+            "description": "PS-04 (negativo)"
+          },
+          "umbralVictoriaNegativa": {
+            "bsonType": "int",
+            "maximum": 0,
+            "description": "PS-05, puntaje <= gana"
+          },
+          "valorComodin": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-06"
+          },
+          "comodinesPorBaraja": {
+            "bsonType": "int",
+            "minimum": 0,
+            "maximum": 4,
+            "description": "PS-07"
+          },
+          "jugadoresDobleBaraja": {
+            "bsonType": "int",
+            "minimum": 2,
+            "maximum": 7,
+            "description": "PS-08"
+          },
+          "graciaDesconexionSeg": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-09"
+          },
+          "ventanaResultadosSeg": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-10"
+          },
+          "saldoInicialTokens": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-11"
+          },
+          "precioTokenCOP": {
+            "bsonType": "int",
+            "minimum": 1,
+            "description": "PS-12"
+          },
+          "qrRecaudoId": {
+            "bsonType": "objectId",
+            "description": "PS-13: imagen del QR en GridFS"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "limiteEliminacion",
+          "umbralTocar",
+          "castigoCierreInvalido",
+          "bonificacionCierre",
+          "umbralVictoriaNegativa",
+          "valorComodin",
+          "comodinesPorBaraja",
+          "jugadoresDobleBaraja",
+          "graciaDesconexionSeg",
+          "ventanaResultadosSeg",
+          "saldoInicialTokens",
+          "precioTokenCOP",
+          "qrRecaudoId"
+        ]
+      },
+      "vigenteDesde": {
+        "bsonType": "date"
+      },
+      "modificadoPor": {
+        "bsonType": "objectId"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "version",
+      "valores",
+      "vigenteDesde",
+      "modificadoPor"
+    ],
+    "description": "Versiones de los parámetros del sistema (la vigente es la de mayor 'version')"
+  }
+}

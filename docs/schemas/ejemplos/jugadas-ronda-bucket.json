@@ -1,0 +1,77 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000c3"
+  },
+  "partidaId": {
+    "$oid": "0000000000000000000000a1"
+  },
+  "numeroRonda": 3,
+  "cerrada": false,
+  "conteo": 4,
+  "eventos": [
+    {
+      "secuencia": 1,
+      "tipo": "REPARTO",
+      "jugadorId": null,
+      "carta": null,
+      "detalle": {
+        "inicial": "j3",
+        "cartasPorJugador": {
+          "j3": 11,
+          "j1": 10,
+          "j2": 10
+        }
+      },
+      "version": 149,
+      "en": {
+        "$date": "2026-10-26T23:30:25Z"
+      }
+    },
+    {
+      "secuencia": 2,
+      "tipo": "DESCARTE",
+      "jugadorId": "j3",
+      "carta": {
+        "valor": "K",
+        "palo": "DIAMANTES",
+        "baraja": 1,
+        "disenoId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      },
+      "detalle": null,
+      "version": 150,
+      "en": {
+        "$date": "2026-10-26T23:31:02Z"
+      }
+    },
+    {
+      "secuencia": 3,
+      "tipo": "CASTIGO",
+      "jugadorId": "j2",
+      "carta": null,
+      "detalle": {
+        "motivo": "GRUPO_2_NO_ES_TERNA",
+        "puntos": 2
+      },
+      "version": 152,
+      "en": {
+        "$date": "2026-10-26T23:33:40Z"
+      }
+    },
+    {
+      "secuencia": 4,
+      "tipo": "ROBO_MAZO",
+      "jugadorId": "j1",
+      "carta": null,
+      "detalle": {
+        "cartaOculta": true
+      },
+      "version": 156,
+      "en": {
+        "$date": "2026-10-26T23:41:30Z"
+      }
+    }
+  ],
+  "manosReveladas": []
+}

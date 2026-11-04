@@ -1,0 +1,73 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "usuarioId": {
+        "bsonType": "objectId"
+      },
+      "tokens": {
+        "bsonType": "int",
+        "minimum": 1
+      },
+      "valorCOP": {
+        "bsonType": [
+          "long",
+          "int"
+        ],
+        "minimum": 1
+      },
+      "referenciaNequi": {
+        "bsonType": "string",
+        "minLength": 4,
+        "maxLength": 40
+      },
+      "comprobanteId": {
+        "bsonType": "objectId",
+        "description": "archivo en el bucket GridFS 'comprobantes' (JPG, PNG o PDF <= 5 MB)"
+      },
+      "estado": {
+        "bsonType": "string",
+        "enum": [
+          "PENDIENTE",
+          "APROBADA",
+          "RECHAZADA"
+        ]
+      },
+      "revisadaPor": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "motivoRechazo": {
+        "bsonType": [
+          "string",
+          "null"
+        ]
+      },
+      "creadaEn": {
+        "bsonType": "date"
+      },
+      "resueltaEn": {
+        "bsonType": [
+          "date",
+          "null"
+        ]
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "usuarioId",
+      "tokens",
+      "valorCOP",
+      "referenciaNequi",
+      "comprobanteId",
+      "estado",
+      "creadaEn"
+    ]
+  }
+}

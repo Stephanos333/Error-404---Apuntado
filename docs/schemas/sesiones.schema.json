@@ -1,0 +1,30 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "usuarioId": {
+        "bsonType": "objectId"
+      },
+      "hashRefreshToken": {
+        "bsonType": "string"
+      },
+      "expiraEn": {
+        "bsonType": "date"
+      },
+      "creadaEn": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "usuarioId",
+      "hashRefreshToken",
+      "expiraEn",
+      "creadaEn"
+    ]
+  }
+}
