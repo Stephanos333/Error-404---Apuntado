@@ -1,0 +1,56 @@
+@startuml
+left to right direction
+
+actor "Jugador" as JUG
+actor "Administrador de Sala\n(Anfitrión)" as ANF
+actor "ADMIN" as ADM
+
+ANF --|> JUG : «generaliza»
+
+rectangle "Sistema Apuntado: Cuenta, Sala y Economía" {
+    usecase "Registrarse" as UC_REG
+    usecase "Iniciar sesión" as UC_LOG
+    usecase "Gestionar perfil\ny diseño activo" as UC_PER
+    usecase "Comprar diseño de cartas" as UC_DIS
+    usecase "Solicitar recarga de tokens\npor QR Nequi" as UC_REC
+    usecase "Consultar historial de\npartidas y movimientos" as UC_HIS
+    usecase "Listar salas públicas" as UC_LIS
+    usecase "Crear partida con\nmodalidad y reglas" as UC_CRE
+    usecase "Unirse a partida" as UC_UNI
+    usecase "Iniciar partida" as UC_INI
+    usecase "Cancelar sala" as UC_CAN
+    usecase "Expulsar jugador" as UC_EXP
+    usecase "Debitar apuesta" as UC_DEB
+    usecase "Reembolsar apuesta" as UC_REE
+    usecase "Congelar configuración\nde reglas" as UC_CON
+    usecase "Iniciar ronda" as UC_RON
+    usecase "Revisar solicitud\nde recarga" as UC_REV
+    usecase "Acreditar tokens" as UC_ACR
+    usecase "Administrar catálogo\ny parámetros" as UC_ADP
+}
+
+JUG -- UC_REG
+JUG -- UC_LOG
+JUG -- UC_PER
+JUG -- UC_DIS
+JUG -- UC_REC
+JUG -- UC_HIS
+JUG -- UC_LIS
+JUG -- UC_CRE
+JUG -- UC_UNI
+ANF -- UC_INI
+ANF -- UC_CAN
+ANF -- UC_EXP
+ADM -- UC_LOG
+ADM -- UC_REV
+ADM -- UC_ADP
+
+UC_CRE ..> UC_DEB : «include»
+UC_CRE ..> UC_CON : «include»
+UC_UNI ..> UC_DEB : «include»
+UC_CAN ..> UC_REE : «include»
+UC_EXP ..> UC_REE : «include»
+UC_INI ..> UC_RON : «include»
+UC_ACR ..> UC_REV : «extend»\n[solicitud aprobada]
+
+@enduml

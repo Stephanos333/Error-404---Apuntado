@@ -1,0 +1,39 @@
+@startuml 07-secuencia-comunicacion
+title ADR-05 — Comando síncrono en memoria + eventos de dominio locales después del commit
+skinparam shadowing false
+autonumber
+actor "Jugador en turno" as J
+participant "WebClientUI" as UI
+participant "GameApiGateway" as API
+participant "TurnOrchestrator" as TO
+participant "DeckManagement" as DK
+participant "IGameStateStore" as ST
+participant "DomainEventBus\n(en proceso)" as BUS
+participant "RealtimeNotification" as RT
+participant "PresenceMonitor" as PM
+actor "Demás jugadores" as O
+
+J -> UI : arrastra la carta al pozo
+UI -> API : PATCH /partidas/{id}/descartes {idComando, carta}
+group Unidad de trabajo síncrona (llamadas directas por interfaces)
+  API -> TO : descartar(jugadorId, carta)
+  TO -> ST : cargar(partidaId)
+  TO -> TO : validar protocolo del turno\n(máquina de estados)
+  TO -> DK : moverAlPozo(carta)
+  TO -> TO : avanzarTurno()
+  TO -> ST : guardar(partida, versionEsperada)
+end
+API --> UI : 200 OK {version: 44, vistaPrivada}
+group Efectos secundarios desacoplados (eventos locales, tras el commit)
+  TO -> BUS : publicar(CartaDescartada v44, TurnoCambiado v44)
+  BUS -> RT : on(CartaDescartada / TurnoCambiado)
+  RT -> O : WSS sala "partida:{id}"\n{tipo, version: 44, vistaPública}
+  RT -> UI : WSS sala "usuario:{id}"\n{vistaPrivada}
+  BUS -> PM : on(TurnoCambiado)\n(re-arma temporizador de gracia si el siguiente está desconectado)
+end
+note over O
+  Cada cliente aplica eventos en orden de versión.
+  Si detecta un salto (p. ej. 42 → 44) pide
+  GET /partidas/{id}/estado (RF-14).
+end note
+@enduml

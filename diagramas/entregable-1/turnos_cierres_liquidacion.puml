@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+
+actor "Jugador" as JUG2
+actor "Sistema / Temporizador" as TMP
+
+rectangle "Sistema Apuntado: Juego" {
+    usecase "Iniciar ronda:\nbarajar y repartir" as UC_RON2
+    usecase "Robar carta" as UC_ROB
+    usecase "Reabastecer mazo" as UC_REA
+    usecase "Organizar mano" as UC_ORG
+    usecase "Descartar y pasar turno" as UC_DES
+    usecase "CU-01 Ejecutar cierre de\nronda clásica 4-3-3" as CU01
+    usecase "CU-02 Declarar cierre\npor apuntado: tocar" as CU02
+    usecase "Validar combinación\nde mano" as UC_VAL
+    usecase "Aplicar castigo por\ncierre inválido" as UC_CAS
+    usecase "Jugar ronda extra" as UC_EXT
+    usecase "CU-03 Liquidar puntos de ronda\ny evaluar umbral 101" as CU03
+    usecase "Finalizar partida y\nentregar pozo" as UC_FIN
+    usecase "Reengancharse" as UC_RNG
+    usecase "Jugar turno automático\npor desconexión" as UC_AUT
+    usecase "Eliminar por abandono" as UC_ELI
+    usecase "Reconectarse a la partida" as UC_RCX
+}
+
+JUG2 -- UC_ROB
+JUG2 -- UC_ORG
+JUG2 -- UC_DES
+JUG2 -- CU01
+JUG2 -- CU02
+JUG2 -- UC_EXT
+JUG2 -- UC_RNG
+JUG2 -- UC_RCX
+TMP -- UC_RON2
+TMP -- UC_AUT
+TMP -- CU03
+
+UC_REA ..> UC_ROB : «extend»\n[mazo vacío]
+CU01 ..> UC_VAL : «include»
+CU02 ..> UC_VAL : «include»
+UC_CAS ..> CU01 : «extend»\n[declaración inválida]
+UC_CAS ..> CU02 : «extend»\n[declaración inválida]
+CU02 ..> UC_EXT : «include»
+CU01 ..> CU03 : «include»
+CU02 ..> CU03 : «include»
+UC_FIN ..> CU03 : «extend»\n[las eliminaciones por 101 dejan 1 activo,\no alguien llega a -51]
+UC_RNG ..> CU03 : «extend»\n[eliminado con reenganche activo]
+UC_ELI ..> UC_AUT : «extend»\n[vence el tiempo de gracia]
+UC_AUT ..> UC_ROB : «include»
+UC_AUT ..> UC_DES : «include»
+
+@enduml

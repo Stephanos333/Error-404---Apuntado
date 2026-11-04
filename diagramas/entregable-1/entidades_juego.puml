@@ -1,0 +1,166 @@
+@startuml
+left to right direction
+
+class Partida {
+    -id: PartidaId
+    -anfitrionId: UsuarioId
+    -estado: EstadoPartida
+    -configuracion: ConfiguracionPartida
+    -pozoTokens: int
+    -version: int
+    +admitir(usuario: UsuarioId, posicion: int) Jugador
+    +iniciar(solicitante: UsuarioId) Ronda
+    +rondaActual() Ronda
+    +jugadoresActivos() List<Jugador>
+    +reincorporar(jugador: JugadorId, puntaje: int, apuesta: int) void
+    +finalizar(ganador: JugadorId) void
+}
+
+class ConfiguracionPartida <<ValueObject>> {
+    +nombre: String
+    +modalidad: Modalidad
+    +cupo: int
+    +apuestaPorJugador: int
+    +visibilidad: Visibilidad
+    +tipoEscalera: TipoEscalera
+    +comodinesActivos: boolean
+    +reengancheActivo: boolean
+    +victoriaNegativaActiva: boolean
+    +parametros: ParametrosSistema
+}
+
+class ParametrosSistema <<ValueObject>> {
+    +limiteEliminacion: int = 101
+    +umbralTocar: int = 5
+    +castigoCierreInvalido: int = 2
+    +bonificacionCierre: int = -10
+    +umbralVictoriaNegativa: int = -51
+    +valorComodin: int = 20
+    +comodinesPorBaraja: int = 2
+    +jugadoresDobleBaraja: int = 4
+}
+
+class Ronda {
+    -numero: int
+    -estado: EstadoRonda
+    -posicionTurno: int
+    -posicionInicial: int
+    -tipoCierre: TipoCierre
+    -ganadorRonda: JugadorId
+    +esTurnoDe(jugador: JugadorId) boolean
+    +avanzarTurno() void
+    +iniciarRondaExtra(tocador: JugadorId) void
+    +cerrar(ganador: JugadorId, tipo: TipoCierre) void
+}
+
+class Jugador {
+    -id: JugadorId
+    -usuarioId: UsuarioId
+    -posicion: int
+    -puntaje: int
+    -estado: EstadoJugador
+    -intentoCierreEnTurno: boolean
+    -usoReenganche: boolean
+    +sumarPuntos(puntos: int) void
+    +eliminar() void
+    +reenganchar(puntaje: int) void
+}
+
+class Mano {
+    -cartas: List<Carta>
+    -grupos: List<GrupoDeclarado>
+    +recibir(carta: Carta) void
+    +entregar(carta: Carta) Carta
+    +contiene(cartas: List<Carta>) boolean
+    +organizar(grupos: List<GrupoDeclarado>) void
+    +tamano() int
+}
+
+class GrupoDeclarado <<ValueObject>> {
+    +cartas: List<Carta>
+    +tamano() int
+}
+
+class Carta <<ValueObject>> {
+    +valor: Valor
+    +palo: Palo
+    +esComodin: boolean
+    +puntos(valorComodin: int) int
+}
+
+enum Valor {
+    AS
+    DOS
+    TRES
+    CUATRO
+    CINCO
+    SEIS
+    SIETE
+    OCHO
+    NUEVE
+    DIEZ
+    J
+    Q
+    K
+}
+
+enum Palo {
+    PICAS
+    CORAZONES
+    DIAMANTES
+    TREBOLES
+}
+
+class Mazo {
+    -cartas: Deque<Carta>
+    +robar() Carta
+    +estaVacio() boolean
+    +reabastecer(cartas: List<Carta>, rng: GeneradorAleatorio) void
+}
+
+class PozoDescarte {
+    -cartas: Stack<Carta>
+    +tope() Carta
+    +tomarTope() Carta
+    +recibir(carta: Carta) void
+    +retirarTodasMenosTope() List<Carta>
+}
+
+enum Modalidad {
+    CLASICA
+    APUNTADO
+}
+
+enum TipoEscalera {
+    CON_VUELTA
+    SIN_VUELTA
+}
+
+enum EstadoPartida {
+    EN_ESPERA
+    EN_JUEGO
+    MOSTRANDO_RESULTADOS
+    FINALIZADA
+    CANCELADA
+}
+
+Partida "1" *-- "1" ConfiguracionPartida : congela
+ConfiguracionPartida "1" *-- "1" ParametrosSistema
+Partida "1" *-- "2..6" Jugador : participan
+Partida "1" *-- "1..*" Ronda : rondas
+Ronda "1" *-- "1" Mazo
+Ronda "1" *-- "1" PozoDescarte
+Ronda "1" --> "2..6" Jugador : orden de turno
+Jugador "1" *-- "0..1" Mano : mano de la ronda
+Mano "1" *-- "0..4" GrupoDeclarado
+Mano "1" o-- "10..11" Carta
+GrupoDeclarado "1" o-- "1..4" Carta
+Mazo "1" o-- "0..*" Carta
+PozoDescarte "1" o-- "0..*" Carta
+Carta --> Valor
+Carta --> Palo
+Partida --> EstadoPartida
+ConfiguracionPartida --> Modalidad
+ConfiguracionPartida --> TipoEscalera
+
+@enduml

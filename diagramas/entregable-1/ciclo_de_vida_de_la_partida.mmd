@@ -1,0 +1,11 @@
+stateDiagram-v2
+    direction LR
+    [*] --> EN_ESPERA : crear sala (debita apuesta)
+    EN_ESPERA --> EN_ESPERA : unirse / salir / expulsar
+    EN_ESPERA --> CANCELADA : anfitrión cancela (reembolso)
+    EN_ESPERA --> EN_JUEGO : anfitrión inicia (2 o más jugadores)
+    EN_JUEGO --> MOSTRANDO_RESULTADOS : ronda liquidada
+    MOSTRANDO_RESULTADOS --> EN_JUEGO : vence ventana PS-10 y hay 2 o más activos
+    MOSTRANDO_RESULTADOS --> FINALIZADA : queda 1 activo o alguien llega a -51
+    CANCELADA --> [*]
+    FINALIZADA --> [*] : pozo acreditado al ganador

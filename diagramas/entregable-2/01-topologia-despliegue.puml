@@ -1,0 +1,36 @@
+@startuml 01-topologia-despliegue
+title Topología de despliegue — 1 quantum arquitectónico
+skinparam componentStyle uml2
+skinparam shadowing false
+left to right direction
+
+node "Dispositivo del jugador / ADMIN" as DISP {
+  node "Navegador web" as NAV {
+    artifact "SPA React (Vite)\nWebClientUI" as SPA
+  }
+}
+cloud "Hosting estático (Vercel)" as CDN {
+  artifact "build del frontend" as FE
+}
+node "Servidor de aplicación con WebSockets persistentes\n(contenedor Node.js 20 — Render / Railway / Fly.io)" as SRV {
+  component "Backend NestJS\n«monolito modular + microkernel»" as BE
+  folder "plugins/" as PLG {
+    artifact "@apuntado/plugin-clasica" as P1
+    artifact "@apuntado/plugin-apuntado" as P2
+  }
+  file "config/reglas.plugins.json\n(manifiesto del registro)" as MAN
+}
+database "MongoDB Atlas\nreplica set — 1 base lógica" as DB {
+  collections "partidas" as C1
+  collections "jugadas" as C2
+  collections "usuarios · asientos_tokens\nsolicitudes_recarga · disenos_carta\nparametros_sistema · sesiones" as C3
+  storage "GridFS: comprobantes" as GF
+}
+
+SPA ..> FE : HTTPS\n(descarga de la SPA)
+SPA --> BE : HTTPS REST /api\n(comandos y consultas)
+SPA <--> BE : WSS /game\n(eventos en tiempo real)
+BE --> DB : TLS — driver MongoDB\n(transacciones, majority)
+BE ..> MAN : lee al arrancar
+BE ..> PLG : import() dinámico\n(sin recompilar el núcleo)
+@enduml

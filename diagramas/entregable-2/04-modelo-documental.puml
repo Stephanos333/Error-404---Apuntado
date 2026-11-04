@@ -1,0 +1,156 @@
+@startuml 04-modelo-documental
+title Modelo documental (MongoDB) — colecciones, documentos embebidos y referencias
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide methods
+hide circle
+left to right direction
+
+class "partidas" as partidas <<collection>> {
+  _id : ObjectId
+  codigoInvitacion : string «único»
+  nombre : string
+  estado : EN_ESPERA | EN_JUEGO
+    | MOSTRANDO_RESULTADOS | FINALIZADA | CANCELADA
+  anfitrionId : ObjectId «ref usuarios»
+  ganadorId : ObjectId?
+  ventanaHasta : date?
+  comandosRecientes : string[0..20]
+  version : int
+  creadaEn / actualizadaEn / finalizadaEn : date
+}
+class "configuracion" as conf <<embedded>> {
+  modalidad : clasica | apuntado
+  plugin : {id, version}
+  cupo : int 2..6
+  apuestaPorJugador : int
+  visibilidad : PUBLICA | PRIVADA
+  tipoEscalera : CON_VUELTA | SIN_VUELTA
+  comodinesActivos : bool
+  reengancheActivo : bool «solo apuntado»
+  victoriaNegativaActiva : bool «solo apuntado»
+  parametros : PS-01..PS-10 «copia congelada»
+}
+class "jugadores[]" as jug <<embedded>> {
+  jugadorId : string
+  usuarioId : ObjectId «ref usuarios»
+  nombreUsuario : string «denormalizado»
+  posicion : int
+  estado : EN_SALA | ACTIVO | ELIMINADO | GANADOR
+  puntaje : int
+  usoReenganche : bool
+  conectado : bool
+  desconectadoDesde : date?
+}
+class "pozo" as pozo <<embedded>> {
+  total : int
+  aportes : {usuarioId, tipo, monto, asientoId}[]
+}
+class "rondaActual" as ronda <<embedded>> {
+  numero : int
+  estado : REPARTIENDO | EN_TURNOS
+    | RONDA_EXTRA | LIQUIDANDO | CERRADA
+  posicionInicial : int
+  turno : {jugadorId, fase, intentoCierre}
+  mazo : Carta[]
+  pozoDescarte : Carta[]
+  rondaExtra : {tocadorId, pendientes[]}?
+}
+class "manos[]" as manos <<embedded>> {
+  jugadorId : string
+  cartas : Carta[10..11]
+  grupos : int[][] «organización del jugador»
+}
+class "marcador[]" as marcador <<embedded>> {
+  numeroRonda : int
+  ganadorId : string
+  tipoCierre : GANAR_4_3_3 | TOCAR
+  puntos : {jugadorId, puntosRonda, castigos,
+    acumulado, eliminado, reenganchado}[]
+}
+class "Carta" as carta <<embedded>> {
+  valor : AS..K | COMODIN
+  palo : PICAS | CORAZONES | DIAMANTES
+    | TREBOLES | null
+  baraja : 1 | 2
+  disenoId : ObjectId? «solo en el pozo»
+}
+
+class "jugadas" as jugadas <<collection>> {
+  _id : ObjectId
+  partidaId : ObjectId «ref partidas»
+  numeroRonda : int
+  cerrada : bool
+  conteo : int
+  manosReveladas : {jugadorId, cartas, grupos}[]?
+}
+class "eventos[]" as eventos <<embedded>> {
+  secuencia : int
+  tipo : ROBO_MAZO | ROBO_POZO | DESCARTE
+    | CIERRE_INTENTO | CIERRE_VALIDO | CASTIGO
+    | RONDA_EXTRA | TURNO_AUTOMATICO
+    | ELIMINACION | REENGANCHE
+  jugadorId : string
+  carta : Carta?
+  detalle : object?
+  version : int
+  en : date
+}
+
+class "usuarios" as usuarios <<collection>> {
+  _id : ObjectId
+  nombreUsuario : string «único»
+  hashContrasena : string «argon2id»
+  rol : JUGADOR | ADMIN
+  icono : string
+  disenoActivoId : ObjectId «ref disenos_carta»
+  disenosAdquiridos : ObjectId[] «ref disenos_carta»
+  saldoTokens : int «caché del libro»
+  partidaActivaId : ObjectId? «ref partidas»
+  estadisticas : {partidasJugadas, partidasGanadas, tokensGanados}
+  version : int
+}
+class "asientos_tokens" as asientos <<collection>> {
+  _id : ObjectId
+  usuarioId : ObjectId «ref usuarios»
+  tipo : SALDO_INICIAL | APUESTA | REEMBOLSO
+    | PREMIO_POZO | REENGANCHE | COMPRA_DISENO | RECARGA
+  monto : int «+/-»
+  referencia : string «única, idempotencia»
+  partidaId / solicitudId / disenoId : ObjectId?
+  en : date
+}
+class "solicitudes_recarga" as recargas <<collection>> {
+  _id : ObjectId
+  usuarioId : ObjectId «ref usuarios»
+  tokens : int
+  valorCOP : long
+  referenciaNequi : string «única»
+  comprobanteId : ObjectId «GridFS»
+  estado : PENDIENTE | APROBADA | RECHAZADA
+  revisadaPor : ObjectId? · motivoRechazo : string?
+}
+class "disenos_carta" as disenos <<collection>>
+class "parametros_sistema" as params <<collection>>
+class "sesiones" as sesiones <<collection>> {
+  usuarioId · hashRefreshToken · expiraEn «TTL»
+}
+
+partidas *-- "1" conf
+partidas *-- "1..6" jug
+partidas *-- "1" pozo
+partidas *-- "0..1" ronda
+ronda *-- "2..6" manos
+ronda *-- "0..*" carta : mazo / pozoDescarte
+manos *-- "10..11" carta
+partidas *-- "0..*" marcador : historial de penalizaciones
+jugadas *-- "0..*" eventos
+partidas "1" <.. "1..*" jugadas : partidaId
+jug ..> usuarios : usuarioId
+usuarios <.. asientos : usuarioId
+usuarios <.. recargas : usuarioId
+usuarios ..> disenos : disenoActivoId
+usuarios <.. sesiones
+partidas <.. asientos : partidaId
+conf ..> params : copia al crear
+@enduml

@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    participant UI as WebClientUI
+    participant API as GameApiGateway
+    participant TO as TurnOrchestrator
+    participant ST as IGameStateStore
+    participant RF as IRuleSetFactory
+    participant RG as ReglaJuego
+    participant HE as IHandEvaluator
+    participant SC as IRoundScoring
+    participant BUS as IDomainEventBus
+    UI->>API: POST /partidas/{id}/cierres (DeclaracionCierre)
+    API->>TO: declararCierre(jugadorId, declaracion)
+    TO->>ST: cargar(partidaId)
+    ST-->>TO: Partida (versión n)
+    TO->>TO: rondaActual().esTurnoDe(jugadorId) y mano.contiene(cartas)
+    TO->>RF: para(partida.configuracion())
+    RF-->>TO: regla: ReglaJuego
+    TO->>RG: validarCierre(declaracion, contexto)
+    RG->>HE: esCuarta(g1), esTerna(g2), esTerna(g3)
+    HE-->>RG: true / false
+    RG-->>TO: ResultadoValidacion
+    alt cierre válido
+        TO->>SC: liquidar(resumenRonda, efecto)
+        SC->>HE: puntosSueltos(grupos de cada rival)
+        SC-->>TO: ResultadoLiquidacion
+        TO->>ST: guardar(partida, versión esperada n)
+        TO->>BUS: publicar(RondaCerrada, RondaLiquidada)
+    else cierre inválido
+        TO->>ST: guardar(partida con castigo +2, versión esperada n)
+        TO->>BUS: publicar(CierreFallido)
+    end
+    TO-->>API: ResultadoValidacion
+    API-->>UI: 200 OK (esValido, motivo)

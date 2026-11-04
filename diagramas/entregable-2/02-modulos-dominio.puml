@@ -1,0 +1,68 @@
+@startuml 02-modulos-dominio
+title Estructura de módulos (namespaces) y dependencias permitidas
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "backend/src" {
+  rectangle "identidad" as IDE
+  rectangle "economia" as ECO
+  rectangle "sala" as SAL
+  rectangle "juego\n«core system»" as JUE
+  rectangle "puntaje\n«core system»" as PUN
+  package "reglas" as REG {
+    rectangle "contrato\n«@apuntado/contrato-reglas»" as CON
+    rectangle "evaluador\n«@apuntado/evaluador-manos»" as EVA
+    rectangle "registro\n«PluginRegistry»" as RGS
+  }
+  package "transversal" as TRA {
+    rectangle "persistencia" as PER
+    rectangle "eventos" as EVT
+    rectangle "tiempo-real" as RTN
+    rectangle "bitacora" as BIT
+  }
+}
+package "backend/plugins\n(paquetes compilados por separado)" as PLUG {
+  rectangle "clasica\n«@apuntado/plugin-clasica»" as PCL
+  rectangle "apuntado\n«@apuntado/plugin-apuntado»" as PAP
+}
+
+note as N1
+  Cada módulo de dominio contiene
+  api/ · aplicacion/ · dominio/ · infraestructura/
+  y solo expone su index.ts (API pública)
+end note
+
+SAL ..> ECO : debitar / reembolsar apuesta
+SAL ..> RGS : validar opciones de la modalidad
+SAL ..> JUE : iniciar primera ronda
+JUE ..> RGS : obtener ReglaJuegoPlugin
+JUE ..> CON
+JUE ..> PUN : liquidar / decidir desenlace
+PUN ..> CON
+PUN ..> ECO : pagar pozo / reenganche
+RGS ..> CON
+EVA ..> CON
+PCL ..> CON
+PCL ..> EVA
+PAP ..> CON
+PAP ..> EVA
+RGS ..> PLUG : import() según manifiesto
+IDE ..> ECO : saldo inicial
+SAL ..> PER
+JUE ..> PER
+PUN ..> PER
+ECO ..> PER
+JUE ..> EVT
+PUN ..> EVT
+RTN ..> EVT
+BIT ..> EVT
+
+note bottom of PLUG
+  Prohibido: clasica <-> apuntado
+  y juego/puntaje/sala -> plugins (FF-02)
+end note
+note right of CON
+  Sin NestJS, Mongoose
+  ni Socket.IO (FF-05)
+end note
+@enduml

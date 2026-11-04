@@ -1,0 +1,75 @@
+@startuml 03-componentes-core-plugins
+title Diagrama de componentes UML 2.5 — Core System, puertos e interfaces del microkernel
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam ranksep 45
+skinparam nodesep 35
+
+component "WebClientUI «SPA»" as UI
+interface "REST /api" as iREST
+interface "WSS /game" as iWSS
+
+component "Core System — Apuntado Backend «monolito modular»" as CORE {
+  portin "pComandos" as pIn
+  portin "pEventos" as pWs
+  portout "pReglas" as pRules
+  portout "pDatos" as pData
+
+  component "GameApiGateway" as API
+  component "RealtimeNotificationComponent" as RTN
+  interface "ITurnCommands" as iTURN
+  component "TurnOrchestratorComponent\n(robar · descartar · cerrar · ronda extra)" as TOR
+  interface "IDomainEventBus" as iBUS
+  component "DomainEventBus «connector»" as BUS
+  interface "IRuleRegistry" as iREG
+  interface "IRoundScoring" as iSCO
+  interface "ISettlement" as iSET
+  interface "IGameStateStore" as iSTO
+  component "PluginRegistry «registry»" as REG
+  component "RoundScoringComponent" as RSC
+  component "GameSettlementComponent" as SET
+  component "GameStateStoreComponent" as STO
+}
+
+interface "ReglaJuegoPlugin «contrato v1»" as iPLUG
+component "ReglaClasicaCuartaTerna «plug-in»" as PCL
+component "ReglaApuntado101 «plug-in»" as PAP
+interface "IHandEvaluator" as iHEV
+component "EvaluadorManos «librería del contrato»" as HEV
+interface "MongoDB Driver" as iMDB
+database "MongoDB Atlas" as DB
+
+UI -down-( iREST
+UI -down-( iWSS
+iREST -down- pIn
+iWSS -down- pWs
+pIn -down-> API : delega
+RTN -up-> pWs : delega
+
+API -down-( iTURN
+iTURN -down- TOR
+TOR -right-( iBUS
+iBUS -right- BUS
+RTN -down-( iBUS
+
+TOR -down-( iREG
+TOR -down-( iSCO
+TOR -down-( iSET
+TOR -down-( iSTO
+iREG -down- REG
+iSCO -down- RSC
+iSET -down- SET
+iSTO -down- STO
+SET -right-( iSTO
+
+REG -down-> pRules : delega
+STO -down-> pData : delega
+pRules -down-( iPLUG
+iPLUG -down- PCL
+iPLUG -down- PAP
+PCL -down-( iHEV
+PAP -down-( iHEV
+iHEV -down- HEV
+pData -down-( iMDB
+iMDB -down- DB
+@enduml

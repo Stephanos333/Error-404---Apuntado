@@ -1,0 +1,15 @@
+stateDiagram-v2
+    direction LR
+    [*] --> REPARTIENDO
+    REPARTIENDO --> EN_TURNOS : 11 cartas al inicial y 10 al resto
+    state EN_TURNOS {
+        [*] --> CON_11_CARTAS : jugador inicial
+        ESPERANDO_ROBO --> CON_11_CARTAS : robar (mazo o pozo)
+        CON_11_CARTAS --> CON_11_CARTAS : cierre inválido (+2, sin nuevo intento)
+        CON_11_CARTAS --> ESPERANDO_ROBO : descartar (turno al siguiente)
+    }
+    EN_TURNOS --> LIQUIDANDO : cierre 4-3-3 válido
+    EN_TURNOS --> RONDA_EXTRA : tocar válido (solo Apuntado)
+    RONDA_EXTRA --> LIQUIDANDO : cada rival jugó su turno extra
+    LIQUIDANDO --> CERRADA : puntajes, eliminaciones y reenganches
+    CERRADA --> [*]

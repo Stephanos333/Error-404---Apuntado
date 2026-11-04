@@ -1,0 +1,55 @@
+@startuml
+left to right direction
+
+component "WebClientUI" as UI2 <<component>>
+component "GameApiGateway" as API2 <<component>>
+component "TurnOrchestratorComponent" as TOR2 <<component>>
+component "RuleSetFactoryComponent" as RSF2 <<component>>
+component "ReglaClasicaCuartaTerna" as PCL <<plug-in>>
+component "ReglaApuntado101" as PAP <<plug-in>>
+component "HandEvaluatorComponent" as HEV2 <<component>>
+component "DeckManagementComponent" as DEK2 <<component>>
+component "RoundScoringComponent" as RSC2 <<component>>
+component "GameStateStoreComponent" as STO2 <<component>>
+component "DomainEventBus" as BUS2 <<connector>>
+component "RealtimeNotificationComponent" as RTN2 <<component>>
+
+interface "REST /api" as iREST
+interface "WSS /game" as iWSS
+interface "ITurnCommands" as iTURN
+interface "IRuleSetFactory" as iRSF
+interface "ReglaJuego" as iREG
+interface "IHandEvaluator" as iHEV
+interface "IDeckService" as iDECK
+interface "IRoundScoring" as iSCO
+interface "IGameStateStore" as iSTO
+interface "IDomainEventBus" as iBUS
+
+API2 -- iREST
+RTN2 -- iWSS
+TOR2 -- iTURN
+RSF2 -- iRSF
+RSF2 -- iREG
+PCL -- iREG
+PAP -- iREG
+HEV2 -- iHEV
+DEK2 -- iDECK
+RSC2 -- iSCO
+STO2 -- iSTO
+BUS2 -- iBUS
+
+UI2 ..> iREST : «use»
+UI2 ..> iWSS : «use»
+API2 ..> iTURN : «use»
+TOR2 ..> iRSF : «use»
+TOR2 ..> iREG : «use»
+TOR2 ..> iDECK : «use»
+TOR2 ..> iSCO : «use»
+TOR2 ..> iSTO : «use»
+TOR2 ..> iBUS : «use»
+PCL ..> iHEV : «use»
+PAP ..> iHEV : «use»
+RSC2 ..> iHEV : «use»
+RTN2 ..> iBUS : «use»
+
+@enduml

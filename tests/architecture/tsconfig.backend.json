@@ -1,0 +1,9 @@
+{
+  "//": "Proyecto que TSArch usa para leer el grafo de imports del backend. TSArch pasa este JSON completo como opciones del compilador; por eso noResolve/noLib/types también van en la raíz: así no carga backend/node_modules ni @types (en una carpeta montada eso tarda minutos).",
+  "noResolve": true,
+  "noLib": true,
+  "types": [],
+  "compilerOptions": { "target": "ES2021", "module": "commonjs", "noResolve": true, "noLib": true, "types": [] },
+  "include": ["../../backend/src/**/*.ts", "../../backend/plugins/**/*.ts"],
+  "exclude": ["../../backend/**/node_modules", "../../backend/dist", "../../backend/**/*.spec.ts"]
+}

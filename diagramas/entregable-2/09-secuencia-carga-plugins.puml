@@ -1,0 +1,44 @@
+@startuml 09-secuencia-carga-plugins
+title ADR-03 — Registro de plug-ins: carga al arrancar y alta de una variante nueva sin recompilar el núcleo
+skinparam shadowing false
+autonumber
+participant "main.ts\n(bootstrap NestJS)" as MAIN
+participant "PluginRegistry" as REG
+participant "config/reglas.plugins.json" as MAN
+participant "plugins/<id>/dist/index.js" as PKG
+participant "LobbyComponent" as LOB
+participant "TurnOrchestrator" as TO
+
+== Arranque ==
+MAIN -> REG : cargar()
+REG -> MAN : leer manifiesto
+MAN --> REG : [{id: "clasica", modulo, versionContrato: "^1.0.0"},\n {id: "apuntado", ...}, {id: "continental", ...}]
+loop por cada entrada habilitada
+  REG -> PKG : await import(modulo)
+  PKG --> REG : FabricaPlugin
+  REG -> REG : validar contrato\n(semver compatible, métodos requeridos,\nsuite de humo del contrato)
+  alt compatible
+    REG -> REG : registrar(id, fábrica)
+  else incompatible
+    REG -> MAIN : error — arranque abortado (fail fast)
+  end
+end
+
+== Crear partida ==
+LOB -> REG : descriptor(modalidad).validarOpciones(PP)
+LOB -> LOB : congelar {plugin: {id, version}, PP, PS}
+
+== Jugar ==
+TO -> REG : para(configuración congelada)
+REG --> TO : ReglaJuegoPlugin
+TO -> TO : usa solo el contrato
+
+== Nueva variante: Continental ==
+note over PKG
+  1. Se crea plugins/continental (paquete propio que implementa ReglaJuegoPlugin
+     y reutiliza @apuntado/evaluador-manos).
+  2. Se compila SOLO ese paquete y pasa la suite de contrato.
+  3. Se agrega una línea al manifiesto y se reinicia el servicio.
+  El núcleo (juego/, puntaje/, sala/) no se modifica ni se recompila.
+end note
+@enduml

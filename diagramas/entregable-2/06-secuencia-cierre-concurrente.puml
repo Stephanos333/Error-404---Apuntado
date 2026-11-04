@@ -1,0 +1,58 @@
+@startuml 06-secuencia-cierre-concurrente
+title Cierre de ronda atómico con dos comandos concurrentes (control optimista + transacción)
+skinparam shadowing false
+autonumber
+actor "Jugador A\n(en turno)" as A
+actor "Jugador B\n(vista desactualizada)" as B
+participant "GameApiGateway" as API
+participant "TurnOrchestrator" as TO
+participant "ReglaJuegoPlugin" as PL
+participant "IGameStateStore\n(MongoGameStateStore)" as ST
+database "MongoDB Atlas" as DB
+participant "DomainEventBus" as BUS
+
+par Llegan casi al mismo tiempo
+  A -> API : POST /partidas/{id}/cierres\n{idComando: c-17, GANAR_4_3_3, grupos}
+  API -> TO : declararCierre(A, declaración)
+  TO -> ST : cargar(partidaId)
+  ST -> DB : findOne({_id})
+  DB --> ST : partida (version = 42)
+else
+  B -> API : POST /partidas/{id}/cierres\n{idComando: c-90, GANAR_4_3_3, grupos}
+  API -> TO : declararCierre(B, declaración)
+  TO -> ST : cargar(partidaId)
+  ST -> DB : findOne({_id})
+  DB --> ST : partida (version = 42)
+end
+
+TO -> TO : A: esTurnoDe(A) ✔, mano.contiene(cartas) ✔
+TO -> PL : validarCierre(declaración A, contexto)
+PL --> TO : válido
+TO -> PL : liquidarRonda(resumen, contexto)
+PL --> TO : puntos de TODOS los rivales\n(calculados en memoria)
+TO -> ST : guardar(partida, versionEsperada = 42, eventos)
+activate ST
+ST -> DB : startTransaction(snapshot, w: majority)
+ST -> DB : partidas.updateOne(\n {_id, version: 42, "rondaActual.estado": "EN_TURNOS",\n  "rondaActual.turno.jugadorId": A, comandosRecientes: {$ne: "c-17"}},\n {$set: ronda cerrada + puntajes + estados,\n  $push: marcador, comandosRecientes, $inc: {version: 1}})
+DB --> ST : matchedCount = 1
+ST -> DB : jugadas.updateOne({partidaId, numeroRonda}, {$push: eventos, $set: cerrada})
+ST -> DB : asientos_tokens.insertOne(PREMIO_POZO) «solo si la partida termina»
+ST -> DB : commitTransaction()
+deactivate ST
+TO -> BUS : publicar(RondaCerrada, RondaLiquidada) «después del commit»
+
+TO -> TO : B — defensa 1: esTurnoDe(B) sobre la copia v42 ✘
+note right of TO
+  Defensa 2 (p. ej. doble clic del mismo jugador o
+  turno que cambió entre la lectura y la escritura):
+  aunque la copia v42 pasara la validación, el filtro
+  {version: 42, turno, estado} ya no coincide (v43)
+end note
+TO -> ST : guardar(partida, versionEsperada = 42)
+ST -> DB : updateOne({_id, version: 42, ...})
+DB --> ST : matchedCount = 0
+ST --> TO : ConflictoDeVersion
+TO -> ST : cargar(partidaId) → version 43, ronda CERRADA
+TO --> API : rechazo RONDA_YA_CERRADA
+API --> B : 409 Conflict + estado vigente
+@enduml

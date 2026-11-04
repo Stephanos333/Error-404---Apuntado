@@ -1,0 +1,132 @@
+@startuml 05-clases-persistencia-mapeo
+title Clases de entidad/persistencia y su mapeo al dominio y al esquema documental
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+package "Dominio «juego/dominio»" as DOM {
+  class Partida
+  class Jugador
+  class Ronda
+  class Mano
+  class MarcadorRonda <<ValueObject>>
+  class Carta <<ValueObject>>
+  class AsientoTokens <<ValueObject>>
+}
+
+package "Persistencia «transversal/persistencia»" as PER {
+  interface IGameStateStore {
+    +cargar(id: PartidaId): Partida
+    +guardar(p: Partida, versionEsperada: number, eventos: EventoDominio[]): void
+  }
+  class MongoGameStateStore {
+    -partidas: Collection<GameSessionEntity>
+    -jugadas: Collection<MoveLogEntity>
+    -asientos: Collection<LedgerEntryEntity>
+    +cargar(id: PartidaId): Partida
+    +guardar(p: Partida, versionEsperada: number, eventos: EventoDominio[]): void
+  }
+  class GameSessionMapper {
+    +{static} toDomain(e: GameSessionEntity): Partida
+    +{static} toEntity(p: Partida): GameSessionEntity
+  }
+  class MoveLogMapper {
+    +{static} toEventEntities(eventos: EventoDominio[]): MoveEventEmbedded[]
+  }
+}
+
+package "Entidades de persistencia «esquema JSON»" as ENT {
+  class GameSessionEntity <<Document partidas>> {
+    _id: ObjectId
+    codigoInvitacion: string
+    nombre: string
+    estado: string
+    anfitrionId: ObjectId
+    configuracion: GameConfigEmbedded
+    jugadores: PlayerEntity[1..6]
+    pozo: PotEmbedded
+    rondaActual: RoundStateEntity [0..1]
+    marcador: RoundScoreEntity[0..*]
+    ganadorId: ObjectId [0..1]
+    ventanaHasta: Date [0..1]
+    comandosRecientes: string[0..20]
+    version: number
+  }
+  class PlayerEntity <<Embedded jugadores[]>> {
+    jugadorId: string
+    usuarioId: ObjectId
+    nombreUsuario: string
+    posicion: number
+    estado: string
+    puntaje: number
+    usoReenganche: boolean
+    conectado: boolean
+    desconectadoDesde: Date [0..1]
+  }
+  class RoundStateEntity <<Embedded rondaActual>> {
+    numero: number
+    estado: string
+    posicionInicial: number
+    turno: TurnEmbedded
+    mazo: CardEmbedded[0..*]
+    pozoDescarte: CardEmbedded[0..*]
+    manos: HandStateEntity[2..6]
+    rondaExtra: ExtraRoundEmbedded [0..1]
+  }
+  class HandStateEntity <<Embedded manos[]>> {
+    jugadorId: string
+    cartas: CardEmbedded[10..11]
+    grupos: number[][]
+  }
+  class RoundScoreEntity <<Embedded marcador[]>> {
+    numeroRonda: number
+    ganadorId: string
+    tipoCierre: string
+    puntos: PlayerRoundScoreEmbedded[2..6]
+  }
+  class CardEmbedded <<Embedded>> {
+    valor: string
+    palo: string [0..1]
+    baraja: number
+    disenoId: ObjectId [0..1]
+  }
+  class MoveLogEntity <<Document jugadas>> {
+    _id: ObjectId
+    partidaId: ObjectId
+    numeroRonda: number
+    cerrada: boolean
+    eventos: MoveEventEmbedded[0..*]
+  }
+  class LedgerEntryEntity <<Document asientos_tokens>> {
+    _id: ObjectId
+    usuarioId: ObjectId
+    tipo: string
+    monto: number
+    referencia: string
+    partidaId: ObjectId [0..1]
+    en: Date
+  }
+}
+
+GameSessionEntity *-- "1..6" PlayerEntity
+GameSessionEntity *-- "0..1" RoundStateEntity
+GameSessionEntity *-- "0..*" RoundScoreEntity
+RoundStateEntity *-- "2..6" HandStateEntity
+HandStateEntity *-- "10..11" CardEmbedded
+RoundStateEntity *-- "0..*" CardEmbedded
+MoveLogEntity "1..*" ..> "1" GameSessionEntity : partidaId
+
+IGameStateStore <|.. MongoGameStateStore
+MongoGameStateStore ..> GameSessionMapper
+MongoGameStateStore ..> MoveLogMapper
+GameSessionMapper ..> GameSessionEntity : «maps»
+MoveLogMapper ..> MoveLogEntity : «maps»
+MongoGameStateStore ..> LedgerEntryEntity : «maps»
+
+Partida ..> GameSessionEntity : «persiste como»
+Jugador ..> PlayerEntity : «persiste como»
+Ronda ..> RoundStateEntity : «persiste como»
+Mano ..> HandStateEntity : «persiste como»
+MarcadorRonda ..> RoundScoreEntity : «persiste como»
+Carta ..> CardEmbedded : «persiste como»
+AsientoTokens ..> LedgerEntryEntity : «persiste como»
+@enduml

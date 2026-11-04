@@ -1,0 +1,83 @@
+@startuml
+left to right direction
+
+class Usuario {
+    -id: UsuarioId
+    -nombreUsuario: String
+    -hashContrasena: String
+    -rol: Rol
+    -icono: Icono
+    -disenoActivo: DisenoCartaId
+    +verificarContrasena(texto: String) boolean
+    +esAdmin() boolean
+}
+
+enum Rol {
+    JUGADOR
+    ADMIN
+}
+
+class LibroTokens {
+    -usuarioId: UsuarioId
+    +saldo() int
+    +registrar(asiento: AsientoTokens) void
+    +puedeDebitar(monto: int) boolean
+}
+
+class AsientoTokens <<ValueObject>> {
+    +id: AsientoId
+    +tipo: TipoAsiento
+    +monto: int
+    +referencia: String
+    +fecha: Instant
+}
+
+enum TipoAsiento {
+    SALDO_INICIAL
+    APUESTA
+    REEMBOLSO
+    PREMIO_POZO
+    REENGANCHE
+    COMPRA_DISENO
+    RECARGA
+}
+
+class SolicitudRecarga {
+    -id: SolicitudId
+    -usuarioId: UsuarioId
+    -tokens: int
+    -valorCOP: long
+    -referenciaNequi: String
+    -comprobanteUri: String
+    -estado: EstadoSolicitud
+    -revisadaPor: UsuarioId
+    -motivoRechazo: String
+    +aprobar(admin: Usuario) AsientoTokens
+    +rechazar(admin: Usuario, motivo: String) void
+}
+
+enum EstadoSolicitud {
+    PENDIENTE
+    APROBADA
+    RECHAZADA
+}
+
+class DisenoCarta {
+    -id: DisenoCartaId
+    -nombre: String
+    -precioTokens: int
+    -esGratuito: boolean
+    -esPorDefecto: boolean
+    -activo: boolean
+}
+
+Usuario --> Rol
+Usuario "1" *-- "1" LibroTokens
+LibroTokens "1" *-- "1..*" AsientoTokens
+AsientoTokens --> TipoAsiento
+Usuario "1" --> "0..*" SolicitudRecarga : solicita
+SolicitudRecarga --> EstadoSolicitud
+SolicitudRecarga ..> AsientoTokens : genera al aprobar
+Usuario "0..*" o-- "0..*" DisenoCarta : posee
+
+@enduml

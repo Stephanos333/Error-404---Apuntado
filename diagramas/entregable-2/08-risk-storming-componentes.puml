@@ -1,0 +1,84 @@
+@startuml 08-risk-storming-componentes
+title Risk Storming — diagrama de componentes anotado con riesgos consensuados (Impacto × Probabilidad)
+skinparam shadowing false
+skinparam componentStyle uml2
+
+component "WebClientUI" as UI
+component "GameApiGateway" as API
+component "IdentityComponent" as IDC
+component "TurnOrchestratorComponent" as TOR
+component "PresenceMonitorComponent" as PRS
+component "PluginRegistry" as REG
+component "Plug-ins de reglas" as PLG
+component "EvaluadorManos / HandEvaluator" as HEV
+component "RoundScoring + GameSettlement" as SCO
+component "GameStateStore (MongoDB)" as STO
+component "RealtimeNotification (Socket.IO)" as RTN
+component "TokenPurchase + TokenLedger" as ECO
+node "Plataforma de despliegue" as DEP
+
+UI --> API
+UI <-- RTN
+API --> IDC
+API --> TOR
+API --> ECO
+TOR --> REG
+REG --> PLG
+PLG --> HEV
+TOR --> SCO
+TOR --> STO
+SCO --> STO
+PRS --> TOR
+TOR ..> RTN
+API ..> DEP
+RTN ..> DEP
+
+note right of RTN #FFCDD2
+  **R04 = 9** (3×3)
+  Fuga de información oculta por WSS
+end note
+note right of HEV #FFCDD2
+  **R01 = 6** (3×2)
+  Falla combinatoria
+end note
+note left of STO #FFCDD2
+  **R02 = 6** (3×2) inconsistencia del marcador
+  **R03 = 6** (3×2) cierre/comando concurrente
+end note
+note right of REG #FFCDD2
+  **R05 = 6** (3×2)
+  Contrato inestable entre núcleo y plug-ins
+end note
+note bottom of DEP #FFCDD2
+  **R06 = 6** (3×2)
+  Plataforma sin WebSockets persistentes
+end note
+note right of ECO #FFCDD2
+  **R10 = 6** (3×2)
+  Fraude en recargas manuales
+end note
+note left of IDC #FFCDD2
+  **R12 = 6** (3×2)
+  Contraseñas SHA-256 sin sal
+end note
+note left of API #FFCDD2
+  **R11 = 6** (2×3)
+  Degradación estructural: ciclo de 8 módulos
+end note
+note left of UI #FFF9C4
+  **R07 = 4** (2×2)
+  Desincronización al refrescar
+end note
+note left of PRS #FFF9C4
+  **R08 = 4** (2×2)
+  Abandono / temporizadores perdidos
+end note
+note right of TOR #FFF9C4
+  **R09 = 4** (2×2)
+  Latencia por escritura por comando
+end note
+note right of SCO #C8E6C9
+  **R13 = 2** (2×1)
+  Crecimiento del documento (16 MB)
+end note
+@enduml

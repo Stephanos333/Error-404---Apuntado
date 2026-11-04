@@ -1,0 +1,82 @@
+@startuml
+left to right direction
+
+package "Presentación" {
+    component "WebClientUI" as UI <<component>>
+    component "GameApiGateway" as API <<component>>
+}
+package "Identidad y Economía" {
+    component "IdentityComponent" as IDC <<component>>
+    component "CosmeticsComponent" as COS <<component>>
+    component "TokenPurchaseComponent" as TPU <<component>>
+    component "TokenLedgerComponent" as TLE <<component>>
+}
+package "Sala" {
+    component "LobbyComponent" as LOB <<component>>
+}
+package "Juego" {
+    component "RoundSetupComponent" as RSE <<component>>
+    component "DeckManagementComponent" as DEK <<component>>
+    component "TurnOrchestratorComponent" as TOR <<component>>
+}
+package "Motor de Reglas (microkernel)" {
+    component "RuleSetFactoryComponent" as RSF <<component>>
+    component "GameRulePlugins" as PLG <<plug-in>>
+    component "HandEvaluatorComponent" as HEV <<component>>
+}
+package "Puntaje y Desenlace" {
+    component "RoundScoringComponent" as RSC <<component>>
+    component "GameSettlementComponent" as SET <<component>>
+    component "ReentryComponent" as REE <<component>>
+}
+package "Transversal" {
+    component "GameStateStoreComponent" as STO <<component>>
+    component "DomainEventBus" as BUS <<connector>>
+    component "RealtimeNotificationComponent" as RTN <<component>>
+    component "MatchAuditLogComponent" as AUD <<component>>
+    component "PresenceMonitorComponent" as PRS <<component>>
+}
+
+UI --> API
+API --> IDC
+API --> COS
+API --> TPU
+API --> LOB
+API --> TOR
+API --> REE
+API --> RSF
+IDC --> TLE
+COS --> TLE
+TPU --> TLE
+LOB --> RSF
+LOB --> TLE
+LOB --> STO
+LOB --> RSE
+RSE --> DEK
+RSE --> STO
+TOR --> RSF
+TOR --> DEK
+TOR --> RSC
+TOR --> STO
+PLG --> RSF
+PLG --> HEV
+RSC --> HEV
+SET --> TLE
+SET --> STO
+SET --> RSE
+REE --> TLE
+REE --> STO
+PRS --> TOR
+
+TPU ..> BUS : publica
+LOB ..> BUS : publica
+RSE ..> BUS : publica
+TOR ..> BUS : publica
+REE ..> BUS : publica
+SET ..> BUS : publica / suscribe
+RTN ..> BUS : suscribe
+AUD ..> BUS : suscribe
+PRS ..> BUS : publica
+UI ..> RTN : suscribe WSS: eventos filtrados
+
+@enduml

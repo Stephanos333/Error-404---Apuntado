@@ -1,0 +1,128 @@
+@startuml
+left to right direction
+
+interface ReglaJuego {
+    +modalidad() Modalidad
+    +cierresPermitidos() List<TipoCierre>
+    +validarCierre(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+    +efectoCierre(d: DeclaracionCierre, ctx: ContextoRegla) EfectoPuntaje
+}
+
+abstract class ReglaCierreBase {
+    #evaluador: IHandEvaluator
+    +validarCierre(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+    #validarCuatroTresTres(d: DeclaracionCierre) ResultadoValidacion
+    {abstract} #validarSegunTipo(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+}
+
+class ReglaClasicaCuartaTerna {
+    +modalidad() Modalidad
+    +cierresPermitidos() List<TipoCierre>
+    #validarSegunTipo(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+    +efectoCierre(d: DeclaracionCierre, ctx: ContextoRegla) EfectoPuntaje
+}
+
+class ReglaApuntado101 {
+    +modalidad() Modalidad
+    +cierresPermitidos() List<TipoCierre>
+    #validarSegunTipo(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+    -validarTocar(d: DeclaracionCierre, ctx: ContextoRegla) ResultadoValidacion
+    +efectoCierre(d: DeclaracionCierre, ctx: ContextoRegla) EfectoPuntaje
+}
+
+class RuleSetFactory {
+    -registro: Map<Modalidad, FabricaRegla>
+    +registrar(modalidad: Modalidad, fabrica: FabricaRegla) void
+    +para(configuracion: ConfiguracionPartida) ReglaJuego
+}
+
+class DeclaracionCierre <<ValueObject>> {
+    +jugadorId: JugadorId
+    +tipo: TipoCierre
+    +grupos: List<GrupoDeclarado>
+    +cartaSobrante: Carta
+    +cartaDescarte: Carta
+}
+
+class ContextoRegla <<ValueObject>> {
+    +puntajeActual: int
+    +parametros: ParametrosSistema
+}
+
+class ResultadoValidacion <<ValueObject>> {
+    +esValido: boolean
+    +tipoCierre: TipoCierre
+    +motivo: CodigoMotivo
+    +detalle: List<String>
+    {static} +valido(tipo: TipoCierre) ResultadoValidacion
+    {static} +invalido(m: CodigoMotivo, detalle: String) ResultadoValidacion
+}
+
+class EfectoPuntaje <<ValueObject>> {
+    +puntosGanadorRonda: int
+    +requiereRondaExtra: boolean
+}
+
+interface IHandEvaluator {
+    +esTerna(grupo: GrupoDeclarado) boolean
+    +esCuarta(grupo: GrupoDeclarado) boolean
+    +puntosSueltos(grupos: List<GrupoDeclarado>, sueltas: List<Carta>) int
+}
+
+class EvaluadorCombinaciones {
+    -politica: PoliticaEscalera
+    -reglaComodin: ReglaComodin
+    +esTerna(grupo: GrupoDeclarado) boolean
+    +esCuarta(grupo: GrupoDeclarado) boolean
+    +puntosSueltos(grupos: List<GrupoDeclarado>, sueltas: List<Carta>) int
+    -esMismoValor(grupo: GrupoDeclarado) boolean
+    -esEscalera(grupo: GrupoDeclarado) boolean
+}
+
+interface PoliticaEscalera {
+    +sonConsecutivos(valores: List<Valor>) boolean
+}
+
+class EscaleraConVuelta {
+    +sonConsecutivos(valores: List<Valor>) boolean
+}
+
+class EscaleraSinVuelta {
+    +sonConsecutivos(valores: List<Valor>) boolean
+}
+
+class ReglaComodin <<ValueObject>> {
+    +activo: boolean
+    +maximoPorGrupo: int = 1
+    +valorSuelto: int
+}
+
+class CalculadoraPuntajeRonda {
+    -evaluador: IHandEvaluator
+    +liquidar(r: ResumenRonda, e: EfectoPuntaje, p: ParametrosSistema) ResultadoLiquidacion
+}
+
+enum TipoCierre {
+    GANAR_4_3_3
+    TOCAR
+}
+
+ReglaJuego <|.. ReglaCierreBase
+ReglaCierreBase <|-- ReglaClasicaCuartaTerna
+ReglaCierreBase <|-- ReglaApuntado101
+RuleSetFactory o-- "1..*" ReglaJuego : registro de plug-ins
+ReglaCierreBase --> IHandEvaluator : usa
+IHandEvaluator <|.. EvaluadorCombinaciones
+EvaluadorCombinaciones o-- PoliticaEscalera
+EvaluadorCombinaciones *-- ReglaComodin
+PoliticaEscalera <|.. EscaleraConVuelta
+PoliticaEscalera <|.. EscaleraSinVuelta
+ReglaJuego ..> DeclaracionCierre
+ReglaJuego ..> ContextoRegla
+ReglaJuego ..> ResultadoValidacion
+ReglaJuego ..> EfectoPuntaje
+DeclaracionCierre --> TipoCierre
+CalculadoraPuntajeRonda --> IHandEvaluator : usa
+CalculadoraPuntajeRonda ..> EfectoPuntaje
+
+@enduml

@@ -1,0 +1,26 @@
+{
+  "name": "apuntado-architecture-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fitness functions arquitectónicas del Sistema Apuntado (Entregable 2)",
+  "scripts": {
+    "test": "jest",
+    "test:estricto": "cross-env ARQ_ESTRICTO=1 jest",
+    "linea-base": "ts-node --transpile-only generar-linea-base.ts"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.56.12",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.19.43",
+    "@typescript-eslint/parser": "^7.18.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "cross-env": "^7.0.3",
+    "eslint": "8.57",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.15",
+    "ts-node": "^10.9.2",
+    "tsarch": "^5.4.1",
+    "typescript": "5.4"
+  }
+}

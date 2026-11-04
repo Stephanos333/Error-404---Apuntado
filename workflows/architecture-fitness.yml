@@ -1,0 +1,26 @@
+name: Fitness functions arquitectónicas
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  arquitectura:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests/architecture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tests/architecture/package-lock.json
+      - run: npm ci
+      # Modo trinquete: bloquea el merge si aparece una violación arquitectónica nueva.
+      - run: npm test
+      # Modo estricto: informativo hasta terminar la refactorización (ADR-01/ADR-03).
+      - run: npm run test:estricto
+        continue-on-error: true
