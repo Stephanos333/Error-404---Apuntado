@@ -2,6 +2,8 @@ import { Global, Module } from '@nestjs/common';
 import { RegistroReglas } from './reglas/registro/registro-reglas';
 import { ReglaClasicaPlugin } from '../plugins/clasica';
 import { ParametrosApuntado, ReglaApuntadoPlugin } from '../plugins/apuntado';
+import { ParametrosPartida } from './dominio/partida/partida';
+import { PARAMETROS_SISTEMA, PARAMETROS_SISTEMA_POR_DEFECTO } from './aplicacion/partida/parametros-sistema';
 
 /**
  * Lee un número de una variable de entorno; si no existe o no es numérica devuelve `undefined`.
@@ -15,17 +17,35 @@ function leerNumero(valor?: string): number | undefined {
 }
 
 /**
- * Parámetros de la modalidad Apuntado tomados del entorno. Los que no estén definidos
- * conservan el valor por defecto del plug-in.
+ * Parámetros del sistema (PS) que se congelan en cada partida (RD-36). Las variables de
+ * entorno del prototipo reemplazan los valores por defecto.
  * @param {NodeJS.ProcessEnv} env Las variables de entorno.
- * @returns {Partial<ParametrosApuntado>} Los parámetros definidos.
+ * @returns {ParametrosPartida} Los parámetros.
  */
-function parametrosApuntado(env: NodeJS.ProcessEnv): Partial<ParametrosApuntado> {
-	const leidos: Partial<ParametrosApuntado> = {
-		bonificacionCierre: leerNumero(env.APP_BONUS_POINTS),
-		castigoCierreFalso: leerNumero(env.APP_FALSE_WIN_PENALTY_POINTS),
+export function leerParametrosSistema(env: NodeJS.ProcessEnv = process.env): ParametrosPartida {
+	const bonificacion = leerNumero(env.APP_BONUS_POINTS);
+	return {
+		...PARAMETROS_SISTEMA_POR_DEFECTO,
+		castigoCierreInvalido: leerNumero(env.APP_FALSE_WIN_PENALTY_POINTS) ?? PARAMETROS_SISTEMA_POR_DEFECTO.castigoCierreInvalido,
+		// En el esquema la bonificación es negativa (PS-04); la variable del prototipo es positiva.
+		bonificacionCierre: bonificacion === undefined ? PARAMETROS_SISTEMA_POR_DEFECTO.bonificacionCierre : -Math.abs(bonificacion),
 	};
-	return Object.fromEntries(Object.entries(leidos).filter(([, v]) => v !== undefined));
+}
+
+/**
+ * Parámetros del plug-in Apuntado derivados de los parámetros del sistema, para que la
+ * regla y la configuración congelada en la partida coincidan.
+ * @param {ParametrosPartida} sistema Los parámetros del sistema.
+ * @returns {ParametrosApuntado} Los parámetros del plug-in.
+ */
+function parametrosApuntado(sistema: ParametrosPartida): ParametrosApuntado {
+	return {
+		limiteEliminacion: sistema.limiteEliminacion,
+		limiteVictoria: sistema.umbralVictoriaNegativa,
+		umbralTocar: sistema.umbralTocar,
+		bonificacionCierre: Math.abs(sistema.bonificacionCierre),
+		castigoCierreFalso: sistema.castigoCierreInvalido,
+	};
 }
 
 /**
@@ -42,18 +62,21 @@ function parametrosApuntado(env: NodeJS.ProcessEnv): Partial<ParametrosApuntado>
 export function crearRegistroReglas(env: NodeJS.ProcessEnv = process.env): RegistroReglas {
 	const registro: RegistroReglas = new RegistroReglas();
 	// Apuntado es la predeterminada: conserva el comportamiento de los juegos creados antes del MVP.
-	registro.registrar(new ReglaApuntadoPlugin(parametrosApuntado(env)), { predeterminada: true });
+	registro.registrar(new ReglaApuntadoPlugin(parametrosApuntado(leerParametrosSistema(env))), { predeterminada: true });
 	registro.registrar(new ReglaClasicaPlugin());
 	return registro;
 }
 
 /**
- * Módulo global que provee el registro de reglas a toda la aplicación.
+ * Módulo global que provee el registro de reglas y los parámetros del sistema.
  * @class
  */
 @Global()
 @Module({
-	providers: [{ provide: RegistroReglas, useFactory: () => crearRegistroReglas() }],
-	exports: [RegistroReglas],
+	providers: [
+		{ provide: RegistroReglas, useFactory: () => crearRegistroReglas() },
+		{ provide: PARAMETROS_SISTEMA, useFactory: () => leerParametrosSistema() },
+	],
+	exports: [RegistroReglas, PARAMETROS_SISTEMA],
 })
 export class ReglasPluginsModule {}

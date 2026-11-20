@@ -7,6 +7,7 @@ import { GameModule } from './game/config/game.module';
 import { PlayerModule } from './player/config/player.module';
 import { MatchModule } from './match/config/match.module';
 import { ReglasPluginsModule } from './reglas-plugins.module';
+import { PartidaModule } from './partida/config/partida.module';
 
 /**
  * Clase que representa el módulo principal de la aplicación.\
@@ -30,6 +31,7 @@ import { ReglasPluginsModule } from './reglas-plugins.module';
 		CardDesignModule,
 		PlayerModule,
 		MatchModule,
+		PartidaModule,
 	],
 })
 export class AppModule {

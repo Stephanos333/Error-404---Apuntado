@@ -27,13 +27,13 @@ export enum DatabaseConstants {
 	 */
 	GAME_PROVIDER = 'GAME_PROVIDER',
 	/**
-	 * Esta constante representa el nombre de la colección de las partidas en la base de datos.
+	 * Colección del agregado Partida (ADR-04, `docs/schemas/partidas.schema.json`).
 	 */
-	MATCH_COLLECTION_NAME = 'Match',
+	PARTIDAS_COLLECTION_NAME = 'partidas',
 	/**
-	 * Esta constante representa el proveedor del esquema de las partidas.
+	 * Colección del libro de tokens (ADR-04, `docs/schemas/asientos_tokens.schema.json`).
 	 */
-	MATCH_PROVIDER = 'MATCH_PROVIDER',
+	ASIENTOS_TOKENS_COLLECTION_NAME = 'asientos_tokens',
 	/**
 	 * Esta constante representa el nombre de la colección
 	 * de los jugadores en la base de datos.

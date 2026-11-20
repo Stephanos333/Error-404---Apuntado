@@ -17,11 +17,18 @@ import { UserDecorator, UserDecoratorType } from '../../security/user.decorator'
 import { User, UserDTO } from '../../dominio/user/user';
 import { Player, PlayerDTO } from '../../dominio/player/player';
 import { PlayerWithUserDTO } from '../../dominio/player/player-with-user.dto';
-import { Match } from '../../dominio/match/match';
-import { GameId } from '../../dominio/game/game-id';
+import { Partida } from '../../dominio/partida/partida';
+import { EventoPartida } from '../../dominio/partida/comandos-partida';
+import { planificarNotificaciones } from './notificaciones-partida';
+import { salaPrivada, salaPublica } from './salas';
 
 /**
  * Websocket con socket.io para manejar los eventos de los juegos.
+ *
+ * Seguridad (R04): cada cliente autenticado se une a dos salas.
+ * - `partida:{salaId}` (pública): solo recibe vistas públicas, nunca cartas privadas ni el mazo.
+ * - `usuario:{userId}` (privada): solo recibe la mano de ese usuario.
+ * El servidor es la única autoridad: este gateway solo notifica estados ya confirmados.
  */
 @WebSocketGateway({
 	cors: true,
@@ -32,10 +39,10 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 	private readonly logger: Logger = new Logger(GameSocket.name);
 
 	/**
-	 * Evento que captura el mensaje GameSocketConstants.GAME_VALIDATE_CONNECTION en dónde
-	 * se conecta a un usuario a la room de los juegos.
-	 * @param user El usuario que ingresa al juego.
-	 * @param game El juego al que se conecta.
+	 * Evento que captura el mensaje GameSocketConstants.GAME_CONNECTION_EVENT en dónde
+	 * se une al usuario a la sala pública de su juego y a su sala privada.
+	 * @param user El usuario autenticado (JWT).
+	 * @param game El juego al que pertenece (validado por la guardia del juego).
 	 * @param socket El cliente conectado.
 	 */
 	@SubscribeMessage(GameSocketConstants.GAME_CONNECTION_EVENT)
@@ -49,8 +56,9 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 		this.logger.log(
 			`[${this.gameConnection.name}] INIT :: user: ${user.userId}, game: ${game.gameId}, socket: ${socket.id}`,
 		);
-		socket.join(game.gameId);
+		socket.join([salaPublica(game.gameId), salaPrivada(user.userId)]);
 		socket.data.gameId = game.gameId;
+		socket.data.userId = user.userId;
 	}
 
 	/**
@@ -78,23 +86,8 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 			cardDesignId: userDTO.currentDesignId,
 			cardDesignName: userDTO.currentDesignName,
 		};
-		this.wsServer.to(game.gameId.toString()).emit(GameSocketConstants.JOIN_PLAYER_LISTENER, args);
+		this.wsServer.to(salaPublica(game.gameId.toString())).emit(GameSocketConstants.JOIN_PLAYER_LISTENER, args);
 		this.logger.log(`[${this.joinPlayer.name}] FINISH ::`);
-	}
-
-	/**
-	 * Función que notifica que una partida ha sido iniciada.
-	 * @param game El juego en el que se inició la partida.
-	 * @param match La partida iniciada.
-	 */
-	async matchStarted(game: Game, match: Match): Promise<void> {
-		this.logger.log(`[${this.matchStarted.name}] INIT ::`);
-		const args = {
-			match: await match.toDTO(),
-			game: game.toDTO(),
-		};
-		this.wsServer.to(game.gameId.toString()).emit(GameSocketConstants.MATCH_STARTED_LISTENER, args);
-		this.logger.log(`[${this.matchStarted.name}] FINISH ::`);
 	}
 
 	/**
@@ -104,74 +97,24 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 	gameReadyToStart(game: Game): void {
 		this.logger.log(`[${this.gameReadyToStart.name}] INIT :: game: ${game.gameId.toString()}`);
 		const gameDTO: GameDTO = game.toDTO();
-		this.wsServer.to(gameDTO.gameId).emit(GameSocketConstants.GAME_READY_TO_START_LISTENER, gameDTO);
+		this.wsServer.to(salaPublica(gameDTO.gameId)).emit(GameSocketConstants.GAME_READY_TO_START_LISTENER, gameDTO);
 		this.logger.log(`[${this.gameReadyToStart.name}] FINISH ::`);
 	}
 
 	/**
-	 * Función que notifica que un turno ha cambiado.
-	 * @param {Game} game El juego en el que cambió el turno.
-	 * @param {Match} match La partida en la que se cambió el turno.
-	 * @param {Player} nextPlayer El siguiente jugador en turno.
+	 * Notifica un comando confirmado de la partida: vista pública a la sala de la mesa y
+	 * la mano de cada jugador afectado a su sala privada. Reemplaza los antiguos
+	 * `MATCH_STARTED` (que enviaba el mazo completo) y `SHIFT_CHANGED` (que enviaba la mano
+	 * del siguiente jugador a toda la sala).
+	 * @param {string} salaId El id del juego (sala).
+	 * @param {Partida} partida El estado confirmado.
+	 * @param {ReadonlyArray<EventoPartida>} eventos Los eventos del comando.
 	 */
-	async shiftChanged(game: Game, match: Match, nextPlayer: Player): Promise<void> {
-		this.logger.log(`[${this.shiftChanged.name}] INIT ::`);
-		const playerDTO: PlayerDTO = await nextPlayer.toDTO();
-		this.wsServer.to(game.gameId.toString()).emit(GameSocketConstants.SHIFT_CHANGED_LISTENER, {
-			matchId: match.matchId.toString(),
-			player: playerDTO,
-		});
-		this.logger.log(`[${this.shiftChanged.name}] FINISH ::`);
-	}
-
-	/**
-	 * Función que notifica que el mazo de cartas ha sido actualizado.
-	 * @param {GameId} gameId El juego al que se le notificará el evento.
-	 * @param {Match} match La partida en la que se rellenó el mazo.
-	 */
-	async cardDeckFilled(gameId: GameId, match: Match): Promise<void> {
-		this.logger.log(`[${this.cardDeckFilled.name}] INIT ::`);
-		this.wsServer.to(gameId.toString()).emit(GameSocketConstants.CARD_DECK_FILLED_LISTENER, {
-			discardedCards: await match.discardedCards.toDTO(),
-		});
-		this.logger.log(`[${this.cardDeckFilled.name}] FINISH ::`);
-	}
-
-	/**
-	 * Función que notifica que una carta ha sido jalada desde las cartas desechadas.
-	 * @param {GameId} gameId El juego al que se le notificará el evento.
-	 * @param {Match} match La partida en la que se jaló la carta.
-	 */
-	async cardPulledFromDiscarded(gameId: GameId, match: Match): Promise<void> {
-		this.logger.log(`[${this.cardPulledFromDiscarded.name}] INIT ::`);
-		this.wsServer.to(gameId.toString()).emit(GameSocketConstants.CARD_PULLED_FROM_DISCARDED_LISTENER, {
-			discardedCards: await match.discardedCards.toDTO(),
-		});
-		this.logger.log(`[${this.cardPulledFromDiscarded.name}] FINISH ::`);
-	}
-
-	/**
-	 * Función que notifica que un jugador no pudo ganar.
-	 * @param {GameId} gameId El juego al que se le notificará el evento.
-	 * @param {Player} player El jugador que no pudo ganar.
-	 */
-	async playerCantWin(gameId: GameId, player: Player): Promise<void> {
-		this.logger.log(`[${this.playerCantWin.name}] INIT ::`);
-		this.wsServer.to(gameId.toString()).emit(GameSocketConstants.PLAYER_CANT_WIN_LISTENER, {
-			playerId: player.playerId.toString(),
-			score: player.score,
-		});
-		this.logger.log(`[${this.playerCantWin.name}] FINISH ::`);
-	}
-
-	/**
-	 * Evento para notificar que una partida ha sido gana.
-	 * @param {GameId} gameId El juego en el que se ganó la partida.
-	 */
-	async matchWon(gameId: GameId): Promise<void> {
-		this.logger.log(`[${this.matchWon.name}] INIT ::`);
-		this.wsServer.to(gameId.toString()).emit(GameSocketConstants.MATCH_WON_LISTENER);
-		this.logger.log(`[${this.matchWon.name}] FINISH ::`);
+	notificarPartida(salaId: string, partida: Partida, eventos: ReadonlyArray<EventoPartida>): void {
+		for (const envio of planificarNotificaciones(salaId, partida, eventos)) {
+			this.wsServer.to(envio.sala).emit(envio.mensaje, envio.contenido);
+		}
+		this.logger.log(`[${this.notificarPartida.name}] partida: ${partida._id} version: ${partida.version}`);
 	}
 
 	/**

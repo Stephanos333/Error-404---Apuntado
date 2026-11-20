@@ -134,6 +134,66 @@ export enum ExceptionMessagesConstants {
 	 */
 	GAME_RULE_MUST_BE_A_STRING_ERROR = 'GAME_RULE_MUST_BE_A_STRING_ERROR',
 	/**
+	 * Se utiliza cuando se solicita una partida (agregado `partidas`) que no existe.
+	 */
+	PARTIDA_NO_ENCONTRADA = 'PARTIDA_NO_ENCONTRADA',
+	/**
+	 * Se utiliza cuando un comando llega después de que la ronda (o la partida) ya se cerró.
+	 */
+	RONDA_YA_CERRADA = 'RONDA_YA_CERRADA',
+	/**
+	 * Se utiliza cuando un jugador intenta actuar fuera de su turno.
+	 */
+	TURNO_NO_CORRESPONDE = 'TURNO_NO_CORRESPONDE',
+	/**
+	 * Se utiliza cuando el comando se basa en una versión de la partida que ya cambió
+	 * (control de concurrencia optimista): el cliente debe pedir el estado actual.
+	 */
+	VERSION_DESACTUALIZADA = 'VERSION_DESACTUALIZADA',
+	/**
+	 * Se utiliza cuando la acción no corresponde a la fase del turno
+	 * (p. ej. robar dos veces o descartar sin haber robado).
+	 */
+	FASE_DE_TURNO_INVALIDA = 'FASE_DE_TURNO_INVALIDA',
+	/**
+	 * Se utiliza cuando el índice de una carta no existe en la mano del jugador.
+	 */
+	CARTA_NO_ESTA_EN_LA_MANO = 'CARTA_NO_ESTA_EN_LA_MANO',
+	/**
+	 * Se utiliza cuando la organización de grupos enviada no es válida
+	 * (índices repetidos, fuera de rango o grupos de tamaño no permitido).
+	 */
+	GRUPOS_INVALIDOS = 'GRUPOS_INVALIDOS',
+	/**
+	 * Se utiliza cuando se intenta robar del pozo de descarte y está vacío.
+	 */
+	POZO_DESCARTE_VACIO = 'POZO_DESCARTE_VACIO',
+	/**
+	 * Se utiliza cuando no quedan cartas para robar ni en el mazo ni en el pozo de descarte.
+	 */
+	MAZO_VACIO = 'MAZO_VACIO',
+	/**
+	 * Se utiliza cuando el jugador ya intentó cerrar en su turno actual.
+	 */
+	YA_INTENTO_CIERRE_EN_EL_TURNO = 'YA_INTENTO_CIERRE_EN_EL_TURNO',
+	/**
+	 * Se utiliza cuando la regla del juego no admite el tipo de cierre solicitado
+	 * o el MVP todavía no lo soporta (p. ej. tocar con ronda extra).
+	 */
+	CIERRE_NO_PERMITIDO = 'CIERRE_NO_PERMITIDO',
+	/**
+	 * Se utiliza cuando el usuario no es jugador de la partida.
+	 */
+	JUGADOR_NO_PERTENECE_A_LA_PARTIDA = 'JUGADOR_NO_PERTENECE_A_LA_PARTIDA',
+	/**
+	 * Se utiliza cuando se valida el parámetro "version" y no es un entero válido.
+	 */
+	VERSION_MUST_BE_A_NON_NEGATIVE_INTEGER_ERROR = 'VERSION_MUST_BE_A_NON_NEGATIVE_INTEGER_ERROR',
+	/**
+	 * Se utiliza cuando se valida el parámetro "idComando" y no es válido.
+	 */
+	ID_COMANDO_INVALIDO_ERROR = 'ID_COMANDO_INVALIDO_ERROR',
+	/**
 	 * Se utiliza cuando el estado de un juego no se encuentra en
 	 * el archivo de constantes.
 	 */

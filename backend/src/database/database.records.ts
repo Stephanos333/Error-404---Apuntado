@@ -1,41 +1,19 @@
 /**
  * Modelo de persistencia propio de la capa `database/` (inversión de dependencias).
  *
- * Los esquemas de Mongoose se definen sobre estas interfaces y no sobre los DTO del
- * dominio. Así `database/` no importa ningún módulo de dominio y deja de formar parte
- * del ciclo de dependencias (FF-03). Los DTO del dominio son estructuralmente
- * compatibles con estos registros, por lo que los servicios de `aplicacion/` pueden
- * convertir documentos en entidades sin acoplar la persistencia al dominio.
+ * Los esquemas de Mongoose y las colecciones nativas se definen sobre estas interfaces y
+ * no sobre los tipos del dominio. Así `database/` no importa ningún módulo de dominio y
+ * no forma parte de ningún ciclo de dependencias (FF-03). La capa `aplicacion/` traduce
+ * entre estos registros y el dominio.
  */
+import { Types } from 'mongoose';
 
 /**
- * Registro persistido de una carta.
+ * Registro persistido de una carta (modelo heredado del prototipo, colección `Player`).
  */
 export interface CardRecord {
 	type: string;
 	suit: string;
-}
-
-/**
- * Registro persistido de una carta con diseño.
- */
-export interface CardWithDesignRecord extends CardRecord {
-	cardDesignId: string;
-	cardDesignName: string;
-}
-
-/**
- * Registro persistido de un mazo de cartas.
- */
-export interface CardDeckRecord {
-	cards: CardRecord[];
-}
-
-/**
- * Registro persistido de las cartas desechadas.
- */
-export interface DiscardedCardsRecord {
-	cards: CardWithDesignRecord[];
 }
 
 /**
@@ -51,7 +29,7 @@ export interface CardDesignRecord {
 }
 
 /**
- * Registro persistido de un juego.
+ * Registro persistido de un juego (sala de espera).
  */
 export interface GameRecord {
 	gameId: string;
@@ -64,28 +42,13 @@ export interface GameRecord {
 	betByPlayer: number;
 	isPublic: boolean;
 	wasInitiated: boolean;
-	currentMatch?: string;
+	/** `_id` (hexadecimal) del documento de `partidas` creado al iniciar el juego. */
+	partidaId?: string;
 	ruleId?: string;
 }
 
 /**
- * Registro persistido de una partida.
- */
-export interface MatchRecord {
-	gameId: string;
-	matchId: string;
-	initialPlayers: number;
-	currentPlayers: number;
-	currentShift: number;
-	totalShifts: number;
-	status: string;
-	discardedCards: DiscardedCardsRecord;
-	cardDeck: CardDeckRecord;
-	winner?: string;
-}
-
-/**
- * Registro persistido de un jugador.
+ * Registro persistido de un jugador (membresía de la sala).
  */
 export interface PlayerRecord {
 	playerId: string;
@@ -116,4 +79,97 @@ export interface UserRecord {
 	currentDesignName: string;
 	tokens: number;
 	cardDesigns: Array<string>;
+}
+
+/**
+ * Carta embebida del agregado `partidas` (`docs/schemas/partidas.schema.json`).
+ */
+export interface CartaPartidaRecord {
+	valor: string;
+	palo: string;
+	baraja: number;
+}
+
+/**
+ * Documento del agregado Partida (ADR-04). Sigue `docs/schemas/partidas.schema.json`;
+ * los identificadores de MongoDB son `ObjectId`.
+ */
+export interface PartidaRecord {
+	_id: Types.ObjectId;
+	codigoInvitacion: string;
+	nombre: string;
+	estado: string;
+	anfitrionId: Types.ObjectId;
+	configuracion: {
+		modalidad: string;
+		plugin: { id: string; version: string };
+		cupo: number;
+		apuestaPorJugador: number;
+		visibilidad: string;
+		tipoEscalera: string;
+		comodinesActivos: boolean;
+		reengancheActivo: boolean;
+		victoriaNegativaActiva: boolean;
+		parametros: Record<string, number>;
+	};
+	jugadores: Array<{
+		jugadorId: string;
+		usuarioId: Types.ObjectId;
+		nombreUsuario: string;
+		posicion: number;
+		estado: string;
+		puntaje: number;
+		usoReenganche: boolean;
+		conectado: boolean;
+		desconectadoDesde: Date | null;
+	}>;
+	pozo: {
+		total: number;
+		aportes: Array<{ usuarioId: Types.ObjectId; tipo: string; monto: number; asientoId: Types.ObjectId }>;
+	};
+	rondaActual: {
+		numero: number;
+		estado: string;
+		posicionInicial: number;
+		turno: { jugadorId: string; fase: string; intentoCierre: boolean; numero: number };
+		mazo: CartaPartidaRecord[];
+		pozoDescarte: CartaPartidaRecord[];
+		manos: Array<{ jugadorId: string; cartas: CartaPartidaRecord[]; grupos: number[][] }>;
+		rondaExtra: null;
+	} | null;
+	marcador: Array<{
+		numeroRonda: number;
+		ganadorId: string;
+		tipoCierre: string;
+		puntos: Array<{
+			jugadorId: string;
+			puntosRonda: number;
+			castigos: number;
+			acumulado: number;
+			eliminado: boolean;
+			reenganchado: boolean;
+		}>;
+		cerradaEn: Date;
+	}>;
+	ganadorId: string | null;
+	ventanaHasta: Date | null;
+	comandosRecientes: string[];
+	version: number;
+	creadaEn: Date;
+	actualizadaEn: Date;
+	finalizadaEn: Date | null;
+}
+
+/**
+ * Asiento del libro de tokens `asientos_tokens` (append-only, ADR-04).
+ * `monto` positivo es crédito y negativo es débito. `referencia` es única (idempotencia).
+ */
+export interface AsientoTokensRecord {
+	_id: Types.ObjectId;
+	usuarioId: Types.ObjectId;
+	tipo: 'SALDO_INICIAL' | 'APUESTA' | 'REEMBOLSO' | 'PREMIO_POZO' | 'REENGANCHE' | 'COMPRA_DISENO' | 'RECARGA';
+	monto: number;
+	referencia: string;
+	partidaId: Types.ObjectId | null;
+	en: Date;
 }

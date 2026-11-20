@@ -80,7 +80,8 @@ export class GameService {
 		const ruleId: string = this.resolveRuleId(request.ruleId);
 		const user: User = await this.userService.getById(request.creatorId);
 		user.changeStatus(UserStatusConstants.PLAYING);
-		user.removeTokens(request.betByPlayer);
+		// La apuesta se valida aquí y se cobra al iniciar la partida (TurnOrchestrator, transacción ADR-04).
+		user.ensureEnoughTokens(request.betByPlayer);
 		if (requiredPlayers < 2 || requiredPlayers > 6) throw new InvalidGameRequiredPlayersException();
 		const game: Game = Game.fromDTO({
 			creatorId: request.creatorId.toString(),
@@ -180,7 +181,8 @@ export class GameService {
 		if (game.status.is(GameStatusConstants.WAITING_TO_START)) throw new GameExceedsItsPlayerCountException();
 		const user: User = await this.userService.getById(userId);
 		user.changeStatus(UserStatusConstants.PLAYING);
-		user.removeTokens(game.betByPlayer);
+		// La apuesta se valida aquí y se cobra al iniciar la partida (TurnOrchestrator, transacción ADR-04).
+		user.ensureEnoughTokens(game.betByPlayer);
 		const player: Player = await this.playerService.create(userId, gameId, false);
 		await this.userService.update(user);
 		game.addPlayer();

@@ -41,12 +41,15 @@ export const RAIZ_MODULOS = BACKEND_SRC;
 export const COMPLEJIDAD = {
 	umbral: 10,
 	/**
-	 * E3: el evaluador algorítmico vive en `reglas/evaluador/`, los plug-ins en `plugins/` y el
-	 * orquestador que los usa en `aplicacion/player/player.service.ts` (antes `player/`).
+	 * E3: el evaluador algorítmico vive en `reglas/evaluador/` y los plug-ins en `plugins/`.
+	 * Desde la fase 2 el cierre y la liquidación se calculan en el agregado `dominio/partida/`
+	 * y los orquesta `aplicacion/partida/` (TurnOrchestrator, ADR-05).
 	 */
 	evaluadores: [
 		'backend/src/card/**/*.ts',
 		'backend/src/aplicacion/player/player.service.ts',
+		'backend/src/aplicacion/partida/**/*.ts',
+		'backend/src/dominio/partida/**/*.ts',
 		'backend/src/reglas/**/*.ts',
 		'backend/plugins/**/*.ts',
 	],

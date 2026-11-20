@@ -140,10 +140,18 @@ export class User extends DomainBase<UserDTO> {
 	 * supera la cantidad de tokens disponibles.
 	 */
 	removeTokens(value: number): void {
-		if (value < 0) value = -value;
-		value = Math.trunc(value);
-		if (value > this.tokens) throw new NotEnoughTokensException();
-		this.tokens -= value;
+		this.ensureEnoughTokens(value);
+		this.tokens -= Math.trunc(Math.abs(value));
+	}
+
+	/**
+	 * Valida que el usuario tenga tokens suficientes, sin restarlos. La apuesta se cobra
+	 * al iniciar la partida, en la misma transacción que la registra en el libro de tokens.
+	 * @param {number} value La cantidad de tokens requerida.
+	 * @throws {NotEnoughTokensException} Si el usuario no tiene tokens suficientes.
+	 */
+	ensureEnoughTokens(value: number): void {
+		if (Math.trunc(Math.abs(value)) > this.tokens) throw new NotEnoughTokensException();
 	}
 
 }

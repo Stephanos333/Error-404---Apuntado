@@ -1,4 +1,3 @@
-import { MatchService } from '../../aplicacion/match/match.service';
 import { Controller, Post } from '@nestjs/common';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -9,27 +8,21 @@ import { GameDecorator } from '../../security/game.decorator';
 import { Game, GameDTO } from '../../dominio/game/game';
 import { UserId } from '../../dominio/user/user-id';
 import { DefaultResponse } from '../../shared/default.response';
-import { GameService } from '../../aplicacion/game/game.service';
-
+import { TurnOrchestrator } from '../../aplicacion/partida/turn-orchestrator.service';
 /**
- * Clase que contiene los puntos de entrada de la aplicación para las partidas.
+ * Clase que contiene los puntos de entrada de la aplicación para iniciar las partidas.
  */
 @Controller(MatchControllerConstants.CONTROLLER_PREFIX)
 @ApiTags(MatchControllerConstants.CONTROLLER_TAG)
 export class MatchController {
-
 	/**
-	 * @param {MatchService} service Los servicios de la partida.
-	 * @param {GameService} gameService Los servicios para acceder a los procesos de los juegos.
+	 * @param {TurnOrchestrator} orquestador El orquestador de turnos.
 	 */
-	constructor(
-		private readonly service: MatchService,
-		private readonly gameService: GameService,
-	) {
+	constructor(private readonly orquestador: TurnOrchestrator) {
 	}
-
 	/**
-	 * Controlador POST que inicia una partida.
+	 * Controlador POST que inicia la partida del juego actual: cobra las apuestas, crea el
+	 * agregado `partidas` y reparte la primera ronda en una sola transacción (ADR-04).
 	 * @param {UserDecoratorType} user El usuario que está iniciando la partida.
 	 * @param {GameDTO} game El juego al que pertenece la partida.
 	 * @returns {DefaultResponse} La respuesta del servicio.
@@ -42,9 +35,7 @@ export class MatchController {
 		@UserDecorator() user: UserDecoratorType,
 		@GameDecorator() game: GameDTO,
 	): Promise<DefaultResponse> {
-		const response: DefaultResponse = new DefaultResponse();
-		const data = await this.service.startByPlayer(new UserId(user.userId), Game.fromDTO(game));
-		await this.gameService.update(data.game);
-		return response;
+		await this.orquestador.iniciarPartida(Game.fromDTO(game), new UserId(user.userId));
+		return new DefaultResponse();
 	}
 }

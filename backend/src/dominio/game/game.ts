@@ -6,7 +6,6 @@ import { GameStatus } from './game-status';
 import { GameStatusConstants } from './game-status.constants';
 import { GameIsAlreadyStartedException } from './exceptions/game-is-already-started.exception';
 import { GameCannotBeStartedException } from './exceptions/game-cannot-be-started.exception';
-import { MatchId } from '../match/match-id';
 
 /**
  * Clase que representa el objeto de transferencia de un juego.
@@ -23,7 +22,7 @@ export class GameDTO {
 	@ApiProperty() betByPlayer: number;
 	@ApiProperty() isPublic: boolean;
 	@ApiProperty() wasInitiated: boolean;
-	@ApiProperty() currentMatch?: string;
+	@ApiProperty({ required: false, description: '_id del agregado partidas creado al iniciar el juego (ADR-04).' }) partidaId?: string;
 	@ApiProperty({ required: false, description: 'Id del plug-in de reglas congelado al crear el juego (ADR-03).' }) ruleId?: string;
 }
 
@@ -58,7 +57,7 @@ export class Game extends DomainBase<GameDTO> {
 	 * @param {number} betByPlayer El valor de apuesta por cada jugador.
 	 * @param {boolean} isPublic Bandera que determina si el juego es público.
 	 * @param {boolean} wasInitiated Bandera que determina si un juego ya se inició.
-	 * @param {MatchId} currentMatch La partida actual del juego.
+	 * @param {string} [partidaId] El id del agregado partidas del juego.
 	 * @param {string} [ruleId] El id del plug-in de reglas del juego.
 	 */
 	constructor(
@@ -72,7 +71,7 @@ export class Game extends DomainBase<GameDTO> {
 		betByPlayer: number,
 		isPublic: boolean,
 		wasInitiated: boolean,
-		currentMatch: MatchId | undefined,
+		partidaId: string | undefined,
 		ruleId?: string,
 	) {
 		super();
@@ -86,18 +85,18 @@ export class Game extends DomainBase<GameDTO> {
 		this.betByPlayer = betByPlayer;
 		this.isPublic = isPublic;
 		this._wasInitiated = wasInitiated;
-		this._currentMatch = currentMatch;
+		this._partidaId = partidaId;
 		this.ruleId = ruleId;
 	}
 
-	private _currentMatch?: MatchId;
+	private _partidaId?: string;
 
-	set currentMatch(value: MatchId) {
-		this._currentMatch = value;
+	set partidaId(value: string) {
+		this._partidaId = value;
 	}
 
-	get currentMatch(): MatchId {
-		return this._currentMatch;
+	get partidaId(): string {
+		return this._partidaId;
 	}
 
 	get hostId(): UserId {
@@ -134,7 +133,7 @@ export class Game extends DomainBase<GameDTO> {
 			dto.betByPlayer,
 			dto.isPublic,
 			dto.wasInitiated,
-			dto.currentMatch ? new MatchId(dto.currentMatch) : undefined,
+			dto.partidaId,
 			dto.ruleId,
 		);
 	}
@@ -155,7 +154,7 @@ export class Game extends DomainBase<GameDTO> {
 			requiredPlayers: this.requiredPlayers,
 			wasInitiated: this._wasInitiated,
 			hostId: this._hostId.toString(),
-			currentMatch: this._currentMatch?.toString(),
+			partidaId: this._partidaId,
 			ruleId: this.ruleId,
 		};
 	}

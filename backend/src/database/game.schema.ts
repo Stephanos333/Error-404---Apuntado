@@ -49,7 +49,7 @@ const definition: Required<SchemaDefinition<GameRecord>> = {
 		type: String,
 		required: true,
 	},
-	currentMatch: {
+	partidaId: {
 		type: String,
 		required: false,
 	},

@@ -39,7 +39,23 @@ export enum GameSocketConstants {
 	 */
 	PLAYER_CANT_WIN_LISTENER = 'PLAYER_CANT_WIN_LISTENER',
 	/**
-	 * El mensaje que indica que una partida ha sido ganada.
+	 * El mensaje que indica que una ronda fue cerrada y liquidada.
 	 */
-	MATCH_WON_LISTENER = 'MATCH_WON_LISTENER'
+	MATCH_WON_LISTENER = 'MATCH_WON_LISTENER',
+	/**
+	 * El mensaje que indica que un jugador robó una carta del mazo (sin revelar cuál).
+	 */
+	CARD_PULLED_FROM_DECK_LISTENER = 'CARD_PULLED_FROM_DECK_LISTENER',
+	/**
+	 * El mensaje que indica que empezó una nueva ronda (modalidad multironda).
+	 */
+	ROUND_STARTED_LISTENER = 'ROUND_STARTED_LISTENER',
+	/**
+	 * El mensaje que indica que la partida terminó y se pagó el pozo.
+	 */
+	GAME_FINISHED_LISTENER = 'GAME_FINISHED_LISTENER',
+	/**
+	 * El mensaje privado (sala `usuario:{id}`) con la mano del jugador.
+	 */
+	PRIVATE_HAND_LISTENER = 'PRIVATE_HAND_LISTENER',
 }
