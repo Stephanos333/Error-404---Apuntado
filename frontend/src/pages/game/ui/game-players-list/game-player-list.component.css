@@ -40,6 +40,10 @@
         }
     }
 
+    & .game-player-list-component-card-eliminated {
+        opacity: 0.5;
+    }
+
     & .game-player-list-component-card-selected {
         background-color: var(--fourth);
 

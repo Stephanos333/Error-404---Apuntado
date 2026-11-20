@@ -40,7 +40,43 @@ export enum SocketConstants {
      */
     PLAYER_CANT_WIN_LISTENER = 'PLAYER_CANT_WIN_LISTENER',
     /**
-     * El mensaje que indica que una partida ha sido ganada.
+     * Sala pública: una ronda fue cerrada y liquidada.
      */
-    MATCH_WON_LISTENER = 'MATCH_WON_LISTENER'
+    MATCH_WON_LISTENER = 'MATCH_WON_LISTENER',
+    /**
+     * Sala pública: un jugador robó del mazo (sin revelar la carta).
+     */
+    CARD_PULLED_FROM_DECK_LISTENER = 'CARD_PULLED_FROM_DECK_LISTENER',
+    /**
+     * Sala pública: un jugador tocó y empieza la ronda extra.
+     */
+    PLAYER_KNOCKED_LISTENER = 'PLAYER_KNOCKED_LISTENER',
+    /**
+     * Sala pública: empezó una nueva ronda (Apuntado).
+     */
+    ROUND_STARTED_LISTENER = 'ROUND_STARTED_LISTENER',
+    /**
+     * Sala pública: la partida terminó y se pagó el pozo.
+     */
+    GAME_FINISHED_LISTENER = 'GAME_FINISHED_LISTENER',
+    /**
+     * Sala privada `usuario:{id}`: la mano del jugador.
+     */
+    PRIVATE_HAND_LISTENER = 'PRIVATE_HAND_LISTENER',
 }
+
+/**
+ * Mensajes de la sala pública `partida:{id}` que traen la vista pública de la partida.
+ */
+export const MENSAJES_PUBLICOS_PARTIDA: SocketConstants[] = [
+    SocketConstants.MATCH_STARTED_LISTENER,
+    SocketConstants.SHIFT_CHANGED_LISTENER,
+    SocketConstants.CARD_DECK_FILLED_LISTENER,
+    SocketConstants.CARD_PULLED_FROM_DISCARDED_LISTENER,
+    SocketConstants.CARD_PULLED_FROM_DECK_LISTENER,
+    SocketConstants.PLAYER_CANT_WIN_LISTENER,
+    SocketConstants.PLAYER_KNOCKED_LISTENER,
+    SocketConstants.MATCH_WON_LISTENER,
+    SocketConstants.ROUND_STARTED_LISTENER,
+    SocketConstants.GAME_FINISHED_LISTENER,
+];

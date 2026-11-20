@@ -39,6 +39,7 @@ export type TipoEventoPartida =
 	| 'CARTA_ROBADA'
 	| 'TURNO_CAMBIADO'
 	| 'CIERRE_FALLIDO'
+	| 'JUGADOR_TOCO'
 	| 'RONDA_CERRADA'
 	| 'RONDA_INICIADA'
 	| 'PARTIDA_FINALIZADA';
@@ -70,6 +71,13 @@ export interface DatosNuevaPartida {
 	configuracion: ConfiguracionPartida;
 	jugadores: Array<Pick<JugadorPartida, 'jugadorId' | 'usuarioId' | 'nombreUsuario' | 'posicion'>>;
 	aportes: AportePozo[];
+	ahora: Date;
+}
+
+/** Regla de la partida y dependencias que necesita un comando que puede cerrar la ronda. */
+export interface ContextoRegla {
+	regla: ReglaJuegoPlugin;
+	barajador: Barajador;
 	ahora: Date;
 }
 
@@ -107,13 +115,16 @@ function manoDe(ronda: RondaPartida, jugadorId: string): ManoJugador {
 	return mano;
 }
 
+/** Estados de la ronda en los que se aceptan comandos de turno. */
+const ESTADOS_CON_TURNOS: ReadonlyArray<RondaPartida['estado']> = ['EN_TURNOS', 'RONDA_EXTRA'];
+
 /**
- * La ronda actual admite comandos de turno.
+ * La ronda actual admite comandos de turno (turnos normales o ronda extra tras tocar).
  * @throws {PartidaConflictException} RONDA_YA_CERRADA si la partida o la ronda ya se cerraron.
  */
 export function rondaEnTurnos(partida: Partida): RondaPartida {
 	const ronda = partida.rondaActual;
-	if (partida.estado !== 'EN_JUEGO' || !ronda || ronda.estado !== 'EN_TURNOS') {
+	if (partida.estado !== 'EN_JUEGO' || !ronda || !ESTADOS_CON_TURNOS.includes(ronda.estado)) {
 		throw new PartidaConflictException(M.RONDA_YA_CERRADA);
 	}
 	return ronda;
@@ -195,6 +206,12 @@ function manoRival(mano: ManoJugador): ManoRival {
 function siguienteActivo(partida: Partida, posicion: number): JugadorPartida {
 	const activos = jugadoresActivos(partida);
 	return activos.find((j) => j.posicion > posicion) ?? activos[0];
+}
+
+/** Jugadores activos en orden de turno a partir del siguiente a una posición, sin incluirla. */
+function ordenDesde(partida: Partida, posicion: number): JugadorPartida[] {
+	const activos = jugadoresActivos(partida);
+	return [...activos.filter((j) => j.posicion > posicion), ...activos.filter((j) => j.posicion < posicion)];
 }
 
 /**
@@ -296,8 +313,15 @@ export function robar(actual: Partida, jugadorId: string, origen: OrigenRobo, ba
 /**
  * Comando descartar: el jugador deja una carta en el pozo y el turno pasa al siguiente.
  * Puede enviar su organización de grupos (índices de la mano actual, sin la descartada).
+ * En la ronda extra (tras tocar), el último descarte pendiente liquida la ronda.
  */
-export function descartar(actual: Partida, jugadorId: string, indice: number, grupos?: unknown): ResultadoTransicion {
+export function descartar(
+	actual: Partida,
+	jugadorId: string,
+	indice: number,
+	grupos: unknown,
+	contexto: ContextoRegla,
+): ResultadoTransicion {
 	const partida = clonar(actual);
 	const ronda = verificarTurno(partida, jugadorId);
 	exigirFase(ronda, 'CON_11_CARTAS');
@@ -307,6 +331,7 @@ export function descartar(actual: Partida, jugadorId: string, indice: number, gr
 	const [carta] = mano.cartas.splice(indice, 1);
 	ronda.pozoDescarte.push(carta);
 	mano.grupos = reindexarSinCarta(organizacion, indice);
+	if (ronda.estado === 'RONDA_EXTRA') return avanzarRondaExtra(partida, ronda, jugadorId, carta, contexto);
 	const siguiente = siguienteActivo(partida, jugador(partida, jugadorId).posicion);
 	ronda.turno = { jugadorId: siguiente.jugadorId, fase: 'ESPERANDO_ROBO', intentoCierre: false, numero: ronda.turno.numero + 1 };
 	return {
@@ -317,38 +342,41 @@ export function descartar(actual: Partida, jugadorId: string, indice: number, gr
 }
 
 /**
- * Comando intentar cierre: valida con la regla, y si el cierre es válido liquida la
- * ronda y evalúa el desenlace en memoria, en el mismo cálculo (§2.4).
+ * El tipo de cierre lo admite la regla y la ronda: durante la ronda extra no se puede volver a tocar.
+ * @throws {PartidaInvalidaException} CIERRE_NO_PERMITIDO.
  */
-export function intentarCierre(
-	actual: Partida,
-	jugadorId: string,
-	datos: DatosCierre,
-	regla: ReglaJuegoPlugin,
-	barajador: Barajador,
-	ahora: Date,
-): ResultadoTransicion {
+function exigirCierrePermitido(regla: ReglaJuegoPlugin, ronda: RondaPartida, tipo: TipoCierre): void {
+	const tocarEnRondaExtra = ronda.estado === 'RONDA_EXTRA' && tipo === 'TOCAR';
+	if (!regla.cierresPermitidos().includes(tipo) || tocarEnRondaExtra) throw new PartidaInvalidaException(M.CIERRE_NO_PERMITIDO);
+}
+
+/**
+ * Comando intentar cierre: valida con la regla, y si el cierre es válido liquida la
+ * ronda y evalúa el desenlace en memoria, en el mismo cálculo (§2.4). Tocar abre la
+ * ronda extra: los demás juegan un último turno y la ronda se liquida al terminar.
+ */
+export function intentarCierre(actual: Partida, jugadorId: string, datos: DatosCierre, contexto: ContextoRegla): ResultadoTransicion {
+	const { regla } = contexto;
 	const partida = clonar(actual);
 	const ronda = verificarTurno(partida, jugadorId);
 	exigirFase(ronda, 'CON_11_CARTAS');
 	if (ronda.turno.intentoCierre) throw new PartidaInvalidaException(M.YA_INTENTO_CIERRE_EN_EL_TURNO);
-	if (!regla.cierresPermitidos().includes(datos.tipo)) throw new PartidaInvalidaException(M.CIERRE_NO_PERMITIDO);
+	exigirCierrePermitido(regla, ronda, datos.tipo);
 	const mano = manoDe(ronda, jugadorId);
 	exigirIndice(mano, datos.descarte);
 	const grupos = validarGrupos(datos.grupos, mano.cartas.length, [datos.descarte]);
 	const resultado = regla.validarCierre(manoDeclarada(mano.cartas, grupos, datos.descarte), datos.tipo);
 	const efecto = regla.efectoCierre(resultado, datos.tipo);
-	// Tocar con ronda extra todavía no está disponible en el MVP: no se altera el estado.
-	if (efecto.rondaExtra) throw new PartidaInvalidaException(M.CIERRE_NO_PERMITIDO);
 	const cerrador = jugador(partida, jugadorId);
 	cerrador.puntaje += efecto.ajustePuntos;
+	if (efecto.rondaExtra) return iniciarRondaExtra(partida, ronda, { jugadorId, descarte: datos.descarte, grupos });
 	if (!efecto.terminaRonda) {
 		ronda.turno.intentoCierre = true;
 		const detalle = { motivo: resultado.motivo ?? null, ajustePuntos: efecto.ajustePuntos, puntaje: cerrador.puntaje };
 		return { partida, eventos: [{ tipo: 'CIERRE_FALLIDO', jugadorId, detalle }], finalizada: false };
 	}
 	mano.grupos = grupos;
-	return cerrarRonda(partida, ronda, { jugadorId, descarte: datos.descarte, tipo: datos.tipo, ajuste: efecto.ajustePuntos }, regla, barajador, ahora);
+	return cerrarRonda(partida, ronda, { jugadorId, descarte: datos.descarte, tipo: datos.tipo, ajuste: efecto.ajustePuntos }, contexto);
 }
 
 interface CierreValido {
@@ -358,45 +386,120 @@ interface CierreValido {
 	ajuste: number;
 }
 
-/** Liquida la ronda, evalúa el desenlace y reparte la siguiente ronda o finaliza la partida. */
-function cerrarRonda(
+/** Quien gana la ronda y con qué tipo de cierre. */
+interface GanadorRonda {
+	jugadorId: string;
+	tipo: TipoCierre;
+}
+
+/** Saca de la mano la carta de descarte, la deja en el pozo y ajusta los grupos. */
+function descartarAlCerrar(ronda: RondaPartida, jugadorId: string, descarte: number): CartaPartida {
+	const mano = manoDe(ronda, jugadorId);
+	const [carta] = mano.cartas.splice(descarte, 1);
+	ronda.pozoDescarte.push(carta);
+	mano.grupos = reindexarSinCarta(mano.grupos, descarte);
+	return carta;
+}
+
+/**
+ * Tocar válido: el tocador descarta y los demás jugadores activos, en orden de turno,
+ * juegan un último turno (ronda extra) antes de liquidar.
+ */
+function iniciarRondaExtra(
 	partida: Partida,
 	ronda: RondaPartida,
-	cierre: CierreValido,
-	regla: ReglaJuegoPlugin,
-	barajador: Barajador,
-	ahora: Date,
+	toque: { jugadorId: string; descarte: number; grupos: number[][] },
 ): ResultadoTransicion {
-	const manoCerrador = manoDe(ronda, cierre.jugadorId);
-	const [descarte] = manoCerrador.cartas.splice(cierre.descarte, 1);
-	ronda.pozoDescarte.push(descarte);
-	manoCerrador.grupos = reindexarSinCarta(manoCerrador.grupos, cierre.descarte);
+	manoDe(ronda, toque.jugadorId).grupos = toque.grupos;
+	const carta = descartarAlCerrar(ronda, toque.jugadorId, toque.descarte);
+	const pendientes = ordenDesde(partida, jugador(partida, toque.jugadorId).posicion).map((j) => j.jugadorId);
+	ronda.estado = 'RONDA_EXTRA';
+	ronda.rondaExtra = { tocadorId: toque.jugadorId, pendientes };
+	ronda.turno = { jugadorId: pendientes[0], fase: 'ESPERANDO_ROBO', intentoCierre: false, numero: ronda.turno.numero + 1 };
+	return {
+		partida,
+		eventos: [{ tipo: 'JUGADOR_TOCO', jugadorId: toque.jugadorId, detalle: { descarte: { ...carta }, pendientes: [...pendientes] } }],
+		finalizada: false,
+	};
+}
+
+/** Un jugador terminó su turno extra: pasa al siguiente pendiente o, si no queda ninguno, se liquida. */
+function avanzarRondaExtra(
+	partida: Partida,
+	ronda: RondaPartida,
+	jugadorId: string,
+	carta: CartaPartida,
+	contexto: ContextoRegla,
+): ResultadoTransicion {
+	const extra = ronda.rondaExtra;
+	extra.pendientes = extra.pendientes.filter((id) => id !== jugadorId);
+	const siguienteJugadorId = extra.pendientes[0] ?? null;
+	const turno: EventoPartida = { tipo: 'TURNO_CAMBIADO', jugadorId, detalle: { descarte: { ...carta }, siguienteJugadorId } };
+	if (siguienteJugadorId) {
+		ronda.turno = { jugadorId: siguienteJugadorId, fase: 'ESPERANDO_ROBO', intentoCierre: false, numero: ronda.turno.numero + 1 };
+		return { partida, eventos: [turno], finalizada: false };
+	}
+	// Fin de la ronda extra: todos (incluido el tocador, por su sobrante) liquidan su mano organizada.
 	const participantes = jugadoresActivos(partida);
-	const rivales = participantes.filter((j) => j.jugadorId !== cierre.jugadorId);
-	const { penalizaciones } = regla.liquidarRonda(rivales.map((j) => manoRival(manoDe(ronda, j.jugadorId))));
+	const { penalizaciones } = contexto.regla.liquidarRonda(participantes.map((j) => manoRival(manoDe(ronda, j.jugadorId))));
+	participantes.forEach((j) => (j.puntaje += penalizaciones[j.jugadorId] ?? 0));
+	return concluirRonda(partida, ronda, { jugadorId: extra.tocadorId, tipo: 'TOCAR' }, { ...penalizaciones }, contexto, [turno]);
+}
+
+/** Cierre 4-3-3: el cerrador descarta y cada rival liquida su mano organizada. */
+function cerrarRonda(partida: Partida, ronda: RondaPartida, cierre: CierreValido, contexto: ContextoRegla): ResultadoTransicion {
+	const descarte = descartarAlCerrar(ronda, cierre.jugadorId, cierre.descarte);
+	const rivales = jugadoresActivos(partida).filter((j) => j.jugadorId !== cierre.jugadorId);
+	const { penalizaciones } = contexto.regla.liquidarRonda(rivales.map((j) => manoRival(manoDe(ronda, j.jugadorId))));
 	rivales.forEach((j) => (j.puntaje += penalizaciones[j.jugadorId] ?? 0));
-	const desenlace = regla.evaluarDesenlace(Object.fromEntries(participantes.map((j) => [j.jugadorId, j.puntaje])), cierre.jugadorId);
+	const puntosRonda = { ...penalizaciones, [cierre.jugadorId]: cierre.ajuste };
+	return concluirRonda(partida, ronda, { jugadorId: cierre.jugadorId, tipo: cierre.tipo }, puntosRonda, contexto, [], descarte);
+}
+
+/**
+ * Evalúa el desenlace con la regla, registra el marcador (multironda) y reparte la
+ * siguiente ronda o finaliza la partida. Todo en el mismo cálculo en memoria.
+ */
+function concluirRonda(
+	partida: Partida,
+	ronda: RondaPartida,
+	ganador: GanadorRonda,
+	puntosRonda: Record<string, number>,
+	contexto: ContextoRegla,
+	eventosPrevios: EventoPartida[],
+	descarte?: CartaPartida,
+): ResultadoTransicion {
+	const { regla, barajador, ahora } = contexto;
+	const participantes = jugadoresActivos(partida);
+	const desenlace = regla.evaluarDesenlace(Object.fromEntries(participantes.map((j) => [j.jugadorId, j.puntaje])), ganador.jugadorId);
 	// Si la partida termina en esta ronda, quienes salen quedan como PERDEDOR (ver `finalizar`).
 	if (!desenlace.terminada) participantes.filter((j) => desenlace.eliminados.includes(j.jugadorId)).forEach((j) => (j.estado = 'ELIMINADO'));
-	const puntosRonda = { ...penalizaciones, [cierre.jugadorId]: cierre.ajuste };
 	if (regla.descriptor.multironda) {
-		partida.marcador.push(entradaMarcador(ronda.numero, cierre, participantes, puntosRonda, desenlace.eliminados, ahora));
+		partida.marcador.push(entradaMarcador(ronda.numero, ganador, participantes, puntosRonda, desenlace.eliminados, ahora));
 	}
 	ronda.estado = 'CERRADA';
+	ronda.rondaExtra = null;
 	const eventoCierre: EventoPartida = {
 		tipo: 'RONDA_CERRADA',
-		jugadorId: cierre.jugadorId,
-		detalle: { numeroRonda: ronda.numero, tipoCierre: cierre.tipo, descarte: { ...descarte }, puntosRonda, eliminados: [...desenlace.eliminados] },
+		jugadorId: ganador.jugadorId,
+		detalle: {
+			numeroRonda: ronda.numero,
+			tipoCierre: ganador.tipo,
+			descarte: descarte ? { ...descarte } : null,
+			puntosRonda,
+			eliminados: [...desenlace.eliminados],
+		},
 	};
-	if (desenlace.terminada) return finalizar(partida, desenlace, cierre.jugadorId, ahora, [eventoCierre]);
+	const eventos = [...eventosPrevios, eventoCierre];
+	if (desenlace.terminada) return finalizar(partida, desenlace, ganador.jugadorId, ahora, eventos);
 	const siguiente = siguienteActivo(partida, ronda.posicionInicial);
 	partida.rondaActual = repartirRonda(partida, ronda.numero + 1, siguiente.posicion, regla.configuracionReparto(), barajador);
-	return { partida, eventos: [eventoCierre, { tipo: 'RONDA_INICIADA', detalle: { numeroRonda: ronda.numero + 1 } }], finalizada: false };
+	return { partida, eventos: [...eventos, { tipo: 'RONDA_INICIADA', detalle: { numeroRonda: ronda.numero + 1 } }], finalizada: false };
 }
 
 function entradaMarcador(
 	numeroRonda: number,
-	cierre: CierreValido,
+	ganador: GanadorRonda,
 	participantes: JugadorPartida[],
 	puntosRonda: Record<string, number>,
 	eliminados: ReadonlyArray<string>,
@@ -404,8 +507,8 @@ function entradaMarcador(
 ): EntradaMarcador {
 	return {
 		numeroRonda,
-		ganadorId: cierre.jugadorId,
-		tipoCierre: cierre.tipo,
+		ganadorId: ganador.jugadorId,
+		tipoCierre: ganador.tipo,
 		cerradaEn: ahora,
 		puntos: participantes.map((j) => ({
 			jugadorId: j.jugadorId,

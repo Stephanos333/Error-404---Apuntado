@@ -135,7 +135,7 @@ export interface PartidaRecord {
 		mazo: CartaPartidaRecord[];
 		pozoDescarte: CartaPartidaRecord[];
 		manos: Array<{ jugadorId: string; cartas: CartaPartidaRecord[]; grupos: number[][] }>;
-		rondaExtra: null;
+		rondaExtra: { tocadorId: string; pendientes: string[] } | null;
 	} | null;
 	marcador: Array<{
 		numeroRonda: number;

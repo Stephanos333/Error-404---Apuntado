@@ -63,21 +63,21 @@ export enum BackendConstants {
      */
     START_MATCH_URL = '/api/match',
     /**
-     * Ruta para acceder al servicio que permite pasar una partida.
+     * Estado de la partida actual: vista pública y mano del usuario (agregado `partidas`).
      */
-    PASS_SHIFT_URL = '/api/player/pass-shift',
+    PARTIDA_ESTADO_URL = '/api/partidas/actual',
     /**
-     * Ruta para acceder al servicio que permite jalar una carta desde el mazo.
+     * Comando robar (del mazo o del pozo de descarte).
      */
-    PULL_FROM_CARD_DECK_URL = '/api/player/pull-from-card-deck',
+    PARTIDA_ROBAR_URL = '/api/partidas/actual/comandos/robar',
     /**
-     * Ruta para acceder al servicio que permite jalar una carta desde las cartas desechadas.
+     * Comando descartar (pasa el turno).
      */
-    PULL_FROM_DISCARDED_CARDS = '/api/player/pull-from-discarded-cards',
+    PARTIDA_DESCARTAR_URL = '/api/partidas/actual/comandos/descartar',
     /**
-     * Ruta para acceder al servicio que permite a un jugador ganar.
+     * Comando cerrar la ronda (4-3-3 o tocar).
      */
-    WIN_MATCH = '/api/player/win-match',
+    PARTIDA_CERRAR_URL = '/api/partidas/actual/comandos/cerrar',
 }
 
 /**
@@ -141,22 +141,22 @@ export const BackendConfigConstants: Record<BackendConstants, BackendConfigType>
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PASS_SHIFT_URL]: {
+    [BackendConstants.PARTIDA_ESTADO_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PULL_FROM_CARD_DECK_URL]: {
+    [BackendConstants.PARTIDA_ROBAR_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PULL_FROM_DISCARDED_CARDS]: {
+    [BackendConstants.PARTIDA_DESCARTAR_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.WIN_MATCH]: {
+    [BackendConstants.PARTIDA_CERRAR_URL]: {
         requireAccessToken: true,
         retryRequest: true,
-    }
+    },
 };
 
 /**

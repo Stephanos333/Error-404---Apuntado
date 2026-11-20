@@ -69,6 +69,13 @@ export interface ManoJugador {
 	grupos: number[][];
 }
 
+/** Ronda extra tras tocar: los demás jugadores juegan un último turno antes de liquidar. */
+export interface RondaExtra {
+	tocadorId: string;
+	/** Jugadores a los que aún les falta su turno extra, en orden. */
+	pendientes: string[];
+}
+
 export interface RondaPartida {
 	numero: number;
 	estado: EstadoRonda;
@@ -77,7 +84,7 @@ export interface RondaPartida {
 	mazo: CartaPartida[];
 	pozoDescarte: CartaPartida[];
 	manos: ManoJugador[];
-	rondaExtra: null;
+	rondaExtra: RondaExtra | null;
 }
 
 export interface PuntosRonda {

@@ -1,378 +1,298 @@
 import './game-board.component.css';
-import React, {Dispatch, JSX, SetStateAction, useEffect, useState} from 'react';
-import {DiscardedCardsType} from '../../../../types/discarded-cards.type.ts';
-import {PlayerType} from '../../../../types/player.type.ts';
-import {BackendConstants} from '../../../../utils/constants/backend.constants.ts';
-import {BackendUtils} from '../../../../utils/backend.utils.tsx';
-import {LocalLoadingComponent} from '../../../../components/loading/local/local-loading.component.tsx';
-import {GetCurrentPlayerResponse} from '../../../../types/services/get-current-player.ts';
+import {JSX, useEffect, useRef, useState} from 'react';
+import {Button} from '@mui/material';
 import {CardComponent} from '../../../../components/card/card.component.tsx';
-import {CardType, CardWithDesignType} from '../../../../types/card.type.ts';
-import {CardComponentTypeConstants} from '../../../../utils/constants/card-component-type.constants.ts';
-import {
-    changeDifferentTrips,
-    changeKickerAndQuad,
-    changeKickerAndTrip,
-    changeQuadToTrip,
-    changeSameTrip,
-    changeTripToQuad
-} from './game.board.utils.ts';
+import {LocalLoadingComponent} from '../../../../components/loading/local/local-loading.component.tsx';
+import {GlobalLoadingComponent} from '../../../../components/loading/global/global-loading.component.tsx';
+import {AlertTypeConstants} from '../../../../utils/constants/alert.constants.ts';
+import {CartaPartida, VistaPrivadaPartida, VistaPublicaPartida} from '../../../../types/partida.type.ts';
+import {IntencionRobar} from '../../../../types/services/partida.ts';
+import {PartidaClient, ResultadoComando} from '../../../../utils/partida/partida.client.ts';
+import {claveCarta, formaDelCierre, imagenDe, puntos, reconciliarGrupos, sobrantesDe} from '../../../../utils/partida/partida.utils.ts';
 import CardDeckImage from '../../../../../public/assets/images/game/card-deck.jpg';
 import DiscardedCardsImage from '../../../../../public/assets/images/game/discarded-cards.jpg';
 import EmptyDiscardedCardsImage from '../../../../../public/assets/images/game/empty-discarded-cards.jpg';
-import {PlayerConstants} from '../../../../utils/constants/player.constants.ts';
-import {PassShiftRequest, PassShiftResponse} from '../../../../types/services/pass-shift.ts';
-import {GlobalLoadingComponent} from '../../../../components/loading/global/global-loading.component.tsx';
-import {PullFromCardDeckResponse} from '../../../../types/services/pull-from-card-deck.ts';
-import {PullFromDiscardedCardsResponse} from '../../../../types/services/pull-from-discarded-cards.type.ts';
-import {Button} from '@mui/material';
-import {AlertComponent} from '../../../../components/alert/alert.component.tsx';
-import {AlertTypeConstants} from '../../../../utils/constants/alert.constants.ts';
-import {WinMatchRequest, WinMatchResponse} from '../../../../types/services/win-match.ts';
+
+/** Máximo de grupos que acepta el backend en la organización de la mano. */
+const MAXIMO_GRUPOS = 4;
+/** Tamaño máximo de un grupo (una cuarta). */
+const MAXIMO_CARTAS_GRUPO = 4;
 
 /**
- *  Componente que define el tablero del juego.
- *  @param props Los parámetros para el funcionamiento del juego.
- *  @param props.discardedCards Las cartas desechadas de la partida.
+ * Tablero de la partida: mazo, pozo de descarte, la mano organizada en grupos y las
+ * acciones del turno (robar, descartar y cerrar según la modalidad).
+ *
+ * La organización de la mano es local hasta que se envía con `descartar` o `cerrar`.
+ * Las reglas las decide el servidor: aquí solo se valida la forma para dar mensajes claros.
+ * @param props Los parámetros del tablero.
+ * @param props.partida La vista pública de la partida.
+ * @param props.mano La mano del usuario (`null` si fue eliminado).
+ * @param props.miId El id del usuario autenticado.
+ * @param props.diseno El diseño de cartas del usuario.
+ * @param props.cliente El cliente de comandos de la partida.
+ * @param props.aplicarResultado Aplica al estado la respuesta de un comando.
+ * @param props.mostrarAlerta Muestra un mensaje al usuario.
  * @constructor
  */
 export function GameBoardComponent(props: {
-    discardedCards: DiscardedCardsType | undefined,
-    setDiscardedCards: Dispatch<SetStateAction<DiscardedCardsType | undefined>>
-    currentPlayer: PlayerType | undefined
+    partida: VistaPublicaPartida | undefined,
+    mano: VistaPrivadaPartida | null | undefined,
+    miId: string | null,
+    diseno: string,
+    cliente: PartidaClient,
+    aplicarResultado: (resultado: ResultadoComando) => void,
+    mostrarAlerta: (tipo: AlertTypeConstants, codigo: string) => void,
 }): JSX.Element {
+    const {partida, mano, mostrarAlerta} = props;
 
     /**
-     * Hooks para el almacenamiento y gestión de los elementos del jugador.
+     * Organización local de la mano y cartas seleccionadas (por su clave).
      */
-    const [player, setPlayer] = useState<PlayerType | undefined>();
-    const [trips1, setTrips1] = useState<[CardType, CardType, CardType] | undefined>();
-    const [trips2, setTrips2] = useState<[CardType, CardType, CardType] | undefined>();
-    const [quads, setQuads] = useState<[CardType, CardType, CardType, CardType] | undefined>();
-    const [kicker, setKicker] = useState<CardType | undefined>();
-    const [currentDesign, setCurrentDesign] = useState<string | undefined>();
-
+    const [grupos, setGrupos] = useState<CartaPartida[][] | null>(null);
+    const [seleccion, setSeleccion] = useState<string[]>([]);
+    const [enviando, setEnviando] = useState<boolean>(false);
+    const rondaDeLosGrupos = useRef<number | undefined>();
+    const numeroRonda: number | undefined = partida?.ronda?.numero;
 
     /**
-     * Hooks para el funcionamiento del componente.
+     * Al llegar una mano nueva se conserva la organización local (sin las cartas que ya no
+     * están). En una ronda nueva se toma la organización del servidor.
      */
-    const [loading, setLoading] = useState<boolean>(false);
-    const [alertType, setAlertType] = useState<AlertTypeConstants>(AlertTypeConstants.ERROR_ALERT);
-    const [alertMessage, setAlertMessage] = useState<string>('');
-
-    /**
-     * Función que permite guardar los datos de un jugador en los hooks.
-     * @param {PlayerType} player El jugador que se guardará.
-     * @param {string} [design] El diseño de cartas del jugador.
-     */
-    const setPlayerData = (player: PlayerType, design?: string): void => {
-        setPlayer(player);
-        setTrips1(player.trips1);
-        setTrips2(player.trips2);
-        setQuads(player.quads);
-        setKicker(player.kicker);
-        if (design) setCurrentDesign(design);
-    };
-
     useEffect(() => {
-        async function fetchData(): Promise<void> {
-            const backendUtils: BackendUtils = new BackendUtils();
-            const res = await backendUtils.get<GetCurrentPlayerResponse, never>(BackendConstants.GET_CURRENT_PLAYER_URL);
-            if (res) setPlayerData(res.player, res.currentDesignName);
+        if (!mano) {
+            setGrupos(null);
+            setSeleccion([]);
+            return;
         }
+        const mismaRonda = rondaDeLosGrupos.current === numeroRonda;
+        rondaDeLosGrupos.current = numeroRonda;
+        setGrupos((previos) => reconciliarGrupos(mismaRonda ? previos : null, mano.cartas, mano.grupos));
+        const enMano = new Set(mano.cartas.map(claveCarta));
+        setSeleccion((previa) => previa.filter((k) => enMano.has(k)));
+    }, [mano, numeroRonda]);
 
-        fetchData().then();
-    }, []);
-
-    useEffect(() => {
-        if (props.currentPlayer && player && player.playerId == props.currentPlayer.playerId) {
-            setPlayerData(props.currentPlayer);
-        }
-    }, [props.currentPlayer]);
+    const ronda = partida?.ronda ?? null;
+    const cartas: CartaPartida[] = mano?.cartas ?? [];
+    const gruposActuales: CartaPartida[][] = grupos ?? [];
+    const sueltas: CartaPartida[] = sobrantesDe(cartas, gruposActuales);
+    const seleccionadas: CartaPartida[] = sueltas.filter((c) => seleccion.includes(claveCarta(c)));
+    const rondaJugable = partida?.estado === 'EN_JUEGO' && (ronda?.estado === 'EN_TURNOS' || ronda?.estado === 'RONDA_EXTRA');
+    const miTurno = !!mano && rondaJugable && ronda?.turno.jugadorId === props.miId;
+    const puedeRobar = miTurno && ronda?.turno.fase === 'ESPERANDO_ROBO';
+    const conOnceCartas = miTurno && ronda?.turno.fase === 'CON_11_CARTAS';
+    const esApuntado = partida?.modalidad === 'apuntado';
+    const nombreDe = (jugadorId: string): string =>
+        partida?.jugadores.find((j) => j.jugadorId === jugadorId)?.nombreUsuario ?? 'otro jugador';
 
     /**
-     * Evento utilizado cuando se inicia a mover la carta.
-     * @param event El evento de react.
-     * @param position La posición desde la que se empezó a mover.
-     * @param positionType El elemento del tablero desde el cual se empezó a mover.
+     * Envía un comando, aplica el estado resultante y muestra el error controlado, si lo hay.
      */
-    const onDragStartCard = (event: React.DragEvent, position: number, positionType: string): void => {
-        event.dataTransfer.setData('text/plain', `${position} ${positionType}`);
-        event.dataTransfer.effectAllowed = 'move';
+    const ejecutar = async (comando: () => Promise<ResultadoComando>): Promise<boolean> => {
+        setEnviando(true);
+        const resultado = await comando();
+        props.aplicarResultado(resultado);
+        if (!resultado.ok) mostrarAlerta(AlertTypeConstants.ERROR_ALERT, resultado.codigo);
+        setEnviando(false);
+        return resultado.ok;
+    };
+
+    const robar = async (fuente: IntencionRobar['fuente']): Promise<void> => {
+        if (!puedeRobar || enviando) return;
+        if (fuente === 'POZO_DESCARTE' && !ronda?.topeDescarte) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'POZO_DESCARTE_VACIO');
+            return;
+        }
+        await ejecutar(() => props.cliente.robar({fuente}));
+    };
+
+    const alternarSeleccion = (carta: CartaPartida): void => {
+        const clave = claveCarta(carta);
+        setSeleccion((previa) => previa.includes(clave) ? previa.filter((k) => k !== clave) : [...previa, clave]);
+    };
+
+    const formarGrupo = (): void => {
+        if (seleccionadas.length < 1 || seleccionadas.length > MAXIMO_CARTAS_GRUPO) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'SELECCIONA_CARTAS_GRUPO_MESSAGE');
+            return;
+        }
+        if (gruposActuales.length >= MAXIMO_GRUPOS) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'MAXIMO_GRUPOS_MESSAGE');
+            return;
+        }
+        setGrupos([...gruposActuales, seleccionadas]);
+        setSeleccion([]);
+    };
+
+    const soltarGrupo = (indice: number): void => {
+        setGrupos(gruposActuales.filter((_, i) => i !== indice));
+    };
+
+    const descartar = async (): Promise<void> => {
+        if (!conOnceCartas || enviando) return;
+        if (seleccionadas.length !== 1) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'SELECCIONA_UNA_CARTA_MESSAGE');
+            return;
+        }
+        const ok = await ejecutar(() => props.cliente.descartar({carta: seleccionadas[0], grupos: gruposActuales}));
+        if (ok) setSeleccion([]);
     };
 
     /**
-     * Función que define como es el movimiento de las cartas.
-     * @param event El evento de react.
+     * Cierre: la carta seleccionada es el descarte; las demás sueltas son las sobrantes.
+     * La forma (4-3-3 o tocar) se deduce de los grupos; la validez la decide el servidor.
      */
-    const onDragOverCard = (event: React.DragEvent) => {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
+    const cerrar = async (): Promise<void> => {
+        if (!conOnceCartas || enviando) return;
+        const mensajeForma = esApuntado ? 'FORMA_APUNTADO_MESSAGE' : 'FORMA_4_3_3_MESSAGE';
+        if (seleccionadas.length !== 1) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, mensajeForma);
+            return;
+        }
+        const descarte = seleccionadas[0];
+        const cartasSobrantes = sobrantesDe(cartas, gruposActuales, descarte);
+        const tipoCierre = formaDelCierre(gruposActuales, cartasSobrantes);
+        if (!tipoCierre || (!esApuntado && tipoCierre !== 'GANAR_4_3_3')) {
+            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, mensajeForma);
+            return;
+        }
+        const ok = await ejecutar(() => props.cliente.cerrar({
+            tipoCierre,
+            declaracion: {grupos: gruposActuales, descarte, cartasSobrantes},
+        }));
+        if (ok) setSeleccion([]);
     };
 
     /**
-     * Función que define el comportamiento cuando se suelta una carta sobre otra.
-     * @param event El evento de react.
-     * @param position La posición en la que se soltó la carta.
-     * @param positionType El elemento del tablero en el que se soltó la carta.
+     * Texto de estado del turno.
      */
-    const onDropCard = (event: React.DragEvent, position: number, positionType: string): void => {
-        event.preventDefault();
-        const data: string = event.dataTransfer.getData('text/plain');
-        const [rawPositionMoved, positionTypeMoved] = data.split(' ');
-        const positionMoved = Number(rawPositionMoved);
-        if (player && trips1 && trips2 && quads) {
-            if (positionType === CardComponentTypeConstants.TRIPS1) {
-                if (positionTypeMoved === CardComponentTypeConstants.TRIPS1) changeSameTrip(position, positionMoved, trips1, setTrips1);
-                else if (positionTypeMoved === CardComponentTypeConstants.TRIPS2) changeDifferentTrips(position, positionMoved, trips1, trips2, setTrips1, setTrips2);
-                else if (positionTypeMoved === CardComponentTypeConstants.QUADS) changeQuadToTrip(position, positionMoved, trips1, quads, setTrips1, setQuads);
-                else if (positionTypeMoved === CardComponentTypeConstants.KICKER && kicker) changeKickerAndTrip(position, trips1, kicker, setTrips1, setKicker);
-            } else if (positionType === CardComponentTypeConstants.TRIPS2) {
-                if (positionTypeMoved === CardComponentTypeConstants.TRIPS2) changeSameTrip(position, positionMoved, trips2, setTrips2);
-                else if (positionTypeMoved === CardComponentTypeConstants.TRIPS1) changeDifferentTrips(position, positionMoved, trips2, trips1, setTrips2, setTrips1);
-                else if (positionTypeMoved === CardComponentTypeConstants.QUADS) changeQuadToTrip(position, positionMoved, trips2, quads, setTrips2, setQuads);
-                else if (positionTypeMoved === CardComponentTypeConstants.KICKER && kicker) changeKickerAndTrip(position, trips2, kicker, setTrips2, setKicker);
-            } else if (positionType === CardComponentTypeConstants.QUADS) {
-                if (positionTypeMoved === CardComponentTypeConstants.TRIPS1) changeTripToQuad(position, positionMoved, trips1, quads, setTrips1, setQuads);
-                else if (positionTypeMoved === CardComponentTypeConstants.TRIPS2) changeTripToQuad(position, positionMoved, trips2, quads, setTrips2, setQuads);
-                else if (positionTypeMoved === CardComponentTypeConstants.QUADS) {
-                    const newQuads = quads.map((t, i) => {
-                        if (i === position) {
-                            return quads[positionMoved];
-                        } else if (i === positionMoved) {
-                            return quads[position];
-                        } else {
-                            return t;
-                        }
-                    });
-                    setQuads(newQuads as [CardType, CardType, CardType, CardType]);
-                } else if (positionTypeMoved === CardComponentTypeConstants.KICKER && kicker) changeKickerAndQuad(position, quads, kicker, setQuads, setKicker);
-            } else if (positionType === CardComponentTypeConstants.KICKER && kicker) {
-                if (positionTypeMoved === CardComponentTypeConstants.TRIPS1) changeKickerAndTrip(positionMoved, trips1, kicker, setTrips1, setKicker);
-                else if (positionTypeMoved === CardComponentTypeConstants.TRIPS2) changeKickerAndTrip(positionMoved, trips2, kicker, setTrips2, setKicker);
-                else if (positionTypeMoved === CardComponentTypeConstants.QUADS) changeKickerAndQuad(positionMoved, quads, kicker, setQuads, setKicker);
-            }
-        }
+    const estadoTurno = (): string => {
+        if (!partida || !ronda) return 'Esperando el estado de la partida...';
+        if (!mano) return 'Fuiste eliminado: observas la partida.';
+        if (!rondaJugable) return 'Liquidando la ronda...';
+        if (!miTurno) return `Turno de ${nombreDe(ronda.turno.jugadorId)}.`;
+        if (puedeRobar) return 'Tu turno: roba del mazo o del pozo de descarte.';
+        return 'Tu turno: organiza tus grupos y descarta una carta o cierra.';
     };
 
-    /**
-     * Ejecuta las acciones respectivas para las cartas descartadas.
-     */
-    const discardedCardsAction = async (): Promise<void> => {
-        if (player && player.status === PlayerConstants.IN_TURN_PLAYER_STATUS) {
-            const backendUtils: BackendUtils = new BackendUtils(() => {
-                setLoading(false);
-            });
-            if (kicker) {
-                if (trips1 && trips2 && quads) {
-                    setLoading(true);
-                    const res = await backendUtils.patch<PassShiftResponse, PassShiftRequest>(BackendConstants.PASS_SHIFT_URL, {
-                        kicker, quads, trips1, trips2,
-                    });
-                    if (res) setPlayerData(res.player, res.currentDesignName);
-                    setLoading(false);
-                }
-            } else {
-                setLoading(true);
-                const res = await backendUtils.patch<PullFromDiscardedCardsResponse, unknown>(BackendConstants.PULL_FROM_DISCARDED_CARDS, {});
-                if (res) setPlayerData(res.player);
-                setLoading(false);
-            }
-        }
-    };
+    const rondaExtra = ronda?.rondaExtra;
+    const tope = ronda?.topeDescarte ?? null;
 
-    /**
-     * Ejecuta las acciones respectivas para el mazo de la partida.
-     */
-    const cardDeckActions = async (): Promise<void> => {
-        if (!kicker && player && player.status === PlayerConstants.IN_TURN_PLAYER_STATUS) {
-            setLoading(true);
-            const backendUtils: BackendUtils = new BackendUtils(() => {
-                setLoading(false);
-            });
-            const res = await backendUtils.patch<PullFromCardDeckResponse, unknown>(BackendConstants.PULL_FROM_CARD_DECK_URL, {});
-            if (res) setPlayerData(res.player);
-            setLoading(false);
-        }
-    };
-
-    /**
-     * Función que ejecuta la acción para saber si un usuario puede ganar o no.
-     */
-    const winMatchAction = async (): Promise<void> => {
-        if (player && trips1 && trips2 && quads && kicker) {
-            const backendUtils: BackendUtils = new BackendUtils((message) => {
-                setLoading(false);
-                setAlertType(AlertTypeConstants.ERROR_ALERT);
-                setAlertMessage(message);
-            });
-            setLoading(true);
-            const body: WinMatchRequest = {quads, trips1, trips2, kicker};
-            const res = await backendUtils.patch<WinMatchResponse, WinMatchRequest>(BackendConstants.WIN_MATCH, body);
-            if (res) {
-                if (res.canWin) {
-                    // TODO: Definir lógica de cuando puede ganar.
-                } else {
-                    setAlertType(AlertTypeConstants.WARNING_ALERT);
-                    setAlertMessage('PLAYER_CANT_WIN_MESSAGE');
-                }
-                setPlayerData(res.player);
-            }
-            setLoading(false);
-        }
+    /** Pinta una carta de la mano. */
+    const carta = (c: CartaPartida, seleccionable: boolean): JSX.Element => {
+        const {suit, type} = imagenDe(c);
+        const seleccionada = seleccion.includes(claveCarta(c));
+        return (
+            <CardComponent
+                key={claveCarta(c)}
+                designName={props.diseno}
+                suit={suit}
+                type={type}
+                onClick={seleccionable ? () => alternarSeleccion(c) : undefined}
+                positionClassName={`game-board-card ${seleccionada ? 'game-board-card-selected' : ''}`}
+            />
+        );
     };
 
     return (
         <>
             <div id='game-board-component-container' className='component-container'>
                 <div id='game-board-maze-container'>
-                    <img
-                        onClick={cardDeckActions}
-                        className={`game-board-maze-container-item ${
-                            player && player.status === PlayerConstants.IN_TURN_PLAYER_STATUS && !kicker
-                                ? 'game-element-available' : ''
-                        }`}
-                        id='game-board-card-deck'
-                        alt=''
-                        src={CardDeckImage}
-                    />
+                    <div id='game-board-card-deck-container'>
+                        <img
+                            onClick={() => robar('MAZO')}
+                            className={`game-board-maze-container-item ${puedeRobar ? 'game-element-available' : ''}`}
+                            id='game-board-card-deck'
+                            alt='Mazo'
+                            src={CardDeckImage}
+                        />
+                        <p>Mazo: {ronda?.cartasEnMazo ?? 0} cartas</p>
+                    </div>
                     <div id='game-board-discarded-cards-container'>
                         <img
-                            onClick={discardedCardsAction}
-                            className={`game-board-maze-container-item ${
-                                player && player.status === PlayerConstants.IN_TURN_PLAYER_STATUS
-                                    ? 'game-element-available' : ''}
-                                `}
+                            onClick={() => robar('POZO_DESCARTE')}
+                            className={`game-board-maze-container-item ${puedeRobar && tope ? 'game-element-available' : ''}`}
                             id='game-board-discarded-cards-image'
-                            alt=''
-                            src={props.discardedCards && props.discardedCards.cards.length > 0 ? DiscardedCardsImage : EmptyDiscardedCardsImage}
+                            alt='Pozo de descarte'
+                            src={tope ? DiscardedCardsImage : EmptyDiscardedCardsImage}
                         />
                         {
-                            props.discardedCards && props.discardedCards.cards.length > 0
-                                ? (() => {
-                                    const lastCard: CardWithDesignType = props.discardedCards?.cards[props.discardedCards?.cards.length - 1];
-                                    return (
-                                        <CardComponent
-                                            onClick={discardedCardsAction}
-                                            designName={lastCard.cardDesignName}
-                                            suit={lastCard.suit}
-                                            type={lastCard.type}
-                                            positionClassName={'discarded-cards-card'}
-                                        />
-                                    );
-                                })()
+                            tope
+                                ? <CardComponent
+                                    onClick={() => robar('POZO_DESCARTE')}
+                                    designName={props.diseno}
+                                    suit={imagenDe(tope).suit}
+                                    type={imagenDe(tope).type}
+                                    positionClassName='discarded-cards-card'
+                                />
                                 : <></>
                         }
                     </div>
                 </div>
                 <div id='game-board-cards-container'>
+                    <div id='game-board-status'>
+                        <h3>{estadoTurno()}</h3>
+                        {
+                            partida && ronda
+                                ? <p>
+                                    {esApuntado ? 'Apuntado' : 'Clásica'} · Ronda {ronda.numero} · Pozo: {partida.pozo.total} tokens
+                                </p>
+                                : <></>
+                        }
+                        {
+                            rondaExtra
+                                ? <p className='game-board-status-extra'>
+                                    Ronda extra: {nombreDe(rondaExtra.tocadorId)} tocó.
+                                    {rondaExtra.pendientes.length > 0 ? ` Falta: ${rondaExtra.pendientes.map(nombreDe).join(', ')}.` : ''}
+                                </p>
+                                : <></>
+                        }
+                    </div>
                     {
-                        player && trips1 && trips2 && quads
-                            ? <>
-                                <div id='game-board-trips-container'>
-                                    <div>
-                                        {trips1.map((c, i) => {
-                                            return (
-                                                <CardComponent
-                                                    key={c.suit + c.type}
-                                                    designName={currentDesign ?? 'DEFAULT'}
-                                                    suit={c.suit}
-                                                    type={c.type}
-                                                    isDraggable={true}
-                                                    position={i}
-                                                    positionType={CardComponentTypeConstants.TRIPS1}
-                                                    onDragStart={onDragStartCard}
-                                                    onDragOver={onDragOverCard}
-                                                    onDrop={onDropCard}
-                                                    positionClassName='game-board-card'
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                    <div>
-                                        {trips2.map((c, i) => {
-                                            return (
-                                                <CardComponent
-                                                    key={c.suit + c.type}
-                                                    designName={currentDesign ?? 'DEFAULT'}
-                                                    suit={c.suit}
-                                                    type={c.type}
-                                                    position={i}
-                                                    positionType={CardComponentTypeConstants.TRIPS2}
-                                                    onDragStart={onDragStartCard}
-                                                    onDragOver={onDragOverCard}
-                                                    onDrop={onDropCard}
-                                                    isDraggable={true}
-                                                    positionClassName='game-board-card'
-                                                />
-                                            );
-                                        })}
-                                    </div>
+                        mano === undefined
+                            ? <LocalLoadingComponent loading={true} showBackground={false}/>
+                            : <>
+                                <div id='game-board-groups'>
+                                    {gruposActuales.map((g, i) => (
+                                        <div className='game-board-group' key={g.map(claveCarta).join('|')}>
+                                            <div className='game-board-group-cards'>{g.map((c) => carta(c, false))}</div>
+                                            <Button size='small' onClick={() => soltarGrupo(i)}>Soltar grupo</Button>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div id='game-board-quads-container'>
-                                    <div>
-                                        {quads.map((c, i) => {
-                                            return (
-                                                <CardComponent
-                                                    key={c.suit + c.type}
-                                                    designName={currentDesign ?? 'DEFAULT'}
-                                                    suit={c.suit}
-                                                    type={c.type}
-                                                    position={i}
-                                                    positionType={CardComponentTypeConstants.QUADS}
-                                                    onDragStart={onDragStartCard}
-                                                    onDragOver={onDragOverCard}
-                                                    onDrop={onDropCard}
-                                                    isDraggable={true}
-                                                    positionClassName='game-board-card'
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                    <div>
-                                        {
-                                            kicker
-                                                ? <CardComponent
-                                                    designName={'RED'}
-                                                    suit={kicker.suit}
-                                                    type={kicker.type}
-                                                    isDraggable={true}
-                                                    position={0}
-                                                    positionType={CardComponentTypeConstants.KICKER}
-                                                    onDragStart={onDragStartCard}
-                                                    onDragOver={onDragOverCard}
-                                                    onDrop={onDropCard}
-                                                    positionClassName='game-board-card'
-                                                />
-                                                : <></>
-                                        }
-                                    </div>
+                                <div id='game-board-loose'>
+                                    {sueltas.map((c) => carta(c, true))}
                                 </div>
+                                {
+                                    mano
+                                        ? <p>Sueltas: {sueltas.length} cartas, {puntos(sueltas)} pts</p>
+                                        : <></>
+                                }
                             </>
-                            : <LocalLoadingComponent loading={true} showBackground={false}/>
                     }
                 </div>
                 <div id='game-board-actions'>
                     <Button
-                        onClick={winMatchAction}
+                        className='game-board-actions-button'
+                        variant='outlined'
+                        onClick={formarGrupo}
+                        disabled={!mano || seleccionadas.length === 0}
+                    >Formar grupo</Button>
+                    <Button
                         className='game-board-actions-button'
                         variant='contained'
-                        disabled={
-                            player && (
-                                player.status !== PlayerConstants.IN_TURN_PLAYER_STATUS
-                                || !kicker
-                                || player.triedToWin
-                            )
-                        }
-                    > Ganar</Button>
+                        onClick={descartar}
+                        disabled={!conOnceCartas || enviando}
+                    >Descartar</Button>
+                    <Button
+                        className='game-board-actions-button'
+                        variant='contained'
+                        color='secondary'
+                        onClick={cerrar}
+                        disabled={!conOnceCartas || enviando || !!ronda?.turno.intentoCierre}
+                    >{esApuntado ? 'Cerrar / Tocar (< 5 pts)' : 'Cerrar con 4-3-3'}</Button>
                 </div>
             </div>
-            <GlobalLoadingComponent loading={loading}/>
-            <AlertComponent
-                type={alertType}
-                rawMessage={alertMessage}
-                setRawMessage={setAlertMessage}
-            />
+            <GlobalLoadingComponent loading={enviando}/>
         </>
     );
 }

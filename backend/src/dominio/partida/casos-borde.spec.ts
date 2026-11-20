@@ -47,7 +47,7 @@ function partida(puntajes: { j1: number; j2: number }): Partida {
 }
 
 const cerrar = (p: Partida): ResultadoTransicion =>
-	intentarCierre(p, 'j1', { tipo: 'GANAR_4_3_3', ...CIERRE_GANADOR }, regla, barajador, new Date());
+	intentarCierre(p, 'j1', { tipo: 'GANAR_4_3_3', ...CIERRE_GANADOR }, { regla, barajador, ahora: new Date() });
 
 /** Penalización que recibe j2 al cerrar j1 (sus 10 cartas sin organizar). */
 const penalizacionRival = cerrar(partida({ j1: 0, j2: 0 })).partida.jugadores[1].puntaje;
@@ -92,7 +92,7 @@ describe('Caso borde A en el agregado: cierre con 3 ternas incompletas', () => {
 	it('se rechaza, suma el castigo y la ronda sigue en el mismo turno', () => {
 		// Grupos de 3 que no combinan: 5-5-AS, 2-3-K y K-K-9.
 		const datos = { tipo: 'GANAR_4_3_3' as const, grupos: [[0, 1, 4], [5, 6, 7], [8, 9, 10]], descarte: 3 };
-		const { partida: despues, eventos, finalizada } = intentarCierre(partida({ j1: 0, j2: 0 }), 'j1', datos, regla, barajador, new Date());
+		const { partida: despues, eventos, finalizada } = intentarCierre(partida({ j1: 0, j2: 0 }), 'j1', datos, { regla, barajador, ahora: new Date() });
 		expect(finalizada).toBe(false);
 		expect(eventos[0].tipo).toBe('CIERRE_FALLIDO');
 		expect(despues.jugadores[0].puntaje).toBe(3);

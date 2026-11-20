@@ -23,6 +23,7 @@ export function CreateGameComponent(): JSX.Element {
      */
     const [players, setPlayers] = useState<number>(2);
     const [isPublic, setIsPublic] = useState<boolean>(false);
+    const [ruleId, setRuleId] = useState<string>('apuntado');
 
     /**
      * Hooks para manejar el nombre del juego.
@@ -90,6 +91,7 @@ export function CreateGameComponent(): JSX.Element {
             isPublic: Boolean(isPublic),
             requiredPlayers: Number(players),
             betByPlayer: betByPlayer as number,
+            ruleId,
         };
         const res = await backendUtils.post<CreateGameResponse, CreateGameRequest>(BackendConstants.CREATE_GAME_URL, body);
         if (res) {
@@ -116,6 +118,15 @@ export function CreateGameComponent(): JSX.Element {
                             {value: 4, label: '4'},
                             {value: 5, label: '5'},
                             {value: 6, label: '6'},
+                        ]}
+                    />
+                    <CheckBoxGroupComponent
+                        label='Modalidad'
+                        selected={ruleId}
+                        setSelected={setRuleId}
+                        values={[
+                            {value: 'apuntado', label: 'Apuntado a 101'},
+                            {value: 'clasica', label: 'Clásica 4-3-3'},
                         ]}
                     />
                     <CheckBoxGroupComponent

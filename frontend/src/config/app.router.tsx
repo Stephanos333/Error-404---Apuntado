@@ -57,7 +57,8 @@ export enum RoutesConstants {
 export const AppRouter = createBrowserRouter([
     {
         path: RoutesConstants.SHOW_MATCH_WINNER,
-        element: <GameGuard element={<ShowMatchWinnerPage/>}/>
+        // Al finalizar la partida el usuario deja de estar "jugando": basta con la sesión.
+        element: <LoginGuard element={<ShowMatchWinnerPage/>}/>
     },
     {
         path: RoutesConstants.WAITING_GAME_ROUTE,

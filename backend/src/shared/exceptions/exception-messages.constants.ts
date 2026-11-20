@@ -178,7 +178,7 @@ export enum ExceptionMessagesConstants {
 	YA_INTENTO_CIERRE_EN_EL_TURNO = 'YA_INTENTO_CIERRE_EN_EL_TURNO',
 	/**
 	 * Se utiliza cuando la regla del juego no admite el tipo de cierre solicitado
-	 * o el MVP todavía no lo soporta (p. ej. tocar con ronda extra).
+	 * (p. ej. tocar en la Clásica o volver a tocar durante la ronda extra).
 	 */
 	CIERRE_NO_PERMITIDO = 'CIERRE_NO_PERMITIDO',
 	/**

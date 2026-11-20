@@ -48,10 +48,11 @@ function escenario(): Array<{ partida: Partida; eventos: EventoPartida[] }> {
 		regla.configuracionReparto(),
 		barajador,
 	);
-	const descarte = descartar(inicio.partida, 'u1', 10);
+	const ctx = { regla, barajador, ahora: new Date() };
+	const descarte = descartar(inicio.partida, 'u1', 10, undefined, ctx);
 	const robo = robar(descarte.partida, 'u2', 'MAZO', barajador);
-	const fallo = intentarCierre(robo.partida, 'u2', { tipo: 'GANAR_4_3_3', grupos: [[1, 2, 3]], descarte: 0 }, regla, barajador, new Date());
-	const otraMano = descartar(fallo.partida, 'u2', 0);
+	const fallo = intentarCierre(robo.partida, 'u2', { tipo: 'GANAR_4_3_3', grupos: [[1, 2, 3]], descarte: 0 }, ctx);
+	const otraMano = descartar(fallo.partida, 'u2', 0, undefined, ctx);
 	return [inicio, descarte, robo, fallo, otraMano];
 }
 
@@ -99,7 +100,7 @@ describe('Notificaciones de la partida: separación de salas pública y privada'
 
 	it('el cierre de ronda se anuncia sin revelar las manos de los rivales', () => {
 		const [inicio] = escenario();
-		const cierre = intentarCierre(inicio.partida, 'u1', { tipo: 'GANAR_4_3_3', ...CIERRE_GANADOR }, regla, barajador, new Date());
+		const cierre = intentarCierre(inicio.partida, 'u1', { tipo: 'GANAR_4_3_3', ...CIERRE_GANADOR }, { regla, barajador, ahora: new Date() });
 		const publicos = planificarNotificaciones('sala-1', cierre.partida, cierre.eventos).filter((e) => e.sala === 'partida:sala-1');
 		expect(publicos.map((e) => e.mensaje)).toEqual([GameSocketConstants.MATCH_WON_LISTENER, GameSocketConstants.ROUND_STARTED_LISTENER]);
 		publicos.forEach((e) => expect(clavesProfundas(e.contenido).filter((k) => CLAVES_PROHIBIDAS.includes(k))).toEqual([]));

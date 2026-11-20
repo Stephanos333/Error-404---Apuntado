@@ -47,6 +47,10 @@ export enum GameSocketConstants {
 	 */
 	CARD_PULLED_FROM_DECK_LISTENER = 'CARD_PULLED_FROM_DECK_LISTENER',
 	/**
+	 * El mensaje que indica que un jugador tocó: empieza la ronda extra (modalidad Apuntado).
+	 */
+	PLAYER_KNOCKED_LISTENER = 'PLAYER_KNOCKED_LISTENER',
+	/**
 	 * El mensaje que indica que empezó una nueva ronda (modalidad multironda).
 	 */
 	ROUND_STARTED_LISTENER = 'ROUND_STARTED_LISTENER',

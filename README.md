@@ -19,7 +19,7 @@ construido como un monolito modular con núcleo **microkernel** de reglas (Richa
 | Consistencia | Cierre y liquidación en memoria y una sola escritura atómica; transacciones `snapshot`/`majority` para apuestas y pozo; concurrencia optimista con `version` e idempotencia con `idComando` |
 | Tiempo real | Sala pública `partida:{id}` (vista pública) y sala privada `usuario:{id}` (solo la mano del usuario); eventos publicados después del commit (ADR-05) |
 | Seguridad | JWT de acceso y refresco, guardias por juego, barajado con `crypto.randomInt`, contenedores sin privilegios de root |
-| Pruebas | 97 unitarias y de contrato (Jest), 8 de integración de concurrencia con replica set en memoria y 28 fitness functions (FF-01 a FF-06) |
+| Pruebas | 102 unitarias y de contrato (Jest), 8 de integración de concurrencia con replica set en memoria, 28 fitness functions (FF-01 a FF-06) y 16 del tablero del frontend (Vitest) |
 | Ejecución | `docker compose up --build` (o `start.sh` / `start.bat`): MongoDB, inicialización de la base, backend y frontend |
 
 ### Servicios y puertos
@@ -72,8 +72,17 @@ Orden de arranque, garantizado con `healthcheck` y `depends_on`:
 | Estado de los contenedores | `docker compose ps` (todos *healthy*; `mongo-init` termina con código 0) |
 | Registros | `docker compose logs -f backend` |
 
-Flujo de humo: registrarse, crear un juego (`ruleId` = `clasica` o `apuntado`), unirse desde
-otra ventana o navegador e iniciar la partida.
+Flujo de humo con dos navegadores (o una ventana normal y una privada):
+
+1. Registrar dos usuarios. El primero crea un juego y elige la modalidad (Clásica o Apuntado).
+2. El segundo se une con el enlace de invitación y el anfitrión inicia la partida.
+3. En su turno, cada jugador roba (clic en el mazo o en el pozo), selecciona cartas sueltas y
+   pulsa "Formar grupo", y descarta seleccionando una sola carta. El otro navegador ve el cambio
+   de turno, el tope del pozo y el tamaño de las manos sin recargar.
+4. Cerrar: con 1 cuarta + 2 ternas formadas, seleccionar la carta de descarte y pulsar el botón
+   de cierre. En Apuntado también se puede tocar con 3 ternas + 1 sobrante de menos de 5 puntos;
+   el rival juega su último turno y la ronda se liquida.
+5. Al terminar la partida se muestra el ganador y el marcador.
 
 Para detener: `docker compose down`. Para borrar también los datos: `docker compose down -v`.
 
@@ -102,6 +111,7 @@ yarn dev
 cd backend && npx jest                      # unitarias, de contrato y casos borde
 cd backend && npm run test:e2e              # concurrencia de cierres con replica set en memoria
 cd tests/architecture && npm ci && npm test && npm run test:estricto   # fitness functions
+cd frontend && yarn test                    # lógica del tablero (traducción de comandos, versiones)
 ```
 
 ### 6. Despliegue en la nube
@@ -131,14 +141,12 @@ El backend necesita un host con **WebSockets persistentes**; los entornos *serve
 
 ## Estado del MVP y limitaciones conocidas
 
-- **Pantalla de juego del frontend.** El backend ya expone los comandos de turno
-  `POST /api/partidas/actual/comandos/{robar|descartar|cerrar}` (con `version` e `idComando`),
-  `GET /api/partidas/actual` y los eventos públicos y privados. El tablero
-  (`frontend/src/pages/game`) todavía llama a los endpoints del prototipo (`/api/player/pass-shift`,
-  `pull-from-*` y `win-match`), que se retiraron en la fase 2. Por eso la partida no se puede jugar
-  desde la interfaz hasta migrar ese tablero. Registro, sesión, diseños, sala de espera e inicio de
-  partida sí funcionan.
-- Tocar con ronda extra, reenganche y la bitácora `jugadas` están diseñados (ADR-03, ADR-04), pero
-  no están disponibles en el MVP.
+- **Flujo de juego.** El tablero (`frontend/src/pages/game`) usa `GET /api/partidas/actual` y
+  `POST /api/partidas/actual/comandos/{robar|descartar|cerrar}` con `version` e `idComando`, y
+  escucha la sala pública `partida:{id}` y la privada `usuario:{id}`. Clásica cierra con 4-3-3;
+  Apuntado cierra con 4-3-3 o toca (3 ternas + 1 sobrante de menos de 5 puntos), lo que abre una
+  ronda extra en la que cada rival juega un último turno antes de liquidar.
+- Reenganche y la bitácora `jugadas` están diseñados (ADR-03, ADR-04), pero no están disponibles en
+  el MVP.
 - El backend no versiona `package-lock.json` (está en `backend/.gitignore`), así que la imagen
   instala con rangos semver. El frontend sí usa `yarn.lock`.

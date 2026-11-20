@@ -27,6 +27,8 @@ export interface RondaVistaPublica {
 	cartasEnMazo: number;
 	cartasEnDescarte: number;
 	topeDescarte: CartaPartida | null;
+	/** Ronda extra en curso tras tocar: quién tocó y a quiénes les falta su último turno. */
+	rondaExtra: { tocadorId: string; pendientes: string[] } | null;
 }
 
 export interface VistaPublicaPartida {
@@ -84,6 +86,7 @@ export function vistaPublica(partida: Partida): VistaPublicaPartida {
 				cartasEnMazo: ronda.mazo.length,
 				cartasEnDescarte: ronda.pozoDescarte.length,
 				topeDescarte: tope ? copiarCarta(tope) : null,
+				rondaExtra: ronda.rondaExtra ? { tocadorId: ronda.rondaExtra.tocadorId, pendientes: [...ronda.rondaExtra.pendientes] } : null,
 			}
 			: null,
 		marcador: partida.marcador.map((e) => ({

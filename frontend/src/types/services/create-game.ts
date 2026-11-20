@@ -8,6 +8,8 @@ export type CreateGameRequest = {
     isPublic: boolean;
     betByPlayer: number;
     name: string;
+    /** Modalidad del juego (plug-in de reglas): `clasica` o `apuntado`. */
+    ruleId?: string;
 }
 
 /**

@@ -41,6 +41,7 @@ function mensajePublico(evento: EventoPartida): GameSocketConstants {
 		CARTA_ROBADA: GameSocketConstants.CARD_PULLED_FROM_DECK_LISTENER,
 		TURNO_CAMBIADO: GameSocketConstants.SHIFT_CHANGED_LISTENER,
 		CIERRE_FALLIDO: GameSocketConstants.PLAYER_CANT_WIN_LISTENER,
+		JUGADOR_TOCO: GameSocketConstants.PLAYER_KNOCKED_LISTENER,
 		RONDA_CERRADA: GameSocketConstants.MATCH_WON_LISTENER,
 		RONDA_INICIADA: GameSocketConstants.ROUND_STARTED_LISTENER,
 		PARTIDA_FINALIZADA: GameSocketConstants.GAME_FINISHED_LISTENER,
@@ -54,7 +55,8 @@ function mensajePublico(evento: EventoPartida): GameSocketConstants {
 function manosAfectadas(evento: EventoPartida, partida: Partida): string[] {
 	const todos = partida.rondaActual?.manos.map((m) => m.jugadorId) ?? [];
 	if (evento.tipo === 'PARTIDA_INICIADA' || evento.tipo === 'RONDA_INICIADA') return todos;
-	return evento.jugadorId && (evento.tipo === 'CARTA_ROBADA' || evento.tipo === 'TURNO_CAMBIADO') ? [evento.jugadorId] : [];
+	const cambiaSuMano: ReadonlyArray<TipoEventoPartida> = ['CARTA_ROBADA', 'TURNO_CAMBIADO', 'JUGADOR_TOCO'];
+	return evento.jugadorId && cambiaSuMano.includes(evento.tipo) ? [evento.jugadorId] : [];
 }
 
 /**

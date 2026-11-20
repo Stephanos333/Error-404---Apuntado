@@ -23,15 +23,51 @@
         justify-content: center;
         align-items: center;
         flex-flow: column;
+        row-gap: 10px;
+        overflow-y: auto;
 
-        & #game-board-trips-container, & #game-board-quads-container {
-            display: flex;
-            width: 60%;
-            justify-content: space-around;
+        & #game-board-status {
+            text-align: center;
 
-            @media (max-width: 1600px) {
-                width: 80%;
+            & h3, & p {
+                margin: 4px 0;
             }
+
+            & .game-board-status-extra {
+                font-weight: bold;
+                color: var(--fourth);
+            }
+        }
+
+        & #game-board-groups {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            width: 90%;
+        }
+
+        & .game-board-group {
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            padding: 5px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: 1px 1px 5px gray;
+        }
+
+        & .game-board-group-cards {
+            display: flex;
+        }
+
+        & #game-board-loose {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 90%;
+            min-height: calc(90px * (1280 / 941) + 30px);
+            padding-top: 20px;
         }
     }
 
@@ -50,13 +86,14 @@
             box-shadow: 5px 5px 5px gray;
         }
 
-        & #game-board-discarded-cards-container, & #game-board-card-deck {
+        & #game-board-discarded-cards-container, & #game-board-card-deck-container {
             width: 60%;
             height: max-content;
             position: relative;
+            text-align: center;
         }
 
-        & #game-board-discarded-cards-image {
+        & #game-board-discarded-cards-image, & #game-board-card-deck {
             width: 100%;
         }
 
@@ -72,6 +109,13 @@
 
 .game-board-card {
     cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.game-board-card-selected {
+    transform: translateY(-15px);
+    border-radius: 10px;
+    box-shadow: 0 0 0 3px var(--fourth);
 }
 
 .game-board-card:hover {

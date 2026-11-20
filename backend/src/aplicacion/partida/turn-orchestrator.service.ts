@@ -151,15 +151,17 @@ export class TurnOrchestrator {
 		return this.ejecutar(comando, (partida) => robar(partida, comando.usuarioId, origen, this.barajador));
 	}
 
-	/** Comando descartar (pasa el turno). */
+	/** Comando descartar (pasa el turno; en la ronda extra, el último descarte liquida la ronda). */
 	async descartar(comando: ComandoTurno, carta: number, grupos?: number[][]): Promise<ResultadoComando> {
-		return this.ejecutar(comando, (partida) => descartar(partida, comando.usuarioId, carta, grupos));
+		return this.ejecutar(comando, (partida, regla) =>
+			descartar(partida, comando.usuarioId, carta, grupos, { regla, barajador: this.barajador, ahora: new Date() }),
+		);
 	}
 
-	/** Comando intentar cierre de ronda. */
+	/** Comando intentar cierre de ronda (4-3-3 o tocar). */
 	async intentarCierre(comando: ComandoTurno, tipo: TipoCierre, grupos: number[][], descarte: number): Promise<ResultadoComando> {
 		return this.ejecutar(comando, (partida, regla) =>
-			intentarCierre(partida, comando.usuarioId, { tipo, grupos, descarte }, regla, this.barajador, new Date()),
+			intentarCierre(partida, comando.usuarioId, { tipo, grupos, descarte }, { regla, barajador: this.barajador, ahora: new Date() }),
 		);
 	}
 
@@ -228,7 +230,7 @@ export class TurnOrchestrator {
 		const actual = await this.cargar(comando.partidaId);
 		if (actual.comandosRecientes.includes(comando.idComando)) return { aplicado: false, partida: actual };
 		const ronda = actual.rondaActual;
-		const rondaCambio = !ronda || ronda.numero !== base.rondaActual?.numero || ronda.estado !== 'EN_TURNOS';
+		const rondaCambio = !ronda || ronda.numero !== base.rondaActual?.numero || !['EN_TURNOS', 'RONDA_EXTRA'].includes(ronda.estado);
 		if (actual.estado !== 'EN_JUEGO' || rondaCambio) throw new PartidaConflictException(M.RONDA_YA_CERRADA);
 		if (ronda.turno.jugadorId !== comando.usuarioId) throw new PartidaConflictException(M.TURNO_NO_CORRESPONDE);
 		throw new PartidaConflictException(M.VERSION_DESACTUALIZADA);

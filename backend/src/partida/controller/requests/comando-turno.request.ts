@@ -53,10 +53,15 @@ export class DescartarRequest extends ComandoTurnoRequest {
  * @class
  */
 export class CerrarRequest extends ComandoTurnoRequest {
-	@ApiProperty({ required: false, enum: ['GANAR_4_3_3'], default: 'GANAR_4_3_3' })
+	@ApiProperty({
+		required: false,
+		enum: ['GANAR_4_3_3', 'TOCAR'],
+		default: 'GANAR_4_3_3',
+		description: 'TOCAR (solo Apuntado): 3 ternas + 1 sobrante de menos de 5 puntos; abre la ronda extra.',
+	})
 	@IsOptional()
-	@IsIn(['GANAR_4_3_3'])
-		tipo?: 'GANAR_4_3_3';
+	@IsIn(['GANAR_4_3_3', 'TOCAR'], { message: M.CIERRE_NO_PERMITIDO })
+		tipo?: 'GANAR_4_3_3' | 'TOCAR';
 
 	@ApiProperty({ type: 'array', items: { type: 'array', items: { type: 'integer' } }, example: [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]] })
 	@IsArray()
