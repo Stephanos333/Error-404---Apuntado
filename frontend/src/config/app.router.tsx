@@ -7,7 +7,7 @@ import {WaitingGamePage} from '../pages/waiting-game/waiting-game.page.tsx';
 import {GameGuard} from './game.guard.tsx';
 import {JoinGamePage} from '../pages/join-game/join-game.page.tsx';
 import {GamePage} from '../pages/game/game.page.tsx';
-import {ShowMatchWinnerPage} from "../pages/show-match-winner/show-match-winner.page.tsx";
+import {ShowMatchWinnerPage} from '../pages/show-match-winner/show-match-winner.page.tsx';
 
 /**
  * Constantes que definen las rutas de la aplicación.

@@ -14,7 +14,7 @@ import {AlertComponent} from '../../../../components/alert/alert.component.tsx';
 import {AlertTypeConstants} from '../../../../utils/constants/alert.constants.ts';
 import {BackendConstants} from '../../../../utils/constants/backend.constants.ts';
 import {UpdateUserIconRequest, UpdateUserIconResponse} from '../../../../types/services/update-user-icon.ts';
-import {buildProfileImageRoute} from "../../../../utils/profile-image.utils.ts";
+import {buildProfileImageRoute} from '../../../../utils/profile-image.utils.ts';
 
 /**
  * Componente que permite configurar el perfíl de un usuario.

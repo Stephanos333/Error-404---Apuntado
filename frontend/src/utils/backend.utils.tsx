@@ -125,8 +125,9 @@ export class BackendUtils {
             window.location.href = RoutesConstants.DEFAULT_ROUTE;
         } else {
             const message: string = BackendUtils.extractMessage(e);
-            console.log(message);
+            // El error se muestra al usuario por el callback; sin callback se registra para no perderlo.
             if (this.callBackErrors) this.callBackErrors(message);
+            else console.error(`[BackendUtils] ${message}`);
         }
 
     }
@@ -141,14 +142,14 @@ export class BackendUtils {
         if (refreshToken) {
             const body: RefreshTokenRequest = {refreshToken};
             return this.post<RefreshTokenResponse, RefreshTokenRequest>(BackendConstants.REFRESH_ACCESS_TOKEN_URL, body)
+                // `post` ya procesa los errores (processError) y resuelve `undefined` si el refresco falla.
                 .then((res) => {
                     if (res) {
                         LocaleStorageUtils.set<LocaleStorageConstants.KEY_ACCESS_TOKEN>(
                             LocaleStorageConstants.KEY_ACCESS_TOKEN, res.accessToken
                         );
                     }
-                })
-                .catch();
+                });
         }
     }
 

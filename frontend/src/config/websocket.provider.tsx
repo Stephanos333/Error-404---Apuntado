@@ -36,8 +36,8 @@ export const WebsocketProvider = ({children}: { children: ReactNode }) => {
                 reconnection: true,
             });
             socket.connect();
-            socket.on('connect', () => {
-                console.log('Socket connected.');
+            socket.on('connect_error', (error: Error) => {
+                console.error(`[WebSocket] No se pudo conectar: ${error.message}`);
             });
             setSocket(socket);
         }

@@ -1,0 +1,91 @@
+# Sistema Apuntado: entorno completo con un solo comando.
+#   docker compose up --build        (o ./start.sh / start.bat)
+#
+# Servicios:
+#   mongodb     MongoDB 7 como replica set de un nodo (rs0): las transacciones multi-documento
+#               del cobro de apuestas y el pago del pozo lo requieren (ADR-04).
+#   mongo-init  Tarea única: validadores $jsonSchema + índices (docs/schemas) y catálogo de diseños.
+#   backend     NestJS compilado en modo producción: REST (/api), WebSockets (/socket.io) y Swagger (/docs).
+#   frontend    SPA React servida por Nginx, con proxy inverso hacia el backend.
+#
+# Variables: se leen de ./.env (plantilla en .env.example). JWT_SECRET y JWT_REFRESH_SECRET son obligatorias.
+
+name: apuntado
+
+services:
+  mongodb:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # Inicia el replica set la primera vez y solo reporta "healthy" cuando el nodo ya es PRIMARY.
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "try { quit(rs.status().myState === 1 ? 0 : 1) } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongodb:27017' }] }); quit(1) }"
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      # La misma URI que usa el backend: si se apunta a Atlas, los validadores se aplican allí.
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/apuntado?replicaSet=rs0}
+    volumes:
+      - ./docs/schemas:/docs/schemas:ro
+      - ./docker/mongo:/docker/mongo:ro
+    entrypoint: ["bash", "/docker/mongo/init.sh"]
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+    environment:
+      APP_PORT: 3000
+      APP_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+      APP_GLOBAL_PREFIX: api
+      APP_DOCS_URI: docs
+      APP_DEFAULT_TOKENS: ${APP_DEFAULT_TOKENS:-100}
+      APP_FALSE_WIN_PENALTY_POINTS: ${APP_FALSE_WIN_PENALTY_POINTS:-3}
+      APP_BONUS_POINTS: ${APP_BONUS_POINTS:-10}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/apuntado?replicaSet=rs0}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en .env (ejecute start.sh o start.bat para generarlo)}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-6h}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Defina JWT_REFRESH_SECRET en .env (ejecute start.sh o start.bat para generarlo)}
+      JWT_REFRESH_EXPIRATION_TIME: ${JWT_REFRESH_EXPIRATION_TIME:-10d}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Vacío = mismo origen: Nginx reenvía /api y /socket.io al backend.
+        VITE_BACKEND_BASE_URL: ${VITE_BACKEND_BASE_URL:-}
+        VITE_FRONTEND_BASE_URL: ${VITE_FRONTEND_BASE_URL:-http://localhost:5173}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  mongo-data:

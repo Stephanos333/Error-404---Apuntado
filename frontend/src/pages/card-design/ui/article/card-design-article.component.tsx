@@ -33,7 +33,10 @@ export function CardDesignArticleComponent(
                 >
                     <div
                         className='card-design-article-icon'
-                        onClick={() => design.canSelect ? props.selectDesign(design) : console.log('Not implemented yet')}
+                        onClick={() => {
+                            // La compra de diseños aún no está disponible en el MVP: solo se seleccionan los habilitados.
+                            if (design.canSelect) props.selectDesign(design);
+                        }}
                         style={{backgroundImage: `url(${design.canSelect ? ClickImage : ShoppingCart})`}}
                     ></div>
                     <div>
