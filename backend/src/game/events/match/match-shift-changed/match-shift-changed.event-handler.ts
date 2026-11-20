@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { MatchShiftChangedEvent } from './match-shift-changed.event';
+import { MatchShiftChangedEvent } from '../../../../dominio/events/match/match-shift-changed/match-shift-changed.event';
 import { GameSocket } from '../../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 

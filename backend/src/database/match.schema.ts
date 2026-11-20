@@ -1,5 +1,5 @@
 import { Connection, HydratedDocument, Model, Schema, SchemaDefinition } from 'mongoose';
-import { MatchDTO } from '../match/match';
+import { MatchRecord } from './database.records';
 import { CardDeckSchema } from './card-deck.schema';
 import { DiscardedCardsSchema } from './discarded-cards.schema';
 import { FactoryProvider } from '@nestjs/common';
@@ -9,12 +9,12 @@ import { DatabaseConstants } from './database.constants';
 /**
  * Representa el tipo del modelo para interactuar con las partidas en mongodb.
  */
-export type MatchDocument = HydratedDocument<MatchDTO>;
+export type MatchDocument = HydratedDocument<MatchRecord>;
 
 /**
  * Representa la definición completa de una partida en mongodb.
  */
-const definition: Required<SchemaDefinition<MatchDTO>> = {
+const definition: Required<SchemaDefinition<MatchRecord>> = {
 	cardDeck: {
 		type: CardDeckSchema,
 		required: true,
@@ -60,19 +60,19 @@ const definition: Required<SchemaDefinition<MatchDTO>> = {
 
 /**
  * Constante que representa el esquema de las partidas.
- * @const {Schema<MatchDTO>}
+ * @const {Schema<MatchRecord>}
  */
-export const MatchSchema: Schema<MatchDTO> = new Schema<MatchDTO>(definition, { timestamps: true });
+export const MatchSchema: Schema<MatchRecord> = new Schema<MatchRecord>(definition, { timestamps: true });
 
 /**
  * Constante que representa la conexión del esquema de partidas a la base de datos.
- * @type {FactoryProvider<Model<MatchDocument>>}
+ * @type {FactoryProvider<Model<MatchRecord>>}
  */
-export const MatchSchemaProvider: FactoryProvider<Model<MatchDocument>> = {
+export const MatchSchemaProvider: FactoryProvider<Model<MatchRecord>> = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],
 	provide: DatabaseConstants.MATCH_PROVIDER,
-	useFactory: (connection: Connection): Model<MatchDocument> => {
-		return connection.model<MatchDocument>(
+	useFactory: (connection: Connection): Model<MatchRecord> => {
+		return connection.model<MatchRecord>(
 			DatabaseConstants.MATCH_COLLECTION_NAME, MatchSchema,
 		);
 	},

@@ -1,29 +1,18 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { DatabaseModule } from '../../database/database.module';
+import { Module } from '@nestjs/common';
+import { AplicacionModule } from '../../aplicacion/aplicacion.module';
 import { UserController } from '../controller/user.controller';
-import { UserService } from '../user.service';
 import { SecurityModule } from '../../security/config/security.module';
-import { CardDesignModule } from '../../card-design/config/card-design.module';
-import { CqrsModule } from '@nestjs/cqrs';
-
 /**
  * Clase que representa el módulo de los usuarios y sus
  * respectivas configuraciones.
  * Configura:
  * - Los controladores de los usuarios.
- * - Los servicios de los usuarios.
+ * Los servicios los provee el módulo de aplicación; el de sesiones, el de seguridad.
  * @class
  */
 @Module({
-	imports: [
-		DatabaseModule,
-		CqrsModule,
-		forwardRef(() => SecurityModule),
-		CardDesignModule,
-	],
+	imports: [AplicacionModule, SecurityModule],
 	controllers: [UserController],
-	providers: [UserService],
-	exports: [UserService],
 })
 export class UserModule {
 }

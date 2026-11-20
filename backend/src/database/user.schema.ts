@@ -1,4 +1,4 @@
-import { UserDTO } from '../user/user';
+import { UserRecord } from './database.records';
 import { Connection, HydratedDocument, Model, Schema, SchemaDefinition } from 'mongoose';
 import { FactoryProvider } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
@@ -7,12 +7,12 @@ import { DatabaseConstants } from './database.constants';
 /**
  * Representa el modelo para interactuar con los usuarios en mongodb.
  */
-export type UserDocument = HydratedDocument<UserDTO>;
+export type UserDocument = HydratedDocument<UserRecord>;
 
 /**
  * Representa la definición completa de un usuario en mongodb.
  */
-const definition: Required<SchemaDefinition<UserDTO>> = {
+const definition: Required<SchemaDefinition<UserRecord>> = {
 	cardDesigns: {
 		type: [String],
 		required: true,
@@ -56,9 +56,9 @@ const definition: Required<SchemaDefinition<UserDTO>> = {
 
 /**
  * Constante que representa el esquema de los usuarios.
- * @const {Schema<UserDTO>}
+ * @const {Schema<UserRecord>}
  */
-export const UserSchema: Schema<UserDTO> = new Schema<UserDTO>(definition, { timestamps: true });
+export const UserSchema: Schema<UserRecord> = new Schema<UserRecord>(definition, { timestamps: true });
 
 /**
  * Constante que representa la conexión del esquema
@@ -68,8 +68,8 @@ export const UserSchema: Schema<UserDTO> = new Schema<UserDTO>(definition, { tim
 export const UserSchemaProvider: FactoryProvider = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],
 	provide: DatabaseConstants.USER_PROVIDER,
-	useFactory(connection: Connection): Model<UserDocument> {
-		return connection.model<UserDocument>(
+	useFactory(connection: Connection): Model<UserRecord> {
+		return connection.model<UserRecord>(
 			DatabaseConstants.USER_COLLECTION_NAME, UserSchema,
 		);
 	},

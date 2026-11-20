@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { PlayerCantWinEvent } from './player-cant-win.event';
+import { PlayerCantWinEvent } from '../../../../dominio/events/player/player-cant-win/player-cant-win.event';
 import { GameSocket } from '../../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 

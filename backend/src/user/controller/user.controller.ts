@@ -1,23 +1,23 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, Patch, Post, UseInterceptors } from '@nestjs/common';
-import { UserService } from '../user.service';
+import { UserService } from '../../aplicacion/user/user.service';
 import { UserControllerConstants } from './user.controller.constants';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDecorator } from '../../security/auth.decorator';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
 import { GetUserControllerResponse, GetUserResponseData } from './responses/get-user-controller.response';
-import { User } from '../user';
-import { UserId } from '../user-id';
+import { User } from '../../dominio/user/user';
+import { UserId } from '../../dominio/user/user-id';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
 import { CreateUserControllerRequest } from './requests/create-user.controller.request';
 import { SessionService } from '../../security/session.service';
 import { CreateUserControllerResponse } from './responses/create-user.controller.response';
 import { UpdateUserCardDesignControllerRequest } from './requests/update-user-card-design.controller.request';
-import { CardDesignId } from '../../card-design/card-design-id';
+import { CardDesignId } from '../../card/card-design-id';
 import { DefaultResponse } from '../../shared/default.response';
 import { UpdateUserIconController } from './requests/update-user-icon.controller.request';
-import { UserIcon } from '../user-icon';
-import { CardDesignService } from '../../card-design/card-design.service';
-import { CardDesign } from '../../card-design/card-design';
+import { UserIcon } from '../../dominio/user/user-icon';
+import { CardDesignService } from '../../aplicacion/card-design/card-design.service';
+import { CardDesign } from '../../dominio/card-design/card-design';
 
 /**
  * Clase que contiene los puntos de entrada a la aplicación

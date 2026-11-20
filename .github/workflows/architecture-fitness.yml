@@ -21,6 +21,5 @@ jobs:
       - run: npm ci
       # Modo trinquete: bloquea el merge si aparece una violación arquitectónica nueva.
       - run: npm test
-      # Modo estricto: informativo hasta terminar la refactorización (ADR-01/ADR-03).
+      # Modo estricto: bloquea el merge si existe cualquier violación arquitectónica
       - run: npm run test:estricto
-        continue-on-error: true

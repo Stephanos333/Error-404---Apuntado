@@ -1,28 +1,17 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { DatabaseModule } from '../../database/database.module';
-import { MatchService } from '../match.service';
+import { Module } from '@nestjs/common';
+import { AplicacionModule } from '../../aplicacion/aplicacion.module';
 import { MatchController } from '../controller/match.controller';
-import { GameModule } from '../../game/config/game.module';
-import { CqrsModule } from '@nestjs/cqrs';
-import { PlayerModule } from '../../player/config/player.module';
-
 /**
  * Clase que representa el módulo de las partidas y sus respectivas configuraciones.\
  * Configura:
- * - Los servicios de las partidas.
+ * - Los controladores de las partidas.
+ * Los servicios los provee el módulo de aplicación.
  * @class
  * @module
  */
 @Module({
-	imports: [
-		DatabaseModule,
-		CqrsModule,
-		forwardRef(() => GameModule),
-		forwardRef(() => PlayerModule),
-	],
+	imports: [AplicacionModule],
 	controllers: [MatchController],
-	providers: [MatchService],
-	exports: [MatchService],
 })
 export class MatchModule {
 }

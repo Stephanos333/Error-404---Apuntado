@@ -1,10 +1,10 @@
 import { Schema, SchemaDefinition } from 'mongoose';
-import { CardWithDesignDTO } from '../card/card-with-design';
+import { CardWithDesignRecord } from './database.records';
 
 /**
  * Representa la definición completa de una carta con diseño en mongodb.
  */
-export const definition: Required<SchemaDefinition<CardWithDesignDTO>> = {
+export const definition: Required<SchemaDefinition<CardWithDesignRecord>> = {
 	cardDesignId: {
 		type: String,
 		required: true,
@@ -26,7 +26,7 @@ export const definition: Required<SchemaDefinition<CardWithDesignDTO>> = {
 /**
  * Constante que representa el esquema de las cartas con diseño.
  */
-export const CardWithDesignSchema: Schema<CardWithDesignDTO> = new Schema<CardWithDesignDTO>(definition, {
+export const CardWithDesignSchema: Schema<CardWithDesignRecord> = new Schema<CardWithDesignRecord>(definition, {
 	timestamps: false,
 	_id: false,
 });

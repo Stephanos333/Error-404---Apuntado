@@ -7,8 +7,8 @@ import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response
 import { SessionControllerConstants } from './session.controller.constants';
 import { SessionService } from '../session.service';
 import { UserDecorator } from '../user.decorator';
-import { UserDTO } from '../../user/user';
-import { UserId } from '../../user/user-id';
+import { UserDTO } from '../../dominio/user/user';
+import { UserId } from '../../dominio/user/user-id';
 import { RefreshTokenControllerRequest } from './requests/refresh-token.controller.request';
 import { RefreshTokenControllerResponse } from './responses/refresh-token.controller.response';
 

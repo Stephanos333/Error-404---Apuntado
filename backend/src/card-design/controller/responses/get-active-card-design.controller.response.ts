@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CardDesignDTO } from '../../card-design';
+import { CardDesignDTO } from '../../../dominio/card-design/card-design';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**

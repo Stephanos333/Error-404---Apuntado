@@ -1,16 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 import { CardDesignControllerConstants } from './card-design.controller.constants';
 import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CardDesignService } from '../card-design.service';
+import { CardDesignService } from '../../aplicacion/card-design/card-design.service';
 import { AuthDecorator } from '../../security/auth.decorator';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
 import { GetActiveCardDesignsControllerResponse } from './responses/get-active-card-design.controller.response';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { UserService } from '../../user/user.service';
-import { User } from '../../user/user';
-import { UserId } from '../../user/user-id';
+import { UserService } from '../../aplicacion/user/user.service';
+import { User } from '../../dominio/user/user';
+import { UserId } from '../../dominio/user/user-id';
 import { GetCurrentCardDesignControllerResponse } from './responses/get-current-card-design.controller.response';
-import { CardDesign } from '../card-design';
+import { CardDesign } from '../../dominio/card-design/card-design';
 
 /**
  * Clase que contiene los puntos de entrada a la aplicación

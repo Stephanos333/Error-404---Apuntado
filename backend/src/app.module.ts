@@ -6,11 +6,13 @@ import { CardDesignModule } from './card-design/config/card-design.module';
 import { GameModule } from './game/config/game.module';
 import { PlayerModule } from './player/config/player.module';
 import { MatchModule } from './match/config/match.module';
+import { ReglasPluginsModule } from './reglas-plugins.module';
 
 /**
  * Clase que representa el módulo principal de la aplicación.\
  * Configura:
  * - La importación de las variables de entorno.
+ * - El registro global de plug-ins de reglas (microkernel, ADR-03).
  * - El módulo de los usuarios.
  * - El módulo de las sesiones.
  * - El módulo de los diseños de cartas.
@@ -21,6 +23,7 @@ import { MatchModule } from './match/config/match.module';
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
+		ReglasPluginsModule,
 		UserModule,
 		GameModule,
 		SecurityModule,

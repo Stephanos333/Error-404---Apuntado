@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlayerDTO } from '../../player';
+import { PlayerDTO } from '../../../dominio/player/player';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**

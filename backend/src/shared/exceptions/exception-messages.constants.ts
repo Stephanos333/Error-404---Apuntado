@@ -125,6 +125,15 @@ export enum ExceptionMessagesConstants {
 	 */
 	INVALID_GAME_REQUIRED_PLAYERS_ERROR = 'INVALID_GAME_REQUIRED_PLAYERS_ERROR',
 	/**
+	 * Se utiliza cuando se intenta crear un juego con una regla (plug-in)
+	 * que no está registrada.
+	 */
+	INVALID_GAME_RULE_ERROR = 'INVALID_GAME_RULE_ERROR',
+	/**
+	 * Se utiliza cuando se valida el parámetro "ruleId" y no es un string.
+	 */
+	GAME_RULE_MUST_BE_A_STRING_ERROR = 'GAME_RULE_MUST_BE_A_STRING_ERROR',
+	/**
 	 * Se utiliza cuando el estado de un juego no se encuentra en
 	 * el archivo de constantes.
 	 */

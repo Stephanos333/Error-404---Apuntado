@@ -1,5 +1,5 @@
 import { Connection, HydratedDocument, Model, Schema, SchemaDefinition } from 'mongoose';
-import { CardDesignDTO } from '../card-design/card-design';
+import { CardDesignRecord } from './database.records';
 import { FactoryProvider } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { DatabaseConstants } from './database.constants';
@@ -7,12 +7,12 @@ import { DatabaseConstants } from './database.constants';
 /**
  * Representa el modelo para interactuar con los diseños de cartas en mongodb.
  */
-export type CardDesignDocument = HydratedDocument<CardDesignDTO>;
+export type CardDesignDocument = HydratedDocument<CardDesignRecord>;
 
 /**
  * Representa la definición completa de un diseño de carta en mongodb.
  */
-const definition: Required<SchemaDefinition<CardDesignDTO>> = {
+const definition: Required<SchemaDefinition<CardDesignRecord>> = {
 	cardDesignId: {
 		type: String,
 		required: true,
@@ -47,9 +47,9 @@ const definition: Required<SchemaDefinition<CardDesignDTO>> = {
 
 /**
  * Constante que representa el esquema de los diseños de cartas.
- * @const {Schema<CardDesignDTO>}
+ * @const {Schema<CardDesignRecord>}
  */
-export const CardDesignSchema: Schema<CardDesignDTO> = new Schema<CardDesignDTO>(definition, { timestamps: true });
+export const CardDesignSchema: Schema<CardDesignRecord> = new Schema<CardDesignRecord>(definition, { timestamps: true });
 
 /**
  * Constante que representa la conexión del esquema de
@@ -58,8 +58,8 @@ export const CardDesignSchema: Schema<CardDesignDTO> = new Schema<CardDesignDTO>
 export const CardDesignSchemaProvider: FactoryProvider = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],
 	provide: DatabaseConstants.CARD_DESIGN_PROVIDER,
-	useFactory(connection: Connection): Model<CardDesignDocument> {
-		return connection.model<CardDesignDocument>(
+	useFactory(connection: Connection): Model<CardDesignRecord> {
+		return connection.model<CardDesignRecord>(
 			DatabaseConstants.CARD_DESIGN_COLLECTION_NAME, CardDesignSchema,
 		);
 	},

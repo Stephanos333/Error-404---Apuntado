@@ -1,10 +1,10 @@
 import { Schema, SchemaDefinition } from 'mongoose';
-import { CardDTO } from '../card/card';
+import { CardRecord } from './database.records';
 
 /**
  * Representa la definición completa de una carta en mongodb.
  */
-const definition: Required<SchemaDefinition<CardDTO>> = {
+const definition: Required<SchemaDefinition<CardRecord>> = {
 	type: {
 		type: String,
 		required: true,
@@ -18,4 +18,4 @@ const definition: Required<SchemaDefinition<CardDTO>> = {
 /**
  * Constante que representa el esquema de las cartas.
  */
-export const CardSchema: Schema<CardDTO> = new Schema<CardDTO>(definition, { timestamps: false, _id: false });
+export const CardSchema: Schema<CardRecord> = new Schema<CardRecord>(definition, { timestamps: false, _id: false });

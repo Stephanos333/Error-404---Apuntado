@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { PlayerJoinGameEvent } from './player-join-game.event';
+import { PlayerJoinGameEvent } from '../../../../dominio/events/player/player-join-game/player-join-game.event';
 import { GameSocket } from '../../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 

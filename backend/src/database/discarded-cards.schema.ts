@@ -1,11 +1,11 @@
 import { Schema, SchemaDefinition } from 'mongoose';
-import { DiscardedCardsDTO } from '../match/discarded-cards';
+import { DiscardedCardsRecord } from './database.records';
 import { CardWithDesignSchema } from './card-with-design.schema';
 
 /**
  * Representa la definición completa de las cartas desechadas en mongodb.
  */
-const definition: Required<SchemaDefinition<DiscardedCardsDTO>> = {
+const definition: Required<SchemaDefinition<DiscardedCardsRecord>> = {
 	cards: {
 		type: [CardWithDesignSchema],
 		required: true,
@@ -15,6 +15,6 @@ const definition: Required<SchemaDefinition<DiscardedCardsDTO>> = {
 /**
  * Constante que representa el esquema de las cartas desechadas.
  */
-export const DiscardedCardsSchema: Schema<DiscardedCardsDTO> = new Schema<DiscardedCardsDTO>(
+export const DiscardedCardsSchema: Schema<DiscardedCardsRecord> = new Schema<DiscardedCardsRecord>(
 	definition, { timestamps: false, _id: false },
 );

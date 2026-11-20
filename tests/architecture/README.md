@@ -27,8 +27,9 @@ backend, así que no necesitan `backend/node_modules` ni base de datos.
 
 ## Modo trinquete (*ratchet*) y línea base
 
-El prototipo actual tiene deuda estructural: un ciclo entre 8 módulos y el motor de cartas
-acoplado a NestJS. Esa deuda está registrada en `linea-base.json`.
+El prototipo del Entregable 2 tenía deuda estructural: un ciclo entre 8 módulos y el motor de
+cartas acoplado a NestJS. En el Entregable 3 (MVP) esa deuda se saldó y `linea-base.json`
+quedó vacío: `npm test` y `npm run test:estricto` dan el mismo resultado.
 
 - En el modo por defecto, las pruebas **toleran** esa deuda, pero **fallan ante cualquier
   violación nueva**. La arquitectura no puede empeorar.
@@ -40,9 +41,8 @@ acoplado a NestJS. Esa deuda está registrada en `linea-base.json`.
 
 Cada regla se prueba también contra código de ejemplo que la **cumple** y que la **viola**.
 Eso demuestra que la regla detecta lo que dice detectar y que no pasa "en vacío". Por
-ejemplo, FF-02 se valida con `fixtures/microkernel-con-violaciones/` mientras el backend
-real no tenga `backend/plugins/`. Sobre el backend real se activa sola cuando esa carpeta
-exista (ADR-03).
+ejemplo, FF-02 se valida con `fixtures/microkernel-con-violaciones/` y, desde el E3, también
+sobre el backend real: `backend/plugins/clasica/` y `backend/plugins/apuntado/` (ADR-03).
 
 ## Adaptar a la estructura objetivo
 

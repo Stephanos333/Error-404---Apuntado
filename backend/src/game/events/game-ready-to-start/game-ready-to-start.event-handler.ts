@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { GameReadyToStartEvent } from './game-ready-to-start.event';
+import { GameReadyToStartEvent } from '../../../dominio/events/game-ready-to-start/game-ready-to-start.event';
 import { GameSocket } from '../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 

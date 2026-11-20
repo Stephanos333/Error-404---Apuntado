@@ -1,36 +1,36 @@
-import { PlayerService } from '../player.service';
+import { PlayerService } from '../../aplicacion/player/player.service';
 import { Body, Controller, Get, Logger, Patch } from '@nestjs/common';
 import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PlayerControllerConstants } from './player.controller.constants';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { PlayerControllerResponse } from './responses/player.controller.response';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
-import { Player } from '../player';
+import { Player } from '../../dominio/player/player';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { UserId } from '../../user/user-id';
-import { User } from '../../user/user';
-import { UserService } from '../../user/user.service';
+import { UserId } from '../../dominio/user/user-id';
+import { User } from '../../dominio/user/user';
+import { UserService } from '../../aplicacion/user/user.service';
 import { GameDecorator } from '../../security/game.decorator';
-import { Game, GameDTO } from '../../game/game';
+import { Game, GameDTO } from '../../dominio/game/game';
 import { PassShiftCard, PassShiftControllerRequest } from './requests/pass-shift.controller.request';
 import { Card } from '../../card/card';
 import { Trips } from '../../card/trips';
 import { Quads } from '../../card/quads';
-import { Match } from '../../match/match';
-import { MatchService } from '../../match/match.service';
+import { Match } from '../../dominio/match/match';
+import { MatchService } from '../../aplicacion/match/match.service';
 import { EventBus } from '@nestjs/cqrs';
-import { MatchShiftChangedEvent } from '../../game/events/match/match-shift-changed/match-shift-changed.event';
+import { MatchShiftChangedEvent } from '../../dominio/events/match/match-shift-changed/match-shift-changed.event';
 import { CardWithDesign } from '../../card/card-with-design';
-import { MatchId } from '../../match/match-id';
-import { GameId } from '../../game/game-id';
-import { CardDeckFilledEvent } from '../../game/events/card/card-deck-filled/card-deck-filled.event';
+import { MatchId } from '../../dominio/match/match-id';
+import { GameId } from '../../dominio/game/game-id';
+import { CardDeckFilledEvent } from '../../dominio/events/card/card-deck-filled/card-deck-filled.event';
 import {
 	CardPulledFromDiscardedEvent,
-} from '../../game/events/card/card-pulled-from-discarded/card-pulled-from-discarded.event';
+} from '../../dominio/events/card/card-pulled-from-discarded/card-pulled-from-discarded.event';
 import { WinMatchCard, WinMatchControllerRequest } from './requests/win-match.controller.request';
-import { PlayerCantWinEvent } from '../../game/events/player/player-cant-win/player-cant-win.event';
+import { PlayerCantWinEvent } from '../../dominio/events/player/player-cant-win/player-cant-win.event';
 import { WinMatchControllerResponse } from './responses/win-match.controller.response';
-import { MatchWonEvent } from '../../game/events/match/match-won/match-won.event';
+import { MatchWonEvent } from '../../dominio/events/match/match-won/match-won.event';
 
 /**
  * El controlador de los jugadores.
@@ -186,7 +186,8 @@ export class PlayerController {
 		@GameDecorator() game: GameDTO,
 	): Promise<WinMatchControllerResponse> {
 		const response: WinMatchControllerResponse = new WinMatchControllerResponse();
-		const gameId: GameId = new GameId(game.gameId);
+		const currentGame: Game = Game.fromDTO(game);
+		const gameId: GameId = currentGame.gameId;
 		const match: Match = await this.matchService.getById(new MatchId(game.currentMatch));
 		const mapper = (c: WinMatchCard) =>
 			Card.fromDTO({
@@ -195,6 +196,7 @@ export class PlayerController {
 			});
 		const data = await this.playerService.winMatch(
 			new UserId(userDecorator.userId),
+			currentGame,
 			match,
 			body.trips1.map((c) => mapper(c)) as Trips,
 			body.trips2.map((c) => mapper(c)) as Trips,
@@ -205,7 +207,7 @@ export class PlayerController {
 			await this.matchService.update(data.match);
 			await this.eventBus.publish(new MatchWonEvent(gameId));
 			this.playerService
-				.updateLoserPlayers(gameId, data.player)
+				.updateLoserPlayers(currentGame, data.player)
 				.then((data) => {
 					// TODO: Definir lógica después de actualizar los jugadores.
 					console.log(data);

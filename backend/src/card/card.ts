@@ -1,15 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { DomainBase } from '../shared/domain.base';
 import { CardType } from './card-type';
 import { CardSuit } from './card-suit';
 
 /**
  * Clase que representa el objeto de transferencia de las cartas.
+ * Es código TypeScript puro (FF-05): la documentación OpenAPI vive en
+ * `dominio/card/card-api.dto.ts`.
  * @class
  */
 export class CardDTO {
-	@ApiProperty() type: string;
-	@ApiProperty() suit: string;
+	type: string;
+	suit: string;
 }
 
 /**

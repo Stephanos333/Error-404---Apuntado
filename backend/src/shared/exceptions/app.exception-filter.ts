@@ -1,7 +1,8 @@
 import { Response } from 'express';
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpArgumentsHost, RpcArgumentsHost, WsArgumentsHost } from '@nestjs/common/interfaces';
 import { Exception } from './exception';
+import { DomainException } from './domain.exception';
 import { ExceptionResponse, ExceptionResponseDTO } from './exception.response';
 import { Socket } from 'socket.io';
 import { SocketSharedConstants } from '../socket/socket-shared.constants';
@@ -85,6 +86,8 @@ export class AppExceptionFilter implements ExceptionFilter {
 		let response: ExceptionResponse;
 		if (exception instanceof Exception) {
 			response = ExceptionResponse.fromExceptionBase(exception);
+		} else if (exception instanceof DomainException) {
+			response = new ExceptionResponse(exception.customMessage, HttpStatus.BAD_REQUEST);
 		} else {
 			response = new ExceptionResponse(
 				AppExceptionFilter.resolveMessage(exception),

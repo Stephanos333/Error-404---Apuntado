@@ -1,5 +1,5 @@
 import { Connection, HydratedDocument, Model, Schema, SchemaDefinition } from 'mongoose';
-import { PlayerDTO } from '../player/player';
+import { PlayerRecord } from './database.records';
 import { CardSchema } from './card.schema';
 import { FactoryProvider } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
@@ -8,12 +8,12 @@ import { DatabaseConstants } from './database.constants';
 /**
  * Representa el modelo para interactuar con los jugadores en mongodb.
  */
-export type PlayerDocument = HydratedDocument<PlayerDTO>;
+export type PlayerDocument = HydratedDocument<PlayerRecord>;
 
 /**
  * Representa la definición completa de un jugador en mongodb.
  */
-const definition: Required<SchemaDefinition<PlayerDTO>> = {
+const definition: Required<SchemaDefinition<PlayerRecord>> = {
 	cardsMap: {
 		of: Number,
 		type: Schema.Types.Map,
@@ -78,9 +78,9 @@ const definition: Required<SchemaDefinition<PlayerDTO>> = {
 
 /**
  * Constante que representa el esquema de los jugadores.
- * @const {Schema<PlayerDTO>}
+ * @const {Schema<PlayerRecord>}
  */
-export const PlayerSchema: Schema<PlayerDTO> = new Schema<PlayerDTO>(definition, {
+export const PlayerSchema: Schema<PlayerRecord> = new Schema<PlayerRecord>(definition, {
 	timestamps: true,
 });
 
@@ -91,8 +91,8 @@ export const PlayerSchema: Schema<PlayerDTO> = new Schema<PlayerDTO>(definition,
 export const PlayerSchemaProvider: FactoryProvider = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],
 	provide: DatabaseConstants.PLAYER_PROVIDER,
-	useFactory(connection: Connection): Model<PlayerDocument> {
-		return connection.model<PlayerDocument>(
+	useFactory(connection: Connection): Model<PlayerRecord> {
+		return connection.model<PlayerRecord>(
 			DatabaseConstants.PLAYER_COLLECTION_NAME, PlayerSchema,
 		);
 	},

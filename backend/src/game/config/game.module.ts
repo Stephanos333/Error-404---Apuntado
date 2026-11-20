@@ -1,33 +1,22 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { DatabaseModule } from '../../database/database.module';
-import { GameService } from '../game.service';
-import { GameController } from '../controller/game.controller';
-import { UserModule } from '../../user/config/user.module';
-import { PlayerModule } from '../../player/config/player.module';
-import { GameSocket } from '../socket/game.socket';
+import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { AplicacionModule } from '../../aplicacion/aplicacion.module';
+import { GameController } from '../controller/game.controller';
+import { GameSocket } from '../socket/game.socket';
 import Events from '../events';
-import { MatchModule } from '../../match/config/match.module';
-
 /**
  * Clase que representa el módulo de los juegos y sus respectivas
  * configuraciones.
  * Configura:
  * - Los controladores de los juegos.
- * - Los servicios de los juegos.
+ * - El gateway WebSocket de los juegos y los manejadores de eventos que lo notifican.
+ * Los servicios los provee el módulo de aplicación.
  * @class
  */
 @Module({
-	imports: [
-		DatabaseModule,
-		CqrsModule,
-		forwardRef(() => UserModule),
-		forwardRef(() => MatchModule),
-		forwardRef(() => PlayerModule),
-	],
+	imports: [AplicacionModule, CqrsModule],
 	controllers: [GameController],
-	providers: [GameService, GameSocket, ...Events],
-	exports: [GameService, GameSocket],
+	providers: [GameSocket, ...Events],
 })
 export class GameModule {
 }

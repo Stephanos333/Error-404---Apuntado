@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserDTO } from '../../user';
+import { UserDTO } from '../../../dominio/user/user';
 import { Exclude } from 'class-transformer';
 import { DefaultResponse } from '../../../shared/default.response';
 

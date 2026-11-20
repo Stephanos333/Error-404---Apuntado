@@ -1,16 +1,17 @@
 import { Card, CardDTO } from './card';
-import { CardDesignId } from '../card-design/card-design-id';
+import { CardDesignId } from './card-design-id';
 import { CardType } from './card-type';
 import { CardSuit } from './card-suit';
-import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * El objeto de transferencia de datos de una carta con diseño.
+ * Es código TypeScript puro (FF-05): la documentación OpenAPI vive en
+ * `dominio/card/card-api.dto.ts`.
  * @extends CardDTO La clase básica de las cartas.
  */
 export class CardWithDesignDTO extends CardDTO {
-	@ApiProperty() cardDesignId: string;
-	@ApiProperty() cardDesignName: string;
+	cardDesignId: string;
+	cardDesignName: string;
 }
 
 /**

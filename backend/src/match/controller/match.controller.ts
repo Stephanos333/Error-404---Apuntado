@@ -1,4 +1,4 @@
-import { MatchService } from '../match.service';
+import { MatchService } from '../../aplicacion/match/match.service';
 import { Controller, Post } from '@nestjs/common';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -6,10 +6,10 @@ import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response
 import { MatchControllerConstants } from './match.controller.constants';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
 import { GameDecorator } from '../../security/game.decorator';
-import { Game, GameDTO } from '../../game/game';
-import { UserId } from '../../user/user-id';
+import { Game, GameDTO } from '../../dominio/game/game';
+import { UserId } from '../../dominio/user/user-id';
 import { DefaultResponse } from '../../shared/default.response';
-import { GameService } from '../../game/game.service';
+import { GameService } from '../../aplicacion/game/game.service';
 
 /**
  * Clase que contiene los puntos de entrada de la aplicación para las partidas.

@@ -11,14 +11,14 @@ import { Logger, UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { GameDecorator } from '../../security/game.decorator';
-import { Game, GameDTO } from '../game';
+import { Game, GameDTO } from '../../dominio/game/game';
 import { AppExceptionFilter } from '../../shared/exceptions/app.exception-filter';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { User, UserDTO } from '../../user/user';
-import { Player, PlayerDTO } from '../../player/player';
-import { PlayerWithUserDTO } from '../../player/player-with-user.dto';
-import { Match } from '../../match/match';
-import { GameId } from '../game-id';
+import { User, UserDTO } from '../../dominio/user/user';
+import { Player, PlayerDTO } from '../../dominio/player/player';
+import { PlayerWithUserDTO } from '../../dominio/player/player-with-user.dto';
+import { Match } from '../../dominio/match/match';
+import { GameId } from '../../dominio/game/game-id';
 
 /**
  * Websocket con socket.io para manejar los eventos de los juegos.

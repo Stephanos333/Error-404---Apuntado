@@ -1,10 +1,10 @@
 import { CanActivate, ContextType, ExecutionContext, Injectable, Logger } from '@nestjs/common';
-import { GameService } from '../../game/game.service';
-import { Game } from '../../game/game';
-import { UserIsNotPartOfAGameException } from '../../user/exceptions/user-is-not-part-of-a-game.exception';
+import { GameService } from '../../aplicacion/game/game.service';
+import { Game } from '../../dominio/game/game';
+import { UserIsNotPartOfAGameException } from '../../dominio/user/exceptions/user-is-not-part-of-a-game.exception';
 import { Socket } from 'socket.io';
 import { UserDecoratorType } from '../user.decorator';
-import { UserId } from '../../user/user-id';
+import { UserId } from '../../dominio/user/user-id';
 
 /**
  * Clase que contiene los métodos para la guardia de los juegos.

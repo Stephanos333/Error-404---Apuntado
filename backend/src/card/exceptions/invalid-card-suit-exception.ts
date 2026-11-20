@@ -1,17 +1,13 @@
-import { Exception } from '../../shared/exceptions/exception';
+import { DomainException } from '../../shared/exceptions/domain.exception';
 import { ExceptionMessagesConstants } from '../../shared/exceptions/exception-messages.constants';
-import { HttpStatus } from '@nestjs/common';
-
 /**
  * Se lanza cuando la pinta de una carta no es válida.
+ * Es una excepción de dominio pura: el filtro global la traduce a HTTP 400.
  * @class
- * @extends Exception
+ * @extends DomainException
  */
-export class InvalidCardSuitException extends Exception {
+export class InvalidCardSuitException extends DomainException {
 	constructor() {
-		super(
-			ExceptionMessagesConstants.INVALID_CARD_SUIT_ERROR,
-			HttpStatus.BAD_REQUEST,
-		);
+		super(ExceptionMessagesConstants.INVALID_CARD_SUIT_ERROR);
 	}
 }

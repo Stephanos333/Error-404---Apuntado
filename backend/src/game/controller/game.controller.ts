@@ -1,4 +1,4 @@
-import { GameService } from '../game.service';
+import { GameService } from '../../aplicacion/game/game.service';
 import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import { GameControllerConstants } from './game.controller.constants';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -7,19 +7,19 @@ import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response
 import { GameControllerResponse } from './responses/game.controller.response';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
 import { CreateGameControllerRequest } from './requests/create-game.controller.request';
-import { Game, GameDTO } from '../game';
-import { UserId } from '../../user/user-id';
+import { Game, GameDTO } from '../../dominio/game/game';
+import { UserId } from '../../dominio/user/user-id';
 import { GetPublicGamesControllerResponse } from './responses/get-public-games.controller.response';
 import { GetCurrentGameControllerResponse } from './responses/get-current-game.controller.response';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { GameDecorator } from '../../security/game.decorator';
-import { PlayerService } from '../../player/player.service';
-import { GameId } from '../game-id';
+import { PlayerService } from '../../aplicacion/player/player.service';
+import { GameId } from '../../dominio/game/game-id';
 import { JoinGameControllerRequest } from './requests/join-game-controller.request';
-import { GameStatusConstants } from '../game-status.constants';
-import { MatchService } from '../../match/match.service';
-import { MatchId } from '../../match/match-id';
-import { Match } from '../../match/match';
+import { GameStatusConstants } from '../../dominio/game/game-status.constants';
+import { MatchService } from '../../aplicacion/match/match.service';
+import { MatchId } from '../../dominio/match/match-id';
+import { Match } from '../../dominio/match/match';
 
 /**
  * Clase que contiene los puntos de entrada a la aplicación

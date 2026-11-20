@@ -1,7 +1,7 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { SessionService } from '../session.service';
-import { UserDTO } from '../../user/user';
+import { UserDTO } from '../../dominio/user/user';
 import { Injectable } from '@nestjs/common';
 
 /**

@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { CardPulledFromDiscardedEvent } from './card-pulled-from-discarded.event';
+import { CardPulledFromDiscardedEvent } from '../../../../dominio/events/card/card-pulled-from-discarded/card-pulled-from-discarded.event';
 import { GameSocket } from '../../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 

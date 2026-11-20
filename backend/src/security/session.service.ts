@@ -1,8 +1,8 @@
-import { UserService } from '../user/user.service';
-import { User } from '../user/user';
+import { UserService } from '../aplicacion/user/user.service';
+import { User } from '../dominio/user/user';
 import { Injectable, Logger } from '@nestjs/common';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { UserId } from '../user/user-id';
+import { UserId } from '../dominio/user/user-id';
 import { JwtService } from '@nestjs/jwt';
 import { UserDecoratorType } from './user.decorator';
 import { ExceptionMessagesConstants } from '../shared/exceptions/exception-messages.constants';

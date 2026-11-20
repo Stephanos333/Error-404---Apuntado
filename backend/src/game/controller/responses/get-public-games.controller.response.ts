@@ -1,6 +1,6 @@
 import { DefaultResponse } from '../../../shared/default.response';
 import { ApiProperty } from '@nestjs/swagger';
-import { GameDTO } from '../../game';
+import { GameDTO } from '../../../dominio/game/game';
 
 /**
  * Clase que representa la respuesta del controlador para buscar

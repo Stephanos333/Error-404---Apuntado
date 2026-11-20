@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
@@ -29,4 +29,11 @@ export class CreateGameControllerRequest {
 	@IsString({ message: ExceptionMessagesConstants.GAME_NAME_MUST_BE_A_STRING_ERROR })
 	@IsNotEmpty({ message: ExceptionMessagesConstants.GAME_NAME_IS_REQUIRED_ERROR })
 		name: string;
+	@ApiProperty({
+		required: false,
+		description: 'Id del plug-in de reglas (p. ej. "clasica" o "apuntado"). Si se omite se usa la regla predeterminada.',
+	})
+	@IsOptional()
+	@IsString({ message: ExceptionMessagesConstants.GAME_RULE_MUST_BE_A_STRING_ERROR })
+		ruleId?: string;
 }

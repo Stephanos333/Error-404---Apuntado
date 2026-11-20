@@ -40,8 +40,16 @@ export const RAIZ_MODULOS = BACKEND_SRC;
 /** FF-04. Complejidad ciclomática de los evaluadores de combinaciones de cartas. */
 export const COMPLEJIDAD = {
 	umbral: 10,
-	/** Prototipo: tablas en `card/` y validación en `player/player.service.ts`. Objetivo: `reglas/` y plug-ins. */
-	evaluadores: ['backend/src/card/**/*.ts', 'backend/src/player/player.service.ts', 'backend/src/reglas/**/*.ts', 'backend/plugins/**/*.ts'],
+	/**
+	 * E3: el evaluador algorítmico vive en `reglas/evaluador/`, los plug-ins en `plugins/` y el
+	 * orquestador que los usa en `aplicacion/player/player.service.ts` (antes `player/`).
+	 */
+	evaluadores: [
+		'backend/src/card/**/*.ts',
+		'backend/src/aplicacion/player/player.service.ts',
+		'backend/src/reglas/**/*.ts',
+		'backend/plugins/**/*.ts',
+	],
 	/** Umbral general (informativo) para el resto del backend. */
 	umbralGeneral: 15,
 };
