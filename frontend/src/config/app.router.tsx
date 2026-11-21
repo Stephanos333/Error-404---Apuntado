@@ -1,4 +1,4 @@
-import {createBrowserRouter, Navigate} from 'react-router-dom';
+import {createHashRouter, Navigate} from 'react-router-dom';
 import {DefaultPage} from '../pages/default/default.page.tsx';
 import {LoginGuard} from './login.guard.tsx';
 import {HomePage} from '../pages/home/home.page.tsx';
@@ -54,7 +54,7 @@ export enum RoutesConstants {
  * componentes que renderiza.
  * @const
  */
-export const AppRouter = createBrowserRouter([
+export const AppRouter = createHashRouter([
     {
         path: RoutesConstants.SHOW_MATCH_WINNER,
         // Al finalizar la partida el usuario deja de estar "jugando": basta con la sesión.
