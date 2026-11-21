@@ -39,7 +39,7 @@ export class PlayerDTO {
 export class Player extends DomainBase<PlayerDTO> {
 	private readonly _gameId: GameId;
 	private readonly _playerId: PlayerId;
-	private readonly userId: UserId;
+	public readonly userId: UserId;
 	private _isActive: boolean;
 	private _triedToWin: boolean;
 	private readonly _status: PlayerStatus;

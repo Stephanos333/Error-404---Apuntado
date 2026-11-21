@@ -39,7 +39,7 @@ export class User extends DomainBase<UserDTO> {
 	public currentDesignName: string;
 	public readonly cardDesigns: Set<string>;
 	public icon: UserIcon;
-	private readonly status: UserStatus;
+	public readonly status: UserStatus;
 	private readonly username: string;
 	private tokens: number;
 

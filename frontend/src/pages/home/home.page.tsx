@@ -1,4 +1,5 @@
 import {JSX, useEffect, useState} from 'react';
+import {Button} from '@mui/material';
 import {VerticalLineComponent} from '../../components/vertical-line/vertical-line.component.tsx';
 import {HomeHeaderComponent} from './ui/header/home-header.component.tsx';
 import './home.page.css';
@@ -69,6 +70,47 @@ export function HomePage(): JSX.Element {
                     user={user}
                     openIProfileConfigModel={openProfileConfigModal}
                 />
+                {user?.status === 'PLAYING' && (
+                    <div style={{
+                        gridColumn: '1 / -1',
+                        backgroundColor: '#2e1c0c',
+                        border: '2px solid #ff9800',
+                        borderRadius: '12px',
+                        padding: '16px 24px',
+                        margin: '10px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        color: '#ffb74d',
+                        zIndex: 10,
+                    }}>
+                        <div>
+                            <strong style={{ fontSize: '1.1rem', color: '#ffa726' }}>⚠️ Tienes una partida o sala de espera en curso.</strong>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#e0e0e0' }}>
+                                Puedes volver a la sala de espera para jugar o cancelarla para liberar tu cuenta.
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <Button
+                                variant='contained'
+                                color='warning'
+                                onClick={() => { window.location.hash = '/game/waiting'; }}
+                            >
+                                Reanudar sala
+                            </Button>
+                            <Button
+                                variant='outlined'
+                                color='error'
+                                onClick={async () => {
+                                    await backendUtils.delete(BackendConstants.GET_CURRENT_GAME_URL);
+                                    window.location.reload();
+                                }}
+                            >
+                                Cancelar sala
+                            </Button>
+                        </div>
+                    </div>
+                )}
                 <CreateGameComponent/>
                 <VerticalLineComponent id='home-page-vertical-line'/>
                 <JoinGameComponent/>

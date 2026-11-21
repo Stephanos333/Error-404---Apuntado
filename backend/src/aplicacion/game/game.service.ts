@@ -212,4 +212,73 @@ export class GameService {
 		this.logger.log(`[${this.update.name}] FINISH ::`);
 		return mapped;
 	}
+
+	/**
+	 * Permite a un usuario cancelar o abandonar una sala de espera,
+	 * liberando su estado a ACTIVE y limpiando los registros pendientes.
+	 * @param {UserId} userId El usuario que solicita salir o cancelar.
+	 * @returns {Promise<{ message: string }>} Mensaje de confirmación.
+	 */
+	async leaveOrCancel(userId: UserId): Promise<{ message: string }> {
+		this.logger.log(`[${this.leaveOrCancel.name}] INIT :: userId: ${userId.toString()}`);
+		const user = await this.userService.getById(userId);
+		const player = await this.playerService.getActiveByUserId(userId, false);
+
+		if (!player) {
+			if (user.status.is(UserStatusConstants.PLAYING)) {
+				user.changeStatus(UserStatusConstants.ACTIVE);
+				await this.userService.update(user);
+			}
+			return { message: 'Usuario liberado con éxito.' };
+		}
+
+		let game: Game | undefined;
+		try {
+			game = await this.getById(new GameId(player.gameId.toString()), false);
+		} catch {
+			game = undefined;
+		}
+
+		if (game && !game.wasInitiated) {
+			const isHost = game.creatorId.toString() === userId.toString() || game.hostId.toString() === userId.toString();
+			if (isHost) {
+				const allPlayers = await this.playerService.getByGame(game.gameId);
+				for (const p of allPlayers) {
+					p.isActive = false;
+					await this.playerService.update(p);
+					try {
+						const u = await this.userService.getById(p.userId);
+						if (u.status.is(UserStatusConstants.PLAYING)) {
+							u.changeStatus(UserStatusConstants.ACTIVE);
+							await this.userService.update(u);
+						}
+					} catch (e) {
+						this.logger.warn(`No se pudo actualizar estado de usuario ${p.userId.toString()}: ${e}`);
+					}
+				}
+				await this.model.deleteOne({ gameId: game.gameId.toString() });
+				this.logger.log(`[${this.leaveOrCancel.name}] Sala ${game.gameId.toString()} cancelada por el host.`);
+			} else {
+				player.isActive = false;
+				await this.playerService.update(player);
+				if (user.status.is(UserStatusConstants.PLAYING)) {
+					user.changeStatus(UserStatusConstants.ACTIVE);
+					await this.userService.update(user);
+				}
+				game.removePlayer();
+				await this.update(game);
+				this.logger.log(`[${this.leaveOrCancel.name}] Jugador ${userId.toString()} abandonó la sala.`);
+			}
+		} else {
+			player.isActive = false;
+			await this.playerService.update(player);
+			if (user.status.is(UserStatusConstants.PLAYING)) {
+				user.changeStatus(UserStatusConstants.ACTIVE);
+				await this.userService.update(user);
+			}
+		}
+
+		this.logger.log(`[${this.leaveOrCancel.name}] FINISH ::`);
+		return { message: 'Partida cancelada o abandonada con éxito.' };
+	}
 }

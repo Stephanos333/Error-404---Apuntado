@@ -62,6 +62,21 @@ Si el enlace no funciona, copia y pega la URL en tu navegador. ¡Te esperamos pa
         ).then(() => setLoading(false));
     };
 
+    /**
+     * Método para cancelar o abandonar la sala de espera actual.
+     */
+    const cancelGame = async (): Promise<void> => {
+        const backendUtils: BackendUtils = new BackendUtils((message) => {
+            setLoading(false);
+            setAlertType(AlertTypeConstants.ERROR_ALERT);
+            setAlertMessage(message);
+        });
+        setLoading(true);
+        await backendUtils.delete(BackendConstants.GET_CURRENT_GAME_URL);
+        setLoading(false);
+        window.location.hash = RoutesConstants.HOME_ROUTE;
+    };
+
     return (
         <>
             <div id='waiting-game-actions-component-container' className='component-container'>
@@ -82,6 +97,16 @@ Si el enlace no funciona, copia y pega la URL en tu navegador. ¡Te esperamos pa
                         >Iniciar</Button>
                         : <></>
                 }
+                <Button
+                    id='waiting-game-actions-component-cancel-button'
+                    variant='outlined'
+                    color='error'
+                    onClick={() => cancelGame()}
+                    disabled={loading}
+                    style={{ marginLeft: '12px' }}
+                >
+                    {props.game && userId && userId === props.game.hostId ? 'Cancelar sala' : 'Salir de la sala'}
+                </Button>
             </div>
             <AlertComponent
                 type={alertType}

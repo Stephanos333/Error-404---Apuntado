@@ -113,6 +113,32 @@ export class BackendUtils {
     }
 
     /**
+     * Método delete que permite acceder al backend.
+     * @template Res El tipo de la respuesta del servicio.
+     * @param {BackendConstants} url
+     * @param {number} [attempts=0] Define la cantidad de intentos del servicio.
+     * @returns {Promise<Res | undefined>} La respuesta del servicio.
+     */
+    public async delete<Res>(
+        url: BackendConstants,
+        attempts: number = 0
+    ): Promise<Res | undefined> {
+        const serviceConfig: BackendConfigType = BackendConfigConstants[url];
+        return axios.delete<Res>(url, BackendUtils.buildRequestConfig(serviceConfig))
+            .then((data: AxiosResponse): Res => data.data)
+            .catch(async (e: ErrorResponseType) => {
+                if (BackendUtils.resolveIfRetry(serviceConfig, e, attempts)) {
+                    return this.refreshAccessToken().then(() => {
+                        attempts += 1;
+                        return this.delete<Res>(url, attempts++);
+                    });
+                }
+                this.processError(serviceConfig, e);
+                return undefined;
+            });
+    }
+
+    /**
      * Método que permite mapear procesar los errores de los servicios.
      * @param {BackendConfigType} serviceConfig La configuración del servicio.
      * @param {ErrorResponseType} e El error del servicio.

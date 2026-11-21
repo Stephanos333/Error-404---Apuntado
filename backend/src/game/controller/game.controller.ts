@@ -1,5 +1,5 @@
 import { GameService } from '../../aplicacion/game/game.service';
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
 import { GameControllerConstants } from './game.controller.constants';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDecorator } from '../../security/auth.decorator';
@@ -17,6 +17,7 @@ import { PlayerService } from '../../aplicacion/player/player.service';
 import { GameId } from '../../dominio/game/game-id';
 import { JoinGameControllerRequest } from './requests/join-game-controller.request';
 import { TurnOrchestrator } from '../../aplicacion/partida/turn-orchestrator.service';
+import { DefaultResponse } from '../../shared/default.response';
 
 /**
  * Clase que contiene los puntos de entrada a la aplicación
@@ -123,5 +124,21 @@ export class GameController {
 		const data: Game = await this.service.join(new GameId(body.gameId), new UserId(user.userId));
 		response.data = data.toDTO();
 		return response;
+	}
+
+	/**
+	 * Controlador DELETE que permite cancelar o abandonar la sala de espera actual.
+	 * @param {UserDecoratorType} user El usuario autenticado.
+	 * @returns {Promise<DefaultResponse>} La respuesta de la operación.
+	 */
+	@Delete(GameControllerConstants.GET_CURRENT_GAME_DETAIL_URL)
+	@AuthDecorator()
+	@ApiOkResponse({ type: DefaultResponse })
+	@ApiResponse({ type: ExceptionResponseDTO })
+	async cancelCurrentGame(
+		@UserDecorator() user: UserDecoratorType,
+	): Promise<DefaultResponse> {
+		await this.service.leaveOrCancel(new UserId(user.userId));
+		return new DefaultResponse();
 	}
 }

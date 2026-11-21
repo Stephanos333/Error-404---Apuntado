@@ -168,6 +168,16 @@ export class Game extends DomainBase<GameDTO> {
 	}
 
 	/**
+	 * Función que permite remover un jugador del juego en sala de espera.
+	 */
+	removePlayer(): void {
+		if (this._currentPlayers > 0) this._currentPlayers--;
+		if (this.status.is(GameStatusConstants.WAITING_TO_START)) {
+			this.changeStatus(GameStatusConstants.WAITING_PLAYERS);
+		}
+	}
+
+	/**
 	 * Función que permite cambiar el estado de un juego, haciendo las
 	 * respectivas validaciones.
 	 * @param {GameStatusConstants} status El nuevo estado del juego.
