@@ -27,11 +27,13 @@ export function WaitingGameActionsComponent(props: { game: GameType | undefined 
     const userId: string | null = LocaleStorageUtils.get<LocaleStorageConstants.KEY_USER_ID>(LocaleStorageConstants.KEY_USER_ID);
 
     const copyOnClipboard = (): void => {
+        const baseUrl = window.location.origin;
+        const joinUrl = `${baseUrl}/#${RoutesConstants.JOIN_GAME}?gameId=${props.game?.gameId}`;
         const message: string = `
 ¡Únete a nuestra partida de cartas!
 
 Haz clic en el enlace a continuación para unirte a la partida:
-${import.meta.env.VITE_FRONTEND_BASE_URL}${RoutesConstants.JOIN_GAME}?gameId=${props.game?.gameId}
+${joinUrl}
 
 Si el enlace no funciona, copia y pega la URL en tu navegador. ¡Te esperamos para una emocionante partida!`;
 

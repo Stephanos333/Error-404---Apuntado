@@ -64,6 +64,26 @@ export class PlayerService {
 	}
 
 	/**
+	 * Elimina un jugador de la base de datos (por ejemplo, al abandonar sala de espera).
+	 * @param {PlayerId} playerId El jugador a eliminar.
+	 */
+	async delete(playerId: PlayerId): Promise<void> {
+		this.logger.log(`[${this.delete.name}] INIT :: id: ${playerId.toString()}`);
+		await this.model.deleteOne({ playerId: playerId.toString() });
+		this.logger.log(`[${this.delete.name}] FINISH ::`);
+	}
+
+	/**
+	 * Elimina todos los jugadores de un juego (por ejemplo, al cancelar sala de espera).
+	 * @param {GameId} gameId El juego cuyos jugadores se eliminarán.
+	 */
+	async deleteByGame(gameId: GameId): Promise<void> {
+		this.logger.log(`[${this.deleteByGame.name}] INIT :: gameId: ${gameId.toString()}`);
+		await this.model.deleteMany({ gameId: gameId.toString() });
+		this.logger.log(`[${this.deleteByGame.name}] FINISH ::`);
+	}
+
+	/**
 	 * Función que permite buscar un jugador por su userId y validar su existencia.
 	 * @param {UserId} userId El jugador que se solicita.
 	 * @param {boolean} [throwExceptionIfNotFound=true] Bandera para determinar si se debe lanzar

@@ -15,7 +15,13 @@ export class UserIcon extends DiscreteValueObject {
 	 * @static
 	 */
 	static generate(): string {
-		const icons: Array<string> = Object.values(UserIconConstants);
+		const icons: Array<string> = [
+			UserIconConstants.ICON1,
+			UserIconConstants.ICON2,
+			UserIconConstants.ICON3,
+			UserIconConstants.ICON4,
+			UserIconConstants.ICON5,
+		];
 		return icons[Math.floor(Math.random() * icons.length)];
 	}
 

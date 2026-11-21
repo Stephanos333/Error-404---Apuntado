@@ -35,20 +35,41 @@ export function WaitingGamePage(): JSX.Element {
      */
     const {socket, connectWebSocket} = useWebSocket();
     useEffect(() => {
-        if (!socket) connectWebSocket();
-    }, []);
-    if (socket) {
+        if (!socket) {
+            connectWebSocket();
+            return;
+        }
+
         socket.emit(SocketConstants.GAME_CONNECTION_EVENT);
-        socket.on(SocketConstants.JOIN_PLAYER_LISTENER, (newPlayer: PlayerWithUserType) => {
-            setPlayers(players ? [...players, newPlayer] : [newPlayer]);
-        });
-        socket.on(SocketConstants.GAME_READY_TO_START_LISTENER, (game: GameType) => {
-            setGame(game);
-        });
-        socket.on(SocketConstants.MATCH_STARTED_LISTENER, () => {
+
+        const handleJoinPlayer = (newPlayer: PlayerWithUserType) => {
+            setPlayers((prev) => {
+                const list = prev || [];
+                if (list.some((p) => p.userId === newPlayer.userId)) {
+                    return list.map((p) => (p.userId === newPlayer.userId ? newPlayer : p));
+                }
+                return [...list, newPlayer];
+            });
+        };
+
+        const handleGameReady = (readyGame: GameType) => {
+            setGame(readyGame);
+        };
+
+        const handleMatchStarted = () => {
             setRedirect(true);
-        });
-    }
+        };
+
+        socket.on(SocketConstants.JOIN_PLAYER_LISTENER, handleJoinPlayer);
+        socket.on(SocketConstants.GAME_READY_TO_START_LISTENER, handleGameReady);
+        socket.on(SocketConstants.MATCH_STARTED_LISTENER, handleMatchStarted);
+
+        return () => {
+            socket.off(SocketConstants.JOIN_PLAYER_LISTENER, handleJoinPlayer);
+            socket.off(SocketConstants.GAME_READY_TO_START_LISTENER, handleGameReady);
+            socket.off(SocketConstants.MATCH_STARTED_LISTENER, handleMatchStarted);
+        };
+    }, [socket]);
 
     /**
      * Hooks para la configuración del componente:
@@ -67,19 +88,37 @@ export function WaitingGamePage(): JSX.Element {
     );
 
     /**
-     * Hook que consume el backend para traer el juego actual del usuario.
+     * Hook que consume el backend para traer el juego actual del usuario
+     * con polling cada 2s para sincronizar altas y bajas de jugadores en tiempo real.
      */
     useEffect(() => {
+        let isMounted = true;
+
         async function fetchData(): Promise<void> {
             const res = await backendUtils.get<GetCurrentGameDetailResponse, never>(BackendConstants.GET_CURRENT_GAME_URL);
-            if (res) {
+            if (!isMounted) return;
+            if (res && res.game) {
                 if (res.game.status === GameConstants.GAME_STATUS_ACTIVE) setRedirect(true);
                 setGame(res.game);
-                setPlayers(res.players);
+                const uniquePlayers: PlayerWithUserType[] = [];
+                const seenUserIds = new Set<string>();
+                for (const p of res.players || []) {
+                    if (p.isActive !== false && !seenUserIds.has(p.userId)) {
+                        seenUserIds.add(p.userId);
+                        uniquePlayers.push(p);
+                    }
+                }
+                setPlayers(uniquePlayers);
             }
         }
 
         fetchData().then();
+        const intervalId = setInterval(fetchData, 2000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
     }, []);
 
     return (

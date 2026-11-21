@@ -115,8 +115,7 @@ export function ProfileConfigComponent(
                                 <h1>Diseños disponibles:</h1>
                                 <div id='profile-config-modal-photo-option-container'>
                                     {
-                                        ['ICON1', 'ICON2', 'ICON3', 'ICON4', 'ICON5', 'ICON6', 'ICON7', 'ICON8', 'ICON9',
-                                            'ICON10', 'ICON11', 'ICON12'].map((icon) => {
+                                        ['ICON1', 'ICON2', 'ICON3', 'ICON4', 'ICON5'].map((icon) => {
                                             return (
                                                 <img
                                                     id={'profile-config-modal-photo-option' + icon}

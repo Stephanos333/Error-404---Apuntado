@@ -20,6 +20,7 @@ export abstract class PlayerQueries {
 			{
 				'$match': {
 					'gameId': gameId.toString(),
+					'isActive': true,
 				},
 			}, {
 				'$lookup': {

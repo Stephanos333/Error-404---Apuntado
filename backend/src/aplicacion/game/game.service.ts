@@ -244,8 +244,6 @@ export class GameService {
 			if (isHost) {
 				const allPlayers = await this.playerService.getByGame(game.gameId);
 				for (const p of allPlayers) {
-					p.isActive = false;
-					await this.playerService.update(p);
 					try {
 						const u = await this.userService.getById(p.userId);
 						if (u.status.is(UserStatusConstants.PLAYING)) {
@@ -256,11 +254,11 @@ export class GameService {
 						this.logger.warn(`No se pudo actualizar estado de usuario ${p.userId.toString()}: ${e}`);
 					}
 				}
+				await this.playerService.deleteByGame(game.gameId);
 				await this.model.deleteOne({ gameId: game.gameId.toString() });
 				this.logger.log(`[${this.leaveOrCancel.name}] Sala ${game.gameId.toString()} cancelada por el host.`);
 			} else {
-				player.isActive = false;
-				await this.playerService.update(player);
+				await this.playerService.delete(player.playerId);
 				if (user.status.is(UserStatusConstants.PLAYING)) {
 					user.changeStatus(UserStatusConstants.ACTIVE);
 					await this.userService.update(user);
@@ -270,8 +268,7 @@ export class GameService {
 				this.logger.log(`[${this.leaveOrCancel.name}] Jugador ${userId.toString()} abandonó la sala.`);
 			}
 		} else {
-			player.isActive = false;
-			await this.playerService.update(player);
+			await this.playerService.delete(player.playerId);
 			if (user.status.is(UserStatusConstants.PLAYING)) {
 				user.changeStatus(UserStatusConstants.ACTIVE);
 				await this.userService.update(user);
