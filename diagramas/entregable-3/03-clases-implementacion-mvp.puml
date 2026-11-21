@@ -1,0 +1,622 @@
+@startuml 03-clases-implementacion-mvp
+' E3 · 1.3 · Clases de implementación del MVP (ver docs/capitulo-1-modelado-uml.md).
+title Sistema Apuntado · Diagrama de clases de implementación del MVP (UML 2.5)\n<size:11>Microkernel con inversión de dependencias</size>
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide empty members
+left to right direction
+scale max 4000 width
+hide circle
+
+package "src/reglas/contrato" as CONTRATO {
+
+  interface ReglaJuegoPlugin <<interface>> {
+    + descriptor : DescriptorRegla {readOnly}
+    + configuracionReparto() : ConfiguracionReparto
+    + cierresPermitidos() : ReadonlyArray<TipoCierre>
+    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
+    + efectoCierre(resultado : ResultadoValidacion, tipo : TipoCierre) : EfectoCierre
+    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
+    + evaluarDesenlace(marcador : Marcador, cerradorId : string) : Desenlace
+  }
+
+  class DescriptorRegla <<interface>> {
+    + id : string {readOnly}
+    + nombre : string {readOnly}
+    + version : string {readOnly}
+    + versionContrato : string {readOnly}
+    + multironda : boolean {readOnly}
+  }
+
+  class Carta <<interface>> {
+    {field} + valor : number {readOnly}  — 1 (A) .. 13 (K)
+    + palo : Palo {readOnly}
+  }
+
+  class ManoDeclarada <<interface>> {
+    + grupos : ReadonlyArray<ReadonlyArray<Carta>>
+    + sobrantes : ReadonlyArray<Carta>
+    + descarte? : Carta
+  }
+
+  class ManoRival <<interface>> {
+    + jugadorId : string
+    + grupos : ReadonlyArray<ReadonlyArray<Carta>>
+    + sobrantes : ReadonlyArray<Carta>
+  }
+
+  class ResultadoValidacion <<interface>> {
+    + esValido : boolean
+    + motivo? : string
+  }
+
+  class EfectoCierre <<interface>> {
+    + terminaRonda : boolean
+    + rondaExtra : boolean
+    + ajustePuntos : number
+  }
+
+  class ConfiguracionReparto <<interface>> {
+    + cartasPorJugador : number
+    + cartasJugadorInicial : number
+  }
+
+  class LiquidacionRonda <<interface>> {
+    + penalizaciones : Readonly<Record<string, number>>
+  }
+
+  class Desenlace <<interface>> {
+    + terminada : boolean
+    + ganadorId? : string
+    + eliminados : ReadonlyArray<string>
+  }
+
+  class Marcador <<type>> {
+    Readonly<Record<string, number>>
+  }
+
+  enum TipoCierre <<enumeration>> {
+    GANAR_4_3_3
+    TOCAR
+  }
+
+  enum Palo <<enumeration>> {
+    CLUB
+    DIAMOND
+    HEART
+    SPADE
+  }
+
+  ReglaJuegoPlugin *-- "1" DescriptorRegla : descriptor
+  ManoDeclarada o-- "0..*" Carta
+  ManoRival o-- "0..*" Carta
+  Carta --> "1" Palo
+}
+
+package "src/reglas/evaluador" as EVAL {
+
+  interface IHandEvaluator <<interface>> {
+    + esCombinacion(grupo : ReadonlyArray<Carta>) : boolean
+    + esTerna(grupo : ReadonlyArray<Carta>) : boolean
+    + esCuarta(grupo : ReadonlyArray<Carta>) : boolean
+    + esCuartaYDosTernas(grupos : ReadonlyArray<ReadonlyArray<Carta>>) : boolean
+    + sonTresTernas(grupos : ReadonlyArray<ReadonlyArray<Carta>>) : boolean
+    + puntos(cartas : ReadonlyArray<Carta>) : number
+    + puntosNoCombinados(grupos : ReadonlyArray<ReadonlyArray<Carta>>, sobrantes : ReadonlyArray<Carta>) : number
+  }
+
+  class EvaluadorManos {
+    - politicaEscalera : PoliticaEscalera = 'CON_VUELTA' {readOnly}
+    + constructor(politicaEscalera : PoliticaEscalera = 'CON_VUELTA')
+    {method} + «las 7 operaciones de IHandEvaluator»
+  }
+
+  class "evaluador-manos" as FuncEval <<utility>> {
+    + TOTAL_VALORES : number = 13 {readOnly}
+    + COPIAS_MAXIMAS_POR_CARTA : number = 2 {readOnly}
+    - PUNTOS_POR_VALOR : readonly number[] {readOnly}
+    + esCartaValida(carta : Carta) : boolean
+    + puntosCarta(carta : Carta) : number
+    + esGrupoDeValor(grupo : ReadonlyArray<Carta>) : boolean
+    + esEscalera(grupo : ReadonlyArray<Carta>, politica : PoliticaEscalera = 'CON_VUELTA') : boolean
+    - maximoDeCopias(grupo : ReadonlyArray<Carta>) : number
+    - esLineal(valores : ReadonlyArray<number>) : boolean
+    - saltos(valores : ReadonlyArray<number>) : number
+    - esConsecutivaCircular(valores : ReadonlyArray<number>) : boolean
+    - esConsecutivaSinVuelta(valores : ReadonlyArray<number>) : boolean
+  }
+
+  enum PoliticaEscalera <<enumeration>> {
+    CON_VUELTA
+    SIN_VUELTA
+  }
+
+  EvaluadorManos ..|> IHandEvaluator
+  EvaluadorManos --> "1" PoliticaEscalera : politicaEscalera
+  EvaluadorManos ..> FuncEval : <<use>>
+  FuncEval ..> PoliticaEscalera
+}
+
+package "src/reglas/registro" as REGISTRO {
+
+  class RegistroReglas {
+    - reglas : Map<string, ReglaJuegoPlugin> {readOnly}
+    - idPredeterminado? : string
+    - versionNucleo : string = VERSION_CONTRATO {readOnly}
+    + constructor(versionNucleo : string = VERSION_CONTRATO)
+    + registrar(plugin : ReglaJuegoPlugin, opciones : OpcionesRegistro = {}) : void
+    + obtener(id? : string) : ReglaJuegoPlugin
+    + existe(id : string) : boolean
+    + <<get>> predeterminada() : string | undefined
+    + ids() : string[]
+    - validarForma(plugin, id) : void
+    - pruebaDeHumo(plugin, id) : void
+  }
+
+  class OpcionesRegistro <<interface>> {
+    + predeterminada? : boolean
+  }
+
+  class PluginIncompatibleError
+
+  class ReglaNoRegistradaError
+
+  RegistroReglas o-- "0..*" ReglaJuegoPlugin : reglas
+  RegistroReglas ..> OpcionesRegistro
+  RegistroReglas ..> PluginIncompatibleError : <<throw>>
+  RegistroReglas ..> ReglaNoRegistradaError : <<throw>>
+}
+
+package "backend/plugins" as PLUGINS {
+
+  class ReglaClasicaPlugin {
+    + descriptor : DescriptorRegla = {id: 'clasica', multironda: false} {readOnly}
+    - evaluador : IHandEvaluator {readOnly}
+    + constructor(evaluador : IHandEvaluator = new EvaluadorManos())
+    + configuracionReparto() : ConfiguracionReparto
+    + cierresPermitidos() : ReadonlyArray<TipoCierre>
+    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
+    + efectoCierre(resultado : ResultadoValidacion) : EfectoCierre
+    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
+    + evaluarDesenlace(marcador : Marcador, cerradorId : string) : Desenlace
+  }
+
+  class ReglaApuntadoPlugin {
+    + descriptor : DescriptorRegla = {id: 'apuntado', multironda: true} {readOnly}
+    - parametros : ParametrosApuntado {readOnly}
+    - evaluador : IHandEvaluator {readOnly}
+    + constructor(parametros : Partial<ParametrosApuntado> = {}, evaluador : IHandEvaluator = new EvaluadorManos())
+    + configuracionReparto() : ConfiguracionReparto
+    + cierresPermitidos() : ReadonlyArray<TipoCierre>
+    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
+    + efectoCierre(resultado : ResultadoValidacion, tipo : TipoCierre) : EfectoCierre
+    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
+    + evaluarDesenlace(marcador : Marcador) : Desenlace
+    - validarCuartaYDosTernas(mano : ManoDeclarada) : ResultadoValidacion
+    - validarTocar(mano : ManoDeclarada) : ResultadoValidacion
+  }
+
+  class ParametrosApuntado <<interface>> {
+    + limiteEliminacion : number = 101
+    + limiteVictoria : number = -51
+    + umbralTocar : number = 5
+    + bonificacionCierre : number = 10
+    + castigoCierreFalso : number = 3
+  }
+
+  ReglaApuntadoPlugin *-- "1" ParametrosApuntado : parametros
+}
+
+package "src/dominio/partida" as DOMINIO {
+
+  class Partida <<interface>> {
+    + _id : string
+    + codigoInvitacion : string
+    + nombre : string
+    + estado : EstadoPartida
+    + anfitrionId : string
+    + configuracion : ConfiguracionPartida
+    + jugadores : JugadorPartida[]
+    + pozo : PozoPartida
+    + rondaActual : RondaPartida | null
+    + marcador : EntradaMarcador[]
+    + ganadorId : string | null
+    + ventanaHasta : Date | null
+    {field} + comandosRecientes : string[]  — máx. 20 (idempotencia)
+    + version : number  — concurrencia optimista
+    + creadaEn : Date
+    + actualizadaEn : Date
+    + finalizadaEn : Date | null
+  }
+
+  class ConfiguracionPartida <<interface>> {
+    + modalidad : string
+    + plugin : {id : string, version : string}
+    + cupo : number
+    + apuestaPorJugador : number
+    + visibilidad : 'PUBLICA' | 'PRIVADA'
+    + tipoEscalera : 'CON_VUELTA' | 'SIN_VUELTA'
+    + comodinesActivos : boolean
+    + reengancheActivo : boolean
+    + victoriaNegativaActiva : boolean
+    + parametros : ParametrosPartida
+  }
+
+  class ParametrosPartida <<interface>> {
+    + limiteEliminacion, umbralTocar, castigoCierreInvalido : number
+    + bonificacionCierre, umbralVictoriaNegativa, valorComodin : number
+    + comodinesPorBaraja, jugadoresDobleBaraja : number
+    + graciaDesconexionSeg, ventanaResultadosSeg : number
+  }
+
+  class JugadorPartida <<interface>> {
+    {field} + jugadorId : string  — userId (UUID)
+    + usuarioId : string  — ObjectId hex
+    + nombreUsuario : string
+    + posicion : number
+    + estado : EstadoJugadorPartida
+    + puntaje : number
+    + usoReenganche : boolean
+    + conectado : boolean
+    + desconectadoDesde : Date | null
+  }
+
+  class PozoPartida <<interface>> {
+    + total : number
+    + aportes : AportePozo[]
+  }
+
+  class AportePozo <<interface>> {
+    + usuarioId : string
+    + tipo : 'APUESTA' | 'REENGANCHE'
+    + monto : number
+    + asientoId : string
+  }
+
+  class RondaPartida <<interface>> {
+    + numero : number
+    + estado : EstadoRonda
+    + posicionInicial : number
+    + turno : TurnoPartida
+    + mazo : CartaPartida[]
+    + pozoDescarte : CartaPartida[]
+    + manos : ManoJugador[]
+    + rondaExtra : RondaExtra | null
+  }
+
+  class TurnoPartida <<interface>> {
+    + jugadorId : string
+    + fase : FaseTurno
+    + intentoCierre : boolean
+    + numero : number
+  }
+
+  class ManoJugador <<interface>> {
+    + jugadorId : string
+    + cartas : CartaPartida[]
+    + grupos : number[][]  — índices de cartas
+  }
+
+  class RondaExtra <<interface>> {
+    + tocadorId : string
+    + pendientes : string[]
+  }
+
+  class CartaPartida <<interface>> {
+    + valor : ValorCarta
+    + palo : PaloCarta
+    + baraja : number  — 1 o 2
+  }
+
+  class EntradaMarcador <<interface>> {
+    + numeroRonda : number
+    + ganadorId : string
+    + tipoCierre : 'GANAR_4_3_3' | 'TOCAR'
+    + puntos : PuntosRonda[]
+    + cerradaEn : Date
+  }
+
+  class PuntosRonda <<interface>> {
+    + jugadorId : string
+    + puntosRonda : number
+    + castigos : number
+    + acumulado : number
+    + eliminado : boolean
+    + reenganchado : boolean
+  }
+
+  enum EstadoPartida <<enumeration>> {
+    EN_ESPERA
+    EN_JUEGO
+    MOSTRANDO_RESULTADOS
+    FINALIZADA
+    CANCELADA
+  }
+
+  enum EstadoRonda <<enumeration>> {
+    REPARTIENDO
+    EN_TURNOS
+    RONDA_EXTRA
+    LIQUIDANDO
+    CERRADA
+  }
+
+  enum FaseTurno <<enumeration>> {
+    ESPERANDO_ROBO
+    CON_11_CARTAS
+  }
+
+  enum EstadoJugadorPartida <<enumeration>> {
+    EN_SALA
+    ACTIVO
+    ELIMINADO
+    GANADOR
+    PERDEDOR
+  }
+
+  enum ValorCarta <<enumeration>> {
+    AS, DOS, TRES, CUATRO, CINCO, SEIS, SIETE
+    OCHO, NUEVE, DIEZ, J, Q, K
+  }
+
+  enum PaloCarta <<enumeration>> {
+    TREBOLES
+    DIAMANTES
+    CORAZONES
+    PICAS
+  }
+
+  class "comandos-partida" as Comandos <<utility>> {
+    - MAXIMO_GRUPOS : number = 4 {readOnly}
+    - MAXIMO_CARTAS_POR_GRUPO : number = 4 {readOnly}
+    + crearPartida(datos : DatosNuevaPartida, reparto : ConfiguracionReparto, barajador : Barajador) : ResultadoTransicion
+    + repartirRonda(partida : Partida, numero : number, posicionInicial : number, reparto : ConfiguracionReparto, barajador : Barajador) : RondaPartida
+    + robar(actual : Partida, jugadorId : string, origen : OrigenRobo, barajador : Barajador) : ResultadoTransicion
+    + descartar(actual : Partida, jugadorId : string, indice : number, grupos : unknown, contexto : ContextoRegla) : ResultadoTransicion
+    + intentarCierre(actual : Partida, jugadorId : string, datos : DatosCierre, contexto : ContextoRegla) : ResultadoTransicion
+    + jugadoresActivos(partida : Partida) : JugadorPartida[]
+    + rondaEnTurnos(partida : Partida) : RondaPartida
+    + verificarTurno(partida : Partida, jugadorId : string) : RondaPartida
+    + validarGrupos(grupos : unknown, tamanoMano : number, excluidos : number[]) : number[][]
+    + reindexarSinCarta(grupos : number[][], quitada : number) : number[][]
+    - exigirCierrePermitido(regla, ronda, tipo : TipoCierre) : void
+    - iniciarRondaExtra(partida, ronda, toque) : ResultadoTransicion
+    - avanzarRondaExtra(partida, ronda, jugadorId, carta, contexto) : ResultadoTransicion
+    - cerrarRonda(partida, ronda, cierre : CierreValido, contexto) : ResultadoTransicion
+    - concluirRonda(partida, ronda, ganador : GanadorRonda, puntosRonda, contexto, eventosPrevios, descarte?) : ResultadoTransicion
+    - finalizar(partida, desenlace : Desenlace, cerradorId, ahora, eventos) : ResultadoTransicion
+    - entradaMarcador(numeroRonda, ganador, participantes, puntosRonda, eliminados, ahora) : EntradaMarcador
+    - manoDeclarada(cartas, grupos : number[][], descarte : number) : ManoDeclarada
+    - manoRival(mano : ManoJugador) : ManoRival
+    - descartarAlCerrar() · robarDelMazo() · robarDelDescarte() · siguienteActivo() · ordenDesde()
+    - sobrantes() · esGrupoBienFormado() · exigirFase() · exigirIndice() · jugador() · manoDe() · clonar()
+  }
+
+  class ResultadoTransicion <<interface>> {
+    + partida : Partida {readOnly}
+    + eventos : EventoPartida[] {readOnly}
+    + finalizada : boolean {readOnly}
+  }
+
+  class EventoPartida <<interface>> {
+    + tipo : TipoEventoPartida {readOnly}
+    + jugadorId? : string {readOnly}
+    + detalle : Readonly<Record<string, unknown>> {readOnly}
+  }
+
+  enum TipoEventoPartida <<enumeration>> {
+    PARTIDA_INICIADA
+    CARTA_ROBADA
+    TURNO_CAMBIADO
+    CIERRE_FALLIDO
+    JUGADOR_TOCO
+    RONDA_CERRADA
+    RONDA_INICIADA
+    PARTIDA_FINALIZADA
+  }
+
+  class ContextoRegla <<interface>> {
+    + regla : ReglaJuegoPlugin
+    + barajador : Barajador
+    + ahora : Date
+  }
+
+  class DatosCierre <<interface>> {
+    + tipo : TipoCierre
+    + grupos : unknown  — índices por grupo
+    + descarte : number
+  }
+
+  class "cartas-partida" as CartasPartida <<utility>> {
+    + aCartaContrato(carta : CartaPartida) : Carta
+    + crearMazo(barajas : number) : CartaPartida[]
+  }
+
+  interface Barajador <<interface>> {
+    + barajar<T>(elementos : ReadonlyArray<T>) : T[]
+  }
+
+  class BarajadorSeguro {
+    + barajar<T>(elementos : ReadonlyArray<T>) : T[]  — Fisher-Yates + crypto.randomInt
+  }
+
+  class "vistas-partida" as Vistas <<utility>> {
+    + vistaPublica(partida : Partida) : VistaPublicaPartida
+    + vistaPrivada(partida : Partida, jugadorId : string) : VistaPrivadaPartida | null
+  }
+
+  class PartidaActualizadaEvent {
+    + salaId : string {readOnly}
+    + partida : Partida {readOnly}
+    + eventos : ReadonlyArray<EventoPartida> {readOnly}
+    + constructor(salaId : string, partida : Partida, eventos : ReadonlyArray<EventoPartida>)
+  }
+
+  class PartidaConflictException <<HTTP 409>>
+  class PartidaInvalidaException <<HTTP 400>>
+
+  Partida *-- "1" ConfiguracionPartida : configuracion
+  ConfiguracionPartida *-- "1" ParametrosPartida : parametros
+  Partida *-- "2..*" JugadorPartida : jugadores
+  Partida *-- "1" PozoPartida : pozo
+  PozoPartida *-- "0..*" AportePozo : aportes
+  Partida *-- "0..1" RondaPartida : rondaActual
+  Partida *-- "0..*" EntradaMarcador : marcador
+  EntradaMarcador *-- "1..*" PuntosRonda : puntos
+  RondaPartida *-- "1" TurnoPartida : turno
+  RondaPartida *-- "2..*" ManoJugador : manos
+  RondaPartida *-- "0..1" RondaExtra : rondaExtra
+  RondaPartida *-- "0..*" CartaPartida : mazo
+  RondaPartida *-- "0..*" CartaPartida : pozoDescarte
+  ManoJugador *-- "0..11" CartaPartida : cartas
+
+  Partida --> EstadoPartida
+  RondaPartida --> EstadoRonda
+  TurnoPartida --> FaseTurno
+  JugadorPartida --> EstadoJugadorPartida
+  CartaPartida --> ValorCarta
+  CartaPartida --> PaloCarta
+
+  Comandos ..> Partida : <<transforma (structuredClone)>>
+  Comandos ..> ResultadoTransicion : <<create>>
+  Comandos ..> CartasPartida : <<use>>
+  Comandos ..> PartidaConflictException : <<throw>>
+  Comandos ..> PartidaInvalidaException : <<throw>>
+  ResultadoTransicion o-- "0..*" EventoPartida : eventos
+  EventoPartida --> TipoEventoPartida
+  ContextoRegla --> "1" Barajador : barajador
+  Comandos ..> ContextoRegla
+  BarajadorSeguro ..|> Barajador
+  Vistas ..> Partida : <<filtra (R04)>>
+  PartidaActualizadaEvent o-- "1" Partida : partida
+  PartidaActualizadaEvent o-- "0..*" EventoPartida : eventos
+}
+
+package "src/aplicacion/partida" as APLICACION {
+
+  class TurnOrchestrator <<@Injectable>> {
+    - partidas : PartidaRepository {readOnly}
+    - asientos : AsientosTokensRepository {readOnly}
+    - unidadDeTrabajo : UnidadDeTrabajo {readOnly}
+    - registroReglas : RegistroReglas {readOnly}
+    - eventBus : EventBus {readOnly}
+    - barajador : Barajador {readOnly}
+    - parametros : ParametrosPartida {readOnly}
+    - usuarios : Model<UserRecord> {readOnly}
+    - juegos : Model<GameRecord> {readOnly}
+    - jugadores : Model<PlayerRecord> {readOnly}
+    + iniciarPartida(game : Game, solicitante : UserId) : Promise<Partida>
+    + robar(comando : ComandoTurno, origen : OrigenRobo) : Promise<ResultadoComando>
+    + descartar(comando : ComandoTurno, carta : number, grupos? : number[][]) : Promise<ResultadoComando>
+    + intentarCierre(comando : ComandoTurno, tipo : TipoCierre, grupos : number[][], descarte : number) : Promise<ResultadoComando>
+    + obtenerEstado(partidaId : string, usuarioId : string) : Promise<EstadoParaUsuario>
+    - ejecutar(comando, aplicar : (Partida, ReglaJuegoPlugin) => ResultadoTransicion) : Promise<ResultadoComando>
+    - guardar(nueva, comando, finalizada : boolean) : Promise<void>
+    - resolverConflicto(comando, base : Partida) : Promise<ResultadoComando>
+    - pagarPozo(partida, salaId, session : ClientSession) : Promise<void>
+    - cobrarApuestas() · datosNuevaPartida() — auxiliares de iniciarPartida
+    - cargar(partidaId : string) : Promise<Partida>
+    - publicar(salaId : string, resultado : ResultadoTransicion) : void
+  }
+
+  class ComandoTurno <<interface>> {
+    + salaId : string
+    + partidaId : string
+    + usuarioId : string
+    + version : number
+    + idComando : string
+  }
+
+  class ResultadoComando <<interface>> {
+    + aplicado : boolean
+    + partida : Partida
+  }
+
+  class EstadoParaUsuario <<interface>> {
+    + publica : VistaPublicaPartida
+    + privada : VistaPrivadaPartida | null
+  }
+
+  class "partida.mapper" as Mapper <<utility>> {
+    + aRegistro(partida : Partida) : PartidaRecord
+    + aDominio(registro : PartidaRecord) : Partida
+  }
+
+  class EscrituraSinCoincidencia
+
+  TurnOrchestrator ..> ComandoTurno
+  TurnOrchestrator ..> ResultadoComando : <<create>>
+  TurnOrchestrator ..> EstadoParaUsuario : <<create>>
+  TurnOrchestrator ..> Mapper : <<use>>
+  TurnOrchestrator ..> EscrituraSinCoincidencia : <<throw / catch>>
+}
+
+package "src/database" as DATABASE {
+
+  class PartidaRepository <<@Injectable>> {
+    + buscarPorId(id : Types.ObjectId, session? : ClientSession) : Promise<PartidaRecord | null>
+    + actualizarSiCoincide(partida : PartidaRecord, condicion : CondicionComando, session? : ClientSession) : Promise<boolean>
+  }
+
+  class CondicionComando <<interface>> {
+    + version : number
+    + jugadorId : string
+    + idComando : string
+  }
+
+  class AsientosTokensRepository <<@Injectable>> {
+    + registrar(asientos : AsientoTokensRecord[], session : ClientSession) : Promise<void>
+  }
+
+  class UnidadDeTrabajo <<@Injectable>> {
+    + ejecutar<T>(trabajo : (session : ClientSession) => Promise<T>) : Promise<T>
+  }
+
+  class PartidaRecord <<interface>>
+  class AsientoTokensRecord <<interface>>
+
+  PartidaRepository ..> CondicionComando
+  PartidaRepository ..> PartidaRecord
+  AsientosTokensRepository ..> AsientoTokensRecord
+}
+
+class ReglasPluginsModule <<composition root · @Global @Module>> {
+  + crearRegistroReglas(env = process.env) : RegistroReglas
+  + leerParametrosSistema(env = process.env) : ParametrosPartida
+  - parametrosApuntado(sistema : ParametrosPartida) : ParametrosApuntado
+}
+
+ReglaClasicaPlugin ..|> ReglaJuegoPlugin
+ReglaApuntadoPlugin ..|> ReglaJuegoPlugin
+ReglaClasicaPlugin --> "1" IHandEvaluator : evaluador
+ReglaApuntadoPlugin --> "1" IHandEvaluator : evaluador
+ReglasPluginsModule ..> RegistroReglas : <<create>>
+ReglasPluginsModule ..> ReglaClasicaPlugin : <<create>>
+ReglasPluginsModule ..> ReglaApuntadoPlugin : <<create>>
+IHandEvaluator ..> Carta
+FuncEval ..> Carta
+
+TurnOrchestrator --> "1" RegistroReglas : registroReglas
+TurnOrchestrator --> "1" Barajador : barajador
+TurnOrchestrator --> "1" PartidaRepository : partidas
+TurnOrchestrator --> "1" AsientosTokensRepository : asientos
+TurnOrchestrator --> "1" UnidadDeTrabajo : unidadDeTrabajo
+TurnOrchestrator --> "1" ParametrosPartida : parametros
+TurnOrchestrator ..> Comandos : <<use>>
+TurnOrchestrator ..> Vistas : <<use>>
+TurnOrchestrator ..> PartidaActualizadaEvent : <<create / publish>>
+TurnOrchestrator ..> ReglaJuegoPlugin : <<use>>
+ContextoRegla --> "1" ReglaJuegoPlugin : regla
+Comandos ..> ReglaJuegoPlugin : <<use>>
+CartasPartida ..> Carta : <<traduce>>
+Mapper ..> PartidaRecord
+
+legend right
+  + público · - privado · «utility»: módulo de funciones (+ exportada, - interna) · sin miembros # en el MVP
+  Solo ReglasPluginsModule conoce los plug-ins concretos; el núcleo depende del contrato (DIP).
+endlegend
+@enduml

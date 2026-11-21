@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Model, PipelineStage } from 'mongoose';
 import { CardDesignDocument } from '../../database/card-design.schema';
 import { CardDesign, CardDesignDTO } from '../../dominio/card-design/card-design';
@@ -14,7 +14,7 @@ import { CardDesignQueries } from './card-design.queries';
  * @class
  */
 @Injectable()
-export class CardDesignService {
+export class CardDesignService implements OnApplicationBootstrap {
 
 	private readonly logger: Logger = new Logger(CardDesignService.name);
 
@@ -25,6 +25,31 @@ export class CardDesignService {
 	constructor(
 		@Inject(DatabaseConstants.CARD_DESIGN_PROVIDER) private readonly model: Model<CardDesignDocument>,
 	) {
+	}
+
+	/**
+	 * Si la base de datos es nueva y no tiene catálogo de diseños, se siembran
+	 * automáticamente los 5 diseños iniciales requeridos por el sistema.
+	 */
+	async onApplicationBootstrap(): Promise<void> {
+		try {
+			const count = await this.model.countDocuments();
+			if (count === 0) {
+				this.logger.log('Colección card-designs vacía. Inicializando catálogo por defecto...');
+				const ahora = new Date();
+				const disenos = [
+					{ cardDesignId: '5f0c6c2e-0a8e-4b3e-9a51-2f1d3c4b5a60', name: 'DEFAULT', isDefault: true, isFree: true, isActive: true, createdAt: ahora, updatedAt: ahora },
+					{ cardDesignId: '7a1d2e3f-4b5c-4d6e-8f70-81a2b3c4d5e6', name: 'BLUE', isDefault: false, isFree: true, isActive: true, createdAt: ahora, updatedAt: ahora },
+					{ cardDesignId: '8b2e3f40-5c6d-4e7f-9a81-92b3c4d5e6f7', name: 'RED', isDefault: false, isFree: true, isActive: true, createdAt: ahora, updatedAt: ahora },
+					{ cardDesignId: '9c3f4051-6d7e-4f80-8b92-a3c4d5e6f708', name: 'RETRO', isDefault: false, isFree: false, isActive: true, price: 50, createdAt: ahora, updatedAt: ahora },
+					{ cardDesignId: 'ad405162-7e8f-4091-9ca3-b4d5e6f70819', name: 'NIGHT_VISION', isDefault: false, isFree: false, isActive: true, price: 100, createdAt: ahora, updatedAt: ahora },
+				];
+				await this.model.insertMany(disenos);
+				this.logger.log('Catálogo de diseños de carta inicializado exitosamente.');
+			}
+		} catch (error) {
+			this.logger.warn(`No se pudo verificar o sembrar card-designs: ${error?.message || error}`);
+		}
 	}
 
 	/**
