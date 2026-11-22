@@ -79,20 +79,23 @@ anterior se eliminó para no ejecutar dos veces las mismas pruebas en cada PR.
 | Imágenes Docker y arranque con docker compose | — | ✅ |
 | Despliegue solo tras todas las puertas | — | ✅ (requiere los secretos de Render) |
 
-### 4.1.4 Estado de verificación
+### 4.1.4 Verificación exitosa en GitHub Actions (PR #1)
 
-Cada comando de los jobs `arquitectura`, `backend` y `frontend` se ejecutó localmente en esta rama
-y terminó en verde (resultados en la sección 4.5). Hay dos cosas que este documento **no** puede
-afirmar todavía:
+El workflow se ejecutó de forma automatizada sobre GitHub Actions en la apertura del Pull Request #1 hacia `main`, completando exitosamente la totalidad de las puertas de calidad:
 
-- **El workflow no se ha ejecutado en GitHub.** Su sintaxis se validó con un analizador YAML, pero
-  la primera ejecución real ocurrirá al abrir el PR hacia `main`.
-- **El job `contenedores` nunca se ha ejecutado.** En la máquina de desarrollo no hay Docker. Es la
-  primera vez que `docker compose up` se comprueba de forma automática (checklist 3.11).
+![Pipeline CI/CD en GitHub Actions exitoso](./evidencias/evidencia-pipeline-github-actions.jpg)
 
-Para que el pipeline gobierne de verdad la rama `main`, hay que configurar en GitHub la protección
+| Job ejecutado | Estado | Duración | Verificaciones cumplidas |
+|---|:---:|:---:|---|
+| `arquitectura` | ✅ | 48s | 28 fitness functions (modo trinquete y estricto) + cálculo y publicación de métricas de calidad. |
+| `backend` | ✅ | 57s | Compilación TypeScript, 106 pruebas unitarias Jest con cobertura, 8 pruebas de concurrencia e2e y build NestJS. |
+| `contenedores` | ✅ | 1m 00s | Construcción multi-stage de imágenes y prueba de integración multi-contenedor con `docker compose`. |
+| `frontend` | ✅ | 1m 00s | Linting, 16 pruebas unitarias Vitest y build de producción Vite de la SPA. |
+| `despliegue` | ⚪ | Omitido | Condicionado por diseño para ejecutarse exclusivamente tras el merge a la rama `main`. |
+
+Para que el pipeline gobierne de verdad la rama `main`, se puede configurar en GitHub la protección
 de rama con los checks obligatorios `arquitectura`, `backend`, `frontend` y `contenedores`. Si el
-despliegue pasa a hacerse desde el pipeline, también hay que desactivar el *auto-deploy* de Render,
+despliegue pasa a hacerse desde el pipeline, también se puede desactivar el *auto-deploy* de Render,
 para que ningún cambio llegue a producción sin pasar por las puertas.
 
 ---
@@ -311,7 +314,7 @@ Cuando una métrica se estabilice, puede convertirse en fitness function. Por ej
 
 | Tema | Situación | Acción propuesta |
 |---|---|---|
-| Primera ejecución del pipeline | Validado localmente y con un analizador YAML; aún no se ha ejecutado en GitHub | Abrir el PR hacia `main` y revisar los cinco jobs |
+| Primera ejecución del pipeline | Resuelto: ejecutado con éxito en el PR #1 (4 checks verdes: arquitectura 48s, backend 57s, contenedores 1m, frontend 1m) | Configurar la protección de rama obligatoria en `main` |
 | `package-lock.json` del backend | Resuelto al cierre del E3 (checklist 3.13): el lockfile se versiona y el job `backend` y el `Dockerfile` instalan con `npm ci` | Regenerarlo con `npm install` solo al cambiar dependencias y versionarlo en el mismo commit |
 | Lint del backend | No forma parte del pipeline: el script `lint` usa `--fix` y no se verificó que quede en cero | Agregar un `lint:ci` sin `--fix` y sumarlo al job `backend` |
 | Cobertura | Se publica, pero no tiene umbral | Fijar un mínimo para `dominio/`, `reglas/` y `plugins/` |
