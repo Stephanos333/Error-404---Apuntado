@@ -30,8 +30,13 @@ export const MICROKERNEL = {
 	plugins: 'plugins',
 	/** Nombres de los plug-ins que no pueden depender entre sí. */
 	nombresPlugins: ['clasica', 'apuntado'],
-	/** Módulos del núcleo que solo pueden conocer el contrato, nunca un plug-in concreto. */
-	nucleo: ['juego', 'puntaje', 'sala'],
+	/**
+	 * Carpetas del núcleo que solo pueden conocer el contrato, nunca un plug-in concreto.
+	 * `juego`, `puntaje` y `sala` son los nombres del diseño E2 (los usan los fixtures);
+	 * las demás son las carpetas reales del backend del E3. La única excepción permitida es
+	 * la raíz de composición `src/reglas-plugins.module.ts`, que no está en ninguna de ellas.
+	 */
+	nucleo: ['juego', 'puntaje', 'sala', 'dominio', 'aplicacion', 'reglas', 'partida', 'game'],
 };
 
 /** FF-03. Módulos de primer nivel considerados para detectar ciclos (todos los de `src/`). */
@@ -40,8 +45,19 @@ export const RAIZ_MODULOS = BACKEND_SRC;
 /** FF-04. Complejidad ciclomática de los evaluadores de combinaciones de cartas. */
 export const COMPLEJIDAD = {
 	umbral: 10,
-	/** Prototipo: tablas en `card/` y validación en `player/player.service.ts`. Objetivo: `reglas/` y plug-ins. */
-	evaluadores: ['backend/src/card/**/*.ts', 'backend/src/player/player.service.ts', 'backend/src/reglas/**/*.ts', 'backend/plugins/**/*.ts'],
+	/**
+	 * E3: el evaluador algorítmico vive en `reglas/evaluador/` y los plug-ins en `plugins/`.
+	 * Desde la fase 2 el cierre y la liquidación se calculan en el agregado `dominio/partida/`
+	 * y los orquesta `aplicacion/partida/` (TurnOrchestrator, ADR-05).
+	 */
+	evaluadores: [
+		'backend/src/card/**/*.ts',
+		'backend/src/aplicacion/player/player.service.ts',
+		'backend/src/aplicacion/partida/**/*.ts',
+		'backend/src/dominio/partida/**/*.ts',
+		'backend/src/reglas/**/*.ts',
+		'backend/plugins/**/*.ts',
+	],
 	/** Umbral general (informativo) para el resto del backend. */
 	umbralGeneral: 15,
 };

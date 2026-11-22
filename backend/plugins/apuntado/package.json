@@ -1,0 +1,11 @@
+{
+  "name": "@apuntado/plugin-apuntado",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plug-in de reglas de la modalidad Apuntado a 101 (multironda, 4-3-3 y tocar). ADR-03.",
+  "main": "index.ts",
+  "apuntado": {
+    "id": "apuntado",
+    "versionContrato": "1.0.0"
+  }
+}

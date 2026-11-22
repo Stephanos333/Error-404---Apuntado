@@ -1,0 +1,212 @@
+@startuml 02-secuencia-cierre-liquidacion
+' =====================================================================================
+' Entregable 3 · Sección 1.2 · Diagrama UML 2.5 de secuencia del flujo crítico:
+' intento de cierre de ronda y liquidación de la puntuación.
+' Fuente de verdad: partida.controller.ts, turn-orchestrator.service.ts,
+' comandos-partida.ts, regla-clasica.plugin.ts, regla-apuntado.plugin.ts,
+' partida.repository.ts, unidad-de-trabajo.ts, asientos-tokens.repository.ts,
+' partida-actualizada.event-handler.ts, game.socket.ts, notificaciones-partida.ts
+' =====================================================================================
+title Sistema Apuntado · Secuencia del flujo crítico: intento de cierre de ronda y liquidación\n<size:11>Entregable 3 · ruta síncrona del comando (ADR-05): leer · calcular en memoria · escribir una vez · notificar</size>
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 300
+skinparam sequenceGroupBodyBackgroundColor transparent
+hide footbox
+scale max 4000 height
+autonumber "<b>00"
+
+actor "Jugador\n(SPA React)" as UI
+participant "PartidaController\n«REST»\n/api/partidas/actual" as CTRL
+participant "TurnOrchestrator\n«aplicación»" as TO
+participant "RegistroReglas\n«microkernel»" as REG
+participant "comandos-partida\n«dominio puro»" as DOM
+participant "ReglaJuegoPlugin\n«interface»\n(Clásica · Apuntado)" as PL
+participant "PartidaRepository\n«driver nativo»" as REPO
+participant "UnidadDeTrabajo\n(ClientSession)" as UOW
+participant "AsientosTokens\nRepository" as LIB
+database "MongoDB rs0" as DB
+participant "EventBus (CQRS)\nPartidaActualizada\nEventHandler" as BUS
+participant "GameSocket\n«gateway Socket.IO»\n/game" as GW
+
+' ------------------------------------------------------------------------------------
+group Precondición · al abrir el tablero
+  UI -> GW : emit GAME_CONNECTION_EVENT\n(WebSocket, JWT en el handshake)
+  GW -> GW : GameAuthGuard resuelve el juego del usuario\nsocket.join(["partida:{gameId}", "usuario:{userId}"])
+end
+
+== Comando de cierre (HTTP síncrono) ==
+
+UI -> CTRL : POST /comandos/cerrar\n{ tipo: GANAR_4_3_3 | TOCAR, grupos: number[][],\n  descarte: number, version: v, idComando: UUID v4 }\nAuthorization: Bearer JWT
+activate CTRL
+CTRL -> TO : intentarCierre(comando{salaId, partidaId, usuarioId,\nversion, idComando}, tipo, grupos, descarte)
+activate TO
+TO -> REPO : buscarPorId(partidaId)
+REPO -> DB : partidas.findOne({ _id })
+DB --> REPO : PartidaRecord (version = v)
+REPO --> TO : registro → aDominio()
+
+break idComando ∈ comandosRecientes (reenvío del mismo comando)
+  TO --> CTRL : { aplicado: false, partida }
+  CTRL --> UI : 200 OK (idempotente: no repite el efecto)
+end
+
+TO -> REG : obtener(configuracion.plugin.id)
+REG --> TO : regla : ReglaJuegoPlugin
+TO -> DOM : intentarCierre(partida, jugadorId, { tipo, grupos, descarte },\n{ regla, barajador, ahora })
+activate DOM
+DOM -> DOM : clonar() · verificarTurno() · exigirFase(CON_11_CARTAS)\nexigirCierrePermitido() · validarGrupos()
+
+break la ronda no está EN_TURNOS / RONDA_EXTRA, o el turno es de otro jugador
+  DOM --> CTRL : PartidaConflictException\n(RONDA_YA_CERRADA | TURNO_NO_CORRESPONDE)
+  CTRL --> UI : 409 Conflict
+end
+
+DOM -> PL : validarCierre(manoDeclarada, tipo)
+PL --> DOM : ResultadoValidacion { esValido, motivo? }
+DOM -> PL : efectoCierre(resultado, tipo)
+PL --> DOM : EfectoCierre { terminaRonda, rondaExtra, ajustePuntos }
+
+' ------------------------------------------------------------------------------------
+alt Escenario 1 · Modalidad Clásica (plugin "clasica") · 1 cuarta + 2 ternas + 1 descarte
+  note over PL
+    validarCierre → ACEPTADO
+    (0 sobrantes y esCuartaYDosTernas)
+    efectoCierre → { terminaRonda: true,
+    rondaExtra: false, ajustePuntos: 0 }
+  end note
+  DOM -> DOM : cerrarRonda() → descartarAlCerrar()
+  DOM -> PL : liquidarRonda(manos de los rivales)
+  PL --> DOM : penalizaciones = 0 (sin marcador histórico)
+  DOM -> DOM : concluirRonda()
+  DOM -> PL : evaluarDesenlace(marcador, cerradorId)
+  PL --> DOM : { terminada: true, ganadorId: cerrador, eliminados: rivales }
+  DOM -> DOM : finalizar(): estado FINALIZADA, GANADOR / PERDEDOR\neventos RONDA_CERRADA, PARTIDA_FINALIZADA
+  DOM --> TO : ResultadoTransicion { finalizada: true }
+
+else Escenario 2 · Modalidad Apuntado (plugin "apuntado")
+
+  alt 2.1 · tipo = TOCAR válido (3 ternas + 1 sobrante de menos de 5 puntos)
+    note over PL
+      efectoCierre → { terminaRonda: false,
+      rondaExtra: true, ajustePuntos: 0 }
+    end note
+    DOM -> DOM : iniciarRondaExtra(): descarta y pasa la ronda a RONDA_EXTRA\nrondaExtra = { tocadorId, pendientes: rivales en orden de turno }\nturno → pendientes[0] (ESPERANDO_ROBO)
+    DOM --> TO : ResultadoTransicion { eventos: [JUGADOR_TOCO], finalizada: false }
+    note over UI, DOM
+      <b>Ronda extra:</b> cada rival pendiente juega su último turno con los comandos
+      normales POST /comandos/robar y POST /comandos/descartar (cada uno con su
+      version e idComando). descartar() → avanzarRondaExtra() lo quita de pendientes.
+      El descarte del último pendiente ejecuta la liquidación del sub-caso 2.2.
+      Tocar otra vez durante la ronda extra responde CIERRE_NO_PERMITIDO.
+    end note
+
+  else 2.2 · cierre final de la ronda (4-3-3 válido, o último descarte de la ronda extra)
+    alt 4-3-3 válido (POST /comandos/cerrar)
+      note over PL
+        efectoCierre → { terminaRonda: true,
+        ajustePuntos: −10 } (bonificación)
+      end note
+      DOM -> PL : liquidarRonda(manos organizadas de los rivales)
+    else último descarte de la ronda extra (POST /comandos/descartar · misma ruta ejecutar())
+      DOM -> PL : liquidarRonda(manos de TODOS los activos, incluido el tocador)
+    end
+    PL --> DOM : penalizaciones[jugadorId] = puntosNoCombinados(grupos, sobrantes)
+    DOM -> DOM : puntaje += penalización (en memoria, sin escribir aún)
+    DOM -> PL : evaluarDesenlace(marcador acumulado, ganadorRondaId)
+    PL --> DOM : Desenlace { terminada, ganadorId?, eliminados: puntaje ≥ 101 }
+    DOM -> DOM : marcador.push(EntradaMarcador\n{ numeroRonda, ganadorId, tipoCierre, puntos[] })
+    alt desenlace.terminada (queda un solo jugador activo, o alguien llega a ≤ −51)
+      DOM -> DOM : finalizar(): FINALIZADA · GANADOR / PERDEDOR / ELIMINADO\neventos RONDA_CERRADA, PARTIDA_FINALIZADA
+      DOM --> TO : ResultadoTransicion { finalizada: true }
+    else la partida continúa (con 3 o más jugadores, 101 elimina pero no termina)
+      DOM -> DOM : jugadores con ≥ 101 → ELIMINADO\nrepartirRonda(n + 1) con BarajadorSeguro, en el mismo cálculo\neventos RONDA_CERRADA, RONDA_INICIADA
+      DOM --> TO : ResultadoTransicion { finalizada: false }
+    end
+  end
+
+else Cierre inválido (cualquier modalidad)
+  DOM -> DOM : intentoCierre = true · puntaje += castigo (+3 Apuntado, 0 Clásica)\nevento CIERRE_FALLIDO · el turno no cambia
+  DOM --> TO : ResultadoTransicion { finalizada: false }
+end
+deactivate DOM
+
+break base.version ≠ comando.version (el cliente actuó sobre un estado viejo)
+  TO --> CTRL : PartidaConflictException(VERSION_DESACTUALIZADA)
+  CTRL --> UI : 409 Conflict
+end
+TO -> TO : nueva = { ...resultado.partida, version: v + 1,\ncomandosRecientes: [..., idComando].slice(−20) }
+
+== Persistencia: una sola escritura condicional (persistir antes de notificar) ==
+
+alt finalizada = false (2.1 · 2.2 con nueva ronda · cierre inválido)
+  TO -> REPO : actualizarSiCoincide(aRegistro(nueva), { version: v, jugadorId, idComando })
+  REPO -> DB : partidas.updateOne(\n { _id, version: v, "rondaActual.turno.jugadorId": jugadorId,\n   comandosRecientes: { $ne: idComando } },\n { $set: estado, $inc: { version: 1 },\n   $push: { comandosRecientes: { $each: [idComando], $slice: −20 } } })
+  DB --> REPO : matchedCount
+  REPO --> TO : coincidió : boolean
+else finalizada = true (Escenario 1 · 2.2 con fin de partida)
+  TO -> UOW : ejecutar(trabajo)
+  activate UOW
+  UOW -> DB : startSession() · withTransaction(\nreadConcern snapshot · writeConcern majority · primary)
+  UOW -> TO : trabajo(session)
+  TO -> REPO : actualizarSiCoincide(nueva, condición, session)
+  REPO -> DB : partidas.updateOne(mismo filtro condicional) [session]
+  DB --> REPO : matchedCount
+  REPO --> TO : coincidió : boolean
+  opt coincidió = true · pagarPozo()
+    TO -> LIB : registrar([PREMIO_POZO { monto: pozo.total,\nreferencia: "PREMIO_POZO:{partidaId}" }], session)
+    LIB -> DB : asientos_tokens.insertMany() (índice único en referencia)
+    TO -> DB : User.updateOne($inc tokens del ganador) · User.updateMany(status ACTIVE)\nGame.updateOne(status FINISHED) · Player.updateMany(isActive: false)
+  end
+  UOW -> DB : commitTransaction() (o abortTransaction() si no coincidió)
+  UOW --> TO : fin de la transacción
+  deactivate UOW
+end
+
+' ------------------------------------------------------------------------------------
+alt coincidió = true · el comando ganó
+  TO -> BUS : publish(PartidaActualizadaEvent(salaId, nueva, eventos))\n«solo después del commit»
+  activate BUS
+  BUS -> GW : notificarPartida(salaId, partida, eventos)
+  GW -> GW : planificarNotificaciones() (función pura: vistas filtradas)
+  GW ->> UI : sala pública "partida:{gameId}":\nMATCH_WON_LISTENER · PLAYER_KNOCKED_LISTENER · PLAYER_CANT_WIN_LISTENER\nROUND_STARTED_LISTENER · GAME_FINISHED_LISTENER { evento, partida: vista pública }
+  GW ->> UI : sala privada "usuario:{userId}": PRIVATE_HAND_LISTENER { mano }\n(solo los jugadores cuya mano cambió)
+  deactivate BUS
+  TO --> CTRL : { aplicado: true, partida: nueva }
+  CTRL --> UI : 200 OK { partida: vistaPublica, mano: vistaPrivada }
+
+else coincidió = false · otro comando ganó la carrera (EscrituraSinCoincidencia)
+  TO -> TO : resolverConflicto(comando, base)
+  TO -> REPO : buscarPorId(partidaId) (relectura)
+  REPO --> TO : partida vigente (version ≥ v + 1)
+  alt el mismo idComando ya se aplicó
+    TO --> CTRL : { aplicado: false, partida }
+    CTRL --> UI : 200 OK (idempotente)
+  else la ronda ya no es la misma o ya no está en turnos
+    TO --> CTRL : PartidaConflictException(RONDA_YA_CERRADA)
+    CTRL --> UI : 409 Conflict (código RONDA_YA_CERRADA)
+    UI -> CTRL : GET /api/partidas/actual (relee el estado y descarta la intención)
+  else el turno es de otro jugador
+    TO --> CTRL : PartidaConflictException(TURNO_NO_CORRESPONDE)
+    CTRL --> UI : 409 Conflict
+  else cualquier otro cambio
+    TO --> CTRL : PartidaConflictException(VERSION_DESACTUALIZADA)
+    CTRL --> UI : 409 Conflict
+  end
+end
+deactivate TO
+deactivate CTRL
+
+legend right
+  <b>Clave</b>
+  ->   llamada síncrona            -->  respuesta
+  ->>  mensaje asíncrono (Socket.IO)
+  break  interrumpe el flujo y responde de inmediato
+  alt / else  escenarios excluyentes · opt  paso condicional
+  Plug-ins: ReglaClasicaPlugin (id "clasica") y ReglaApuntadoPlugin (id "apuntado")
+endlegend
+@enduml

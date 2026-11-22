@@ -1,0 +1,5 @@
+# Los scripts de shell deben conservar LF aunque se clonen en Windows (core.autocrlf=true);
+# con CRLF, bash dentro de los contenedores falla con "$'\r': command not found".
+*.sh text eol=lf
+docker/** text eol=lf
+*.bat text eol=crlf

@@ -1,0 +1,165 @@
+# Pipeline CI/CD del Sistema Apuntado (Entregable 3, capítulo 4).
+#
+# Etapas (todas bloqueantes):
+#   arquitectura  fitness functions FF-01..FF-06 en modo trinquete y estricto + métricas (Ca, Ce, I, A, D, CC)
+#   backend       tsc · pruebas unitarias con cobertura · e2e de concurrencia (replica set en memoria) · nest build
+#   frontend      lint · pruebas Vitest · tsc + vite build
+#   contenedores  build de las imágenes y prueba de humo con docker compose (mongodb rs0 → mongo-init → backend → frontend)
+#   despliegue    solo en push a main y con todas las etapas en verde: dispara los deploy hooks de Render
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  arquitectura:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tests/architecture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/architecture/package-lock.json
+      - run: npm ci
+      # Modo trinquete: bloquea el merge si aparece una violación arquitectónica nueva.
+      - name: Fitness functions (modo trinquete)
+        run: npm test
+      # Modo estricto: bloquea el merge si existe cualquier violación (la línea base está vacía).
+      - name: Fitness functions (modo estricto)
+        run: npm run test:estricto
+      # Métricas estructurales: se publican en el resumen del job y como artefacto.
+      - name: Métricas de arquitectura (CC, Ca, Ce, I, A, D)
+        run: npm run metricas
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metricas-arquitectura
+          path: docs/metricas/
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Instalar dependencias (lockfile congelado)
+        run: npm ci --no-audit --no-fund
+      - name: Verificación de tipos
+        run: npx tsc --noEmit -p tsconfig.json
+      - name: Pruebas unitarias, de contrato y casos borde (con cobertura)
+        run: npx jest --ci --coverage --coverageReporters=text-summary --coverageReporters=lcov
+      - name: Caché de binarios de MongoDB (mongodb-memory-server)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('backend/package-lock.json') }}
+      - name: Pruebas e2e de concurrencia (replica set en memoria)
+        run: npm run test:e2e -- --ci
+      - name: Compilación de producción
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: backend/coverage/lcov-report/
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Instalar dependencias (lockfile congelado)
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn lint
+      - name: Pruebas de la lógica del tablero (Vitest)
+        run: yarn test
+      - name: Compilación (tsc + vite build)
+        run: yarn build
+
+  contenedores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [backend, frontend]
+    env:
+      # Secretos de prueba: solo existen dentro del runner efímero.
+      JWT_SECRET: ci-jwt-secret-${{ github.run_id }}
+      JWT_REFRESH_SECRET: ci-jwt-refresh-secret-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar docker-compose.yml
+        run: docker compose config --quiet
+      - name: Construir imágenes y levantar el sistema completo
+        run: docker compose up -d --build
+      - name: Prueba de humo (backend, SPA y proxy de Nginx)
+        run: |
+          for intento in $(seq 1 60); do
+            if curl -fsSL -o /dev/null http://localhost:3000/docs \
+              && curl -fsSL -o /dev/null http://localhost:5173/ \
+              && curl -fsSL -o /dev/null http://localhost:5173/docs; then
+              echo "Sistema disponible tras ${intento} intento(s)."
+              break
+            fi
+            sleep 5
+          done
+          curl -fsSL -o /dev/null http://localhost:3000/docs
+          curl -fsSL http://localhost:5173/ | grep -q '<div id="root">'
+          curl -fsSL -o /dev/null http://localhost:5173/docs
+          docker compose ps
+          test "$(docker inspect -f '{{.State.ExitCode}}' "$(docker compose ps -a -q mongo-init)")" = "0"
+      - name: Registros de los contenedores (si falla)
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Apagar y borrar volúmenes
+        if: always()
+        run: docker compose down -v
+
+  despliegue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [arquitectura, backend, frontend, contenedores]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Disparar el despliegue en Render
+        env:
+          HOOK_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+          HOOK_FRONTEND: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -z "$HOOK_BACKEND" ] || [ -z "$HOOK_FRONTEND" ]; then
+            echo "::warning::Faltan los secretos RENDER_DEPLOY_HOOK_BACKEND / RENDER_DEPLOY_HOOK_FRONTEND: no se despliega."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK_BACKEND" > /dev/null
+          curl -fsS -X POST "$HOOK_FRONTEND" > /dev/null
+          echo "Despliegue solicitado en Render (backend y frontend)."

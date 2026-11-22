@@ -1,0 +1,11 @@
+{
+  "name": "@apuntado/plugin-clasica",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plug-in de reglas de la modalidad Clásica 4-3-3 (una sola ronda, sin marcador). ADR-03.",
+  "main": "index.ts",
+  "apuntado": {
+    "id": "clasica",
+    "versionContrato": "1.0.0"
+  }
+}

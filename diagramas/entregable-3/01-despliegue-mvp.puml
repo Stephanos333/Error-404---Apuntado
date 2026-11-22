@@ -1,0 +1,111 @@
+@startuml 01-despliegue-mvp
+' =====================================================================================
+' Entregable 3 · Sección 1.1 · Diagrama UML 2.5 de despliegue del MVP
+' Fuente de verdad: docker-compose.yml, frontend/nginx.conf, backend/Dockerfile,
+' frontend/Dockerfile, backend/src/game/socket/{game.socket,salas}.ts
+' =====================================================================================
+title Sistema Apuntado · Diagrama de despliegue del MVP (UML 2.5)\n<size:11>Entregable 3 · topología física del docker compose «apuntado» y su variante en la nube</size>
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam ArrowColor #333333
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #444444
+}
+skinparam artifact {
+  BackgroundColor #F5F9FF
+  BorderColor #4A6FA5
+}
+skinparam database {
+  BackgroundColor #F3FAF3
+  BorderColor #3C7A3C
+}
+left to right direction
+
+' ---------------------------------------------------------------- Cliente
+node "Dispositivo del Jugador" <<device>> as DEV {
+  node "Navegador web\n(Chrome · Firefox · Edge)" <<executionEnvironment>> as NAV {
+    artifact "SPA React 18 (build de Vite 5)\nindex.html · assets/index-[hash].js · assets/index-[hash].css" as SPA
+    artifact "socket.io-client 4.7\nnamespace /game" as SIOC
+  }
+}
+
+' ---------------------------------------------------------------- Servidor web y API
+node "Servidor Web y API\nHost Docker · docker compose (proyecto «apuntado»)\nred bridge interna apuntado_default" <<executionEnvironment>> as HOST {
+
+  node "Contenedor frontend\nnginx:1.27-alpine\nescucha :80 · publicado en el host :5173" <<executionEnvironment>> as NGX {
+    artifact "nginx.conf\nproxy inverso /api/ · /socket.io/ · /docs" as NCONF
+    artifact "/usr/share/nginx/html\n(frontend/dist: estáticos de la SPA)" as DIST
+  }
+
+  node "Contenedor backend\nnode:20.18-alpine · usuario node\nescucha :3000 (también publicado en el host :3000)" <<executionEnvironment>> as API {
+    artifact "dist/src/main.js\nNestJS 10 · REST /api · Socket.IO /game · Swagger /docs" as MAIN
+    artifact "dist/plugins/clasica\n@apuntado/plugin-clasica 1.0.0" as P1
+    artifact "dist/plugins/apuntado\n@apuntado/plugin-apuntado 1.0.0" as P2
+  }
+
+  node "Contenedor mongo-init\nmongo:7.0 · tarea única (restart: no)" <<executionEnvironment>> as INIT {
+    artifact "docker/mongo/init.sh\ncrear-colecciones.mongodb.js\nseed-disenos-carta.js" as INITA
+  }
+}
+
+' ---------------------------------------------------------------- Base de datos
+node "Servidor de Base de Datos" <<device>> as DBS {
+  node "Contenedor mongodb\nmongo:7.0 · mongod ~--replSet rs0 ~--bind_ip_all\nescucha :27017" <<executionEnvironment>> as MONGO {
+    database "Base «apuntado» · replica set rs0 (PRIMARY)\npartidas · asientos_tokens · User · Game · Player · Card-design\nvalidadores $jsonSchema (strict) e índices únicos" as DB
+  }
+  storage "Volumen Docker mongo-data\n(montado en /data/db)" as VOL
+}
+
+' ---------------------------------------------------------------- Despliegue (manifestación)
+MAIN ..> P1 : <<import>>\n(registro estático en\nReglasPluginsModule)
+MAIN ..> P2 : <<import>>
+
+' ---------------------------------------------------------------- Rutas de comunicación
+NAV --> NGX : <<HTTP / HTTPS>>\nlocal: http://localhost:5173 · nube: https :443\nGET / · /assets/* (descarga de la SPA)\nREST JSON /api/* · Authorization: Bearer JWT
+NAV <--> NGX : <<WebSocket · Socket.IO>>\nlocal: ws:~// · nube: wss:~// (TLS)\n/socket.io/ · namespace /game · JWT en el handshake\nsalas partida:{gameId} y usuario:{userId}
+NGX --> API : <<HTTP/1.1 · proxy_pass>>\nhttp://backend:3000 (red interna)\n/api/ · /docs\n/socket.io/ con Upgrade: websocket\nproxy_read_timeout 3600 s
+API --> MONGO : <<Driver MongoDB · TCP>>\nmongodb://mongodb:27017/apuntado?replicaSet=rs0\nMongoose 8 + colecciones nativas\ntransacciones: snapshot · w: majority · primary
+INIT --> MONGO : <<mongosh · TCP :27017>>\nvalidadores, índices y semilla\n(idempotente)
+MONGO --> VOL : <<persistencia>>
+
+' ---------------------------------------------------------------- Notas
+note right of API
+  <b>GameSocket</b> (gateway Socket.IO, namespace /game)
+  en GAME_CONNECTION_EVENT hace socket.join([
+    "partida:{gameId}",   ← solo vista pública
+    "usuario:{userId}"    ← solo la mano propia (R04)
+  ])
+  Las notificaciones salen después del commit (ADR-05).
+end note
+
+note bottom of HOST
+  <b>Orden de arranque</b> (healthcheck + depends_on):
+  1. mongodb healthy (rs.status().myState = PRIMARY)
+  2. mongo-init termina con código 0 (service_completed_successfully)
+  3. backend healthy (responde /docs)
+  4. frontend arranca y sirve la SPA
+end note
+
+note right of DBS
+  <b>Variante de despliegue</b>
+  · Local (MVP): este nodo es un contenedor del mismo host Docker,
+    conectado por la red interna sin TLS.
+  · Nube: MongoDB Atlas (el M0 ya es replica set), URI mongodb+srv://
+    con TLS obligatorio. El frontend y el backend publican HTTPS / WSS
+    detrás del terminador TLS del proveedor (Render · Railway · Fly.io).
+end note
+
+legend right
+  <b>Clave</b>
+  <<device>>  recurso físico o máquina (cliente, servidor)
+  <<executionEnvironment>>  entorno de ejecución (navegador, host Docker, contenedor)
+  artifact  archivo desplegado (bundle, main.js, plug-in, scripts)
+  ──>  ruta de comunicación con su protocolo y puerto
+  ..>  dependencia de despliegue entre artefactos
+endlegend
+@enduml
