@@ -10,8 +10,8 @@ FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 # mongodb-memory-server (solo pruebas) no debe descargar el binario de MongoDB al instalar.
 ENV MONGOMS_DISABLE_POSTINSTALL=1
-COPY package.json ./
-RUN npm install --no-audit --no-fund
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
 FROM deps AS build
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./

@@ -65,10 +65,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          # El backend no versiona package-lock.json (deuda 3.13): la caché se indexa por package.json.
-          cache-dependency-path: backend/package.json
-      - name: Instalar dependencias
-        run: npm install --no-audit --no-fund
+          cache-dependency-path: backend/package-lock.json
+      - name: Instalar dependencias (lockfile congelado)
+        run: npm ci --no-audit --no-fund
       - name: Verificación de tipos
         run: npx tsc --noEmit -p tsconfig.json
       - name: Pruebas unitarias, de contrato y casos borde (con cobertura)
@@ -77,7 +76,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/mongodb-binaries
-          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('backend/package.json') }}
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('backend/package-lock.json') }}
       - name: Pruebas e2e de concurrencia (replica set en memoria)
         run: npm run test:e2e -- --ci
       - name: Compilación de producción

@@ -13,7 +13,7 @@ construido como un monolito modular con núcleo **microkernel** de reglas (Richa
 
 | Aspecto | Detalle |
 |---|---|
-| Estilo arquitectónico | Monolito modular por capas (ADR-01) con núcleo microkernel y plug-ins de reglas (ADR-02, ADR-03) |
+| Estilo arquitectónico | Monolito modular por capas (ADR-01, enmendado por ADR-06) con núcleo microkernel y plug-ins de reglas (ADR-02, ADR-03) |
 | Backend | Node.js 20, NestJS 10, TypeScript 5.4, Socket.IO 4 (namespace `/game`), Swagger en `/docs` |
 | Frontend | React 18, Vite 5, Material UI 5, socket.io-client 4; servido por Nginx 1.27 |
 | Persistencia | MongoDB 7 como replica set (Atlas en la nube). Agregado `partidas`, libro `asientos_tokens` y validadores `$jsonSchema` (ADR-04) |
@@ -97,7 +97,7 @@ docker compose up -d mongodb mongo-init
 # Backend (http://localhost:3000)
 cd backend
 cp .env.example .env     # MONGODB_URI=mongodb://localhost:27017/apuntado?directConnection=true y secretos JWT
-npm install
+npm ci                   # versiones exactas de package-lock.json
 npm run start:dev
 
 # Frontend (http://localhost:5173)
@@ -150,5 +150,3 @@ El backend necesita un host con **WebSockets persistentes**; los entornos *serve
   ronda extra en la que cada rival juega un último turno antes de liquidar.
 - Reenganche y la bitácora `jugadas` están diseñados (ADR-03, ADR-04), pero no están disponibles en
   el MVP.
-- El backend no versiona `package-lock.json` (está en `backend/.gitignore`), así que la imagen
-  instala con rangos semver. El frontend sí usa `yarn.lock`.

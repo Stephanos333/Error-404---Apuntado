@@ -356,7 +356,7 @@ Ninguna simplificación cambia una relación ni una firma pública.
 | Filtro de concurrencia | `version`, turno y `rondaActual.estado` | `version`, turno y `comandosRecientes: {$ne}` | La versión ya cubre el cambio de estado y el filtro por `idComando` añade la idempotencia. |
 | Bitácora `jugadas` | Se escribía en el cierre | No está en el MVP (pendiente, ver README) | Fuera del alcance del MVP. |
 | Tocar | Diseñado | Implementado con ronda extra | Lo necesita el botón "Cerrar / Tocar" de Apuntado. |
-| Organización de `src/` | Módulos por dominio (ADR-01) | Capas `dominio/`, `aplicacion/`, `reglas/`, `database/` | Romper el ciclo de 8 módulos (FF-03). Falta registrarlo en el ADR-06. |
+| Organización de `src/` | Módulos por dominio (ADR-01) | Capas `dominio/`, `aplicacion/`, `reglas/`, `database/` | Romper el ciclo de 8 módulos (FF-03). Registrado en [ADR-06](adrs/ADR-06-organizacion-por-capas-de-src.md). |
 
 Dos precisiones sobre las reglas de Apuntado, tal como están implementadas:
 

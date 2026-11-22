@@ -14,8 +14,8 @@ yarn-error.log*
 lerna-debug.log*
 
 # Dependencies
+# El backend usa npm: package-lock.json SÍ se versiona (instalación reproducible con `npm ci`, checklist 3.13).
 yarn.lock
-package-lock.json
 
 # Environment
 .env

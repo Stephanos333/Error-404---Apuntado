@@ -41,7 +41,7 @@ flowchart LR
 | Job | Qué ejecuta | Qué garantiza | Artefacto |
 |---|---|---|---|
 | `arquitectura` | `npm ci`, `npm test` (trinquete), `npm run test:estricto`, `npm run metricas` en `tests/architecture` | La estructura no se degrada: capas, microkernel, ciclos, complejidad, motor sin framework y esquemas de datos (sección 4.3). | `metricas-arquitectura` (JSON y Markdown); la tabla también aparece en el resumen del job. |
-| `backend` | `npm install`, `tsc --noEmit`, `jest --ci --coverage` (106 pruebas), `npm run test:e2e` (8 pruebas con un replica set de MongoDB en memoria), `npm run build` | El código compila. Las reglas, los plug-ins, el agregado y el orquestador se comportan como se espera. La concurrencia del cierre (R03) sigue protegida. | `cobertura-backend` (informe LCOV) |
+| `backend` | `npm ci`, `tsc --noEmit`, `jest --ci --coverage` (106 pruebas), `npm run test:e2e` (8 pruebas con un replica set de MongoDB en memoria), `npm run build` | El código compila. Las reglas, los plug-ins, el agregado y el orquestador se comportan como se espera. La concurrencia del cierre (R03) sigue protegida. | `cobertura-backend` (informe LCOV) |
 | `frontend` | `yarn install --frozen-lockfile`, `yarn lint`, `yarn test` (16 pruebas Vitest), `yarn build` (`tsc && vite build`) | La SPA compila con el mismo lockfile que la imagen Docker y la lógica del tablero (traducción de comandos, versiones) sigue correcta. | — |
 | `contenedores` | `docker compose config`, `docker compose up -d --build` y una prueba de humo con `curl` sobre `:3000/docs`, `:5173/` y `:5173/docs` (a través del proxy de Nginx); además comprueba que `mongo-init` terminó con código 0 | Las dos imágenes se construyen y el sistema completo arranca en el orden de salud definido: replica set PRIMARY → validadores → backend sano → frontend. | Registros de los contenedores si falla |
 | `despliegue` | `POST` a los *deploy hooks* de Render (backend y frontend) | Solo se despliega lo que pasó las cuatro puertas. Se ejecuta únicamente en `push` a `main`. | — |
@@ -312,7 +312,7 @@ Cuando una métrica se estabilice, puede convertirse en fitness function. Por ej
 | Tema | Situación | Acción propuesta |
 |---|---|---|
 | Primera ejecución del pipeline | Validado localmente y con un analizador YAML; aún no se ha ejecutado en GitHub | Abrir el PR hacia `main` y revisar los cinco jobs |
-| `package-lock.json` del backend | No se versiona (checklist 3.13), así que el job usa `npm install` y las versiones pueden variar entre ejecuciones | Versionar el lockfile y cambiar a `npm ci` |
+| `package-lock.json` del backend | Resuelto al cierre del E3 (checklist 3.13): el lockfile se versiona y el job `backend` y el `Dockerfile` instalan con `npm ci` | Regenerarlo con `npm install` solo al cambiar dependencias y versionarlo en el mismo commit |
 | Lint del backend | No forma parte del pipeline: el script `lint` usa `--fix` y no se verificó que quede en cero | Agregar un `lint:ci` sin `--fix` y sumarlo al job `backend` |
 | Cobertura | Se publica, pero no tiene umbral | Fijar un mínimo para `dominio/`, `reglas/` y `plugins/` |
 | `leaveOrCancel` | Resuelto: CC reducido de 13 a 6 y cubierto con pruebas unitarias (`game.service.leave-cancel.spec.ts`) | Mantener la cobertura al extender el ciclo de vida de salas |
@@ -331,7 +331,7 @@ npm run test:estricto    # 28/28, modo estricto
 npm run metricas         # escribe docs/metricas/metricas-arquitectura.{json,md}
 
 # Backend
-cd backend && npm install
+cd backend && npm ci
 npx tsc --noEmit -p tsconfig.json
 npx jest --ci            # 12 suites, 106/106
 npm run test:e2e         # 8/8 (MongoDB replica set en memoria)

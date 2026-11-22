@@ -105,7 +105,7 @@ la implementación, y fue posible hacerlo sin perder la intención porque el *po
 
 | ADR | Por qué (fuerza que la motivó) | Cómo se propuso | Cómo quedó en el MVP | ¿Se cumplió el por qué? |
 |---|---|---|---|---|
-| **ADR-01** Particionar por dominio | El prototipo caía en *Entity Trap*: `PlayerService` concentraba reparto, turnos, validación y puntaje, y había un ciclo entre 8 módulos | Módulos de dominio (`juego`, `reglas`, `puntaje`, ...) con `api/`, `aplicacion/`, `dominio/`, `infraestructura/` | Capas transversales `dominio/`, `aplicacion/`, `reglas/` y `database/` con registros propios (DIP), conservando los controladores del prototipo | **Sí:** FF-03 sin ciclos en modo estricto, `linea-base.json` vacío y el motor probado sin framework. Falta registrar el cambio de forma en un ADR-06. |
+| **ADR-01** Particionar por dominio | El prototipo caía en *Entity Trap*: `PlayerService` concentraba reparto, turnos, validación y puntaje, y había un ciclo entre 8 módulos | Módulos de dominio (`juego`, `reglas`, `puntaje`, ...) con `api/`, `aplicacion/`, `dominio/`, `infraestructura/` | Capas transversales `dominio/`, `aplicacion/`, `reglas/` y `database/` con registros propios (DIP), conservando los controladores del prototipo | **Sí:** FF-03 sin ciclos en modo estricto, `linea-base.json` vacío y el motor probado sin framework. El cambio de forma quedó registrado en [ADR-06](adrs/ADR-06-organizacion-por-capas-de-src.md). |
 | **ADR-02 / ADR-03** Reglas como plug-ins | Agregar una variante sin tocar el núcleo ni la persistencia | Manifiesto `reglas.plugins.json` + `import()` dinámico | Registro estático en la raíz de composición, validado al arrancar (semver, forma, prueba de humo) | **Sí, en el núcleo:** el orquestador no conoce ningún plug-in (Ca de los plug-ins = 1). **No, en la recompilación:** agregar una variante exige recompilar la raíz. |
 | **ADR-04** Partida como agregado documental | Cerrar y liquidar de forma atómica, sin penalizaciones parciales (R02) ni dobles pagos (R03) | Documento `partidas` + bitácora `jugadas` (*bucket*) + libro `asientos_tokens` + validadores `$jsonSchema` | `partidas` y `asientos_tokens` con driver nativo, escritura condicional y transacciones en inicio y fin. La bitácora `jugadas` y la migración de `User`/`Game`/`Player` quedaron pendientes. | **Sí** para la atomicidad (8/8 e2e). La trazabilidad jugada a jugada todavía no existe. |
 | **ADR-05** Comando síncrono + eventos después del *commit* | Nunca notificar algo que no ocurrió, y no filtrar cartas | `GameApiGateway` → interfaces → `IGameStateStore`; eventos `CartaRobada`, `TurnoCambiado`, ... | `PartidaController` → `TurnOrchestrator` → funciones puras → `PartidaRepository`; un solo `PartidaActualizadaEvent` con la lista de eventos de dominio | **Sí:** `turn-orchestrator.service.spec.ts` comprueba que no se publica nada si la escritura falla, y las vistas filtradas se prueban. `PresenceMonitor` (temporizadores) no se implementó. |
@@ -364,8 +364,8 @@ modalidades) de lo que debe permanecer estable (las reglas y su consistencia).
    de espera, fuera del núcleo que más se había probado.
 5. **Documentar el porqué hizo baratos los cambios de forma.** El MVP se apartó del *cómo* de tres
    ADR (capas en lugar de módulos, registro estático, sin bitácora) y no perdió ninguna intención,
-   porque cada una tenía una verificación. Las desviaciones deben quedar registradas: el ADR-06 sobre
-   la organización por capas sigue pendiente.
+   porque cada una tenía una verificación. Las desviaciones deben quedar registradas: la
+   organización por capas quedó en el ADR-06, escrito después de los hechos y al cierre del E3.
 6. **Lo pendiente también es arquitectura.** R12 (contraseñas) y R08 (abandono) no son detalles de
    implementación: son riesgos de seguridad y de disponibilidad que el *risk storming* ya había
    puntuado en 6 y 4.
