@@ -18,11 +18,25 @@ import * as process from 'process';
  */
 async function bootstrap(): Promise<void> {
 	const app: INestApplication = await NestFactory.create(AppModule);
-	app.setGlobalPrefix(process.env.APP_GLOBAL_PREFIX);
+	app.setGlobalPrefix(process.env.APP_GLOBAL_PREFIX, { exclude: ['/'] });
 	app.useGlobalPipes(new ValidationPipe());
 	app.useGlobalFilters(new AppExceptionFilter());
 	app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 	app.enableCors();
+
+	// Responder a los probes del balanceador de Render y visitas a la raíz con 200 OK
+	const httpAdapter = app.getHttpAdapter();
+	httpAdapter.get('/', (_req, res) => {
+		res.json({
+			name: 'Sistema Digital Apuntado - Backend API',
+			status: 'UP',
+			docs: `/${process.env.APP_DOCS_URI || 'docs'}`,
+			api: `/${process.env.APP_GLOBAL_PREFIX || 'api'}`,
+		});
+	});
+	httpAdapter.head('/', (_req, res) => {
+		res.status(200).end();
+	});
 
 	const config = new DocumentBuilder()
 		.setTitle('Apuntado Requisitos')
