@@ -23,7 +23,7 @@ Si el equipo expone con tres personas, E3 asume también el papel de E4.
 | ✔ | Tarea | Por qué |
 |---|---|---|
 | ☐ | Abrir la URL del frontend y `https://error-404-apuntado-backend.onrender.com/docs` y esperar a que respondan | Los servicios de Render pueden "dormirse" por inactividad y tardar cerca de un minuto en despertar |
-| ☐ | Tener **dos cuentas creadas** (U1 y U2) con al menos 20 tokens cada una y la sesión iniciada en cada navegador | El registro no aporta nada arquitectónico y consume tiempo |
+| ☐ | Tener **cuatro cuentas creadas** (U1 y U2 para Apuntado; U3 y U4 para Clásica) con al menos 20 tokens cada una y la sesión iniciada en cuatro navegadores o perfiles | El registro no aporta nada arquitectónico y consume tiempo; un usuario solo puede estar en una partida a la vez |
 | ☐ | Comprobar que ninguna de las dos cuentas tiene una sala pendiente (no debe aparecer el *banner* de "partida en curso" en el inicio) | Si quedó una, usar "Cancelar sala" antes de empezar (INC-01) |
 | ☐ | En el navegador B: DevTools → **Network → WS**, con el filtro de mensajes listo | Para mostrar las salas pública y privada (R04) |
 | ☐ | Pestaña de **Swagger** (`/docs`) y, en un bloc de notas, los tokens de **U1 y U2** (DevTools → Application → Local Storage → `KEY_ACCESS_TOKEN`) | Para enviar un comando fuera de turno con el token de quien no tiene el turno |
@@ -34,11 +34,30 @@ Si el equipo expone con tres personas, E3 asume también el papel de E4.
 
 > **Advertencia importante.** El mazo se baraja con un generador criptográficamente seguro
 > (`BarajadorSeguro`, `crypto.randomInt`): **no se puede preparar una mano** para tocar en vivo, y
-> hacerlo sería una trampa que la propia arquitectura impide. Lo deterministas en vivo son el flujo de
+> hacerlo sería una trampa que la propia arquitectura impide. Lo determinista en vivo es el flujo de
 > la sala, los turnos, la sincronización, el rechazo de un cierre inválido y el rechazo fuera de turno.
 > *Tocar* con menos de 5 puntos, la ronda extra y la liquidación se muestran en vivo **solo si la mano
 > lo permite**; si no, se usa el video. Grábenlo antes: jueguen una partida de Apuntado de 2 jugadores
 > hasta que ocurra un toque válido.
+
+### Ajustes para cumplir la pauta oficial de la sustentación
+
+La pauta pide **jugar una ronda en Clásica y una en Apuntado** y **terminar comprobando el pipeline
+CI/CD en ejecución**. Para cubrirla:
+
+1. **Pipeline en ejecución.** Al empezar la demo (minuto 0), E4 pulsa **"Re-run all jobs"** en la
+   última ejecución de `CI/CD` del PR hacia `main`. El pipeline tarda varios minutos, y en el bloque
+   de evidencias (11:30) se muestra terminado en verde. Antes de la sustentación, comprueben que ya
+   hubo al menos una ejecución completa en verde.
+2. **Clásica en vivo.** Un usuario solo puede estar en una partida a la vez, así que la mesa
+   Clásica la juegan **E3 y E4 con dos cuentas adicionales (U3 y U4)** en otros dos navegadores.
+   La crean y la inician durante el bloque de turnos de la mesa de Apuntado, y en el bloque de
+   cierre (08:00) muestran un turno y un 4-3-3 inválido que se rechaza **sin castigo**. La
+   diferencia con el +3 de Apuntado la decide el plug-in, no el núcleo. Esto suma unos 2 minutos:
+   recorten la apertura y las preguntas.
+3. **Rondas completas.** Si ninguna mano permite cerrar en vivo, los dos clips del video muestran
+   una ronda completa de cada modalidad. Explíquenlo antes de reproducirlos, con la frase de la
+   sección 4: el barajado seguro impide preparar las manos.
 
 ---
 

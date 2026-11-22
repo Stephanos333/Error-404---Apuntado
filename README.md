@@ -3,6 +3,8 @@
 Juego de cartas **Apuntado** en línea con dos modalidades, **Clásica 4-3-3** y **Apuntado a 101**,
 construido como un monolito modular con núcleo **microkernel** de reglas (Richards & Ford, 2025).
 
+- **Aplicación desplegada:** https://error-404-apuntado.onrender.com (API y Swagger: https://error-404-apuntado-backend.onrender.com/docs). Si no responde de inmediato, espere cerca de un minuto: Render detiene los servicios inactivos.
+- Repositorio: https://github.com/Stephanos333/Error-404---Apuntado
 - Decisiones de arquitectura: [`docs/adrs/`](docs/adrs/README.md)
 - Fitness functions: [`tests/architecture/`](tests/architecture/README.md)
 - Checklists de ingeniería (cap. 24): [`docs/checklists-ingenieria.md`](docs/checklists-ingenieria.md)
