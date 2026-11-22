@@ -1,0 +1,76 @@
+@startuml 04-escalabilidad-100k
+' E3 · 5.4 · Despliegue objetivo para 100.000 jugadores concurrentes (ver docs/capitulo-5-retrospectiva-lecciones.md).
+title Sistema Apuntado · Escalamiento horizontal para 100.000 jugadores concurrentes (UML 2.5)\n<size:11>Diseño objetivo: el dominio y los plug-ins no cambian; se replican los pods sin estado</size>
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam nodesep 25
+skinparam ranksep 45
+left to right direction
+
+node "Dispositivos de jugadores\n(100.000 navegadores)" <<device>> as DEV {
+  artifact "SPA React\nsocket.io-client\n(transporte websocket, JWT en auth)" as SPA
+}
+
+cloud "CDN global" as CDN {
+  artifact "Estáticos de la SPA\nimágenes de cartas e íconos" as EST
+}
+
+node "Balanceador L7 multi-AZ\n(ALB / Cloud Load Balancing + Ingress NGINX)" <<device>> as LB {
+  artifact "TLS · HTTP/2 · WebSocket\nidle timeout 3600 s\n/api -> api · /socket.io -> ws" as RUTAS
+}
+
+node "Clúster Kubernetes (3 zonas)" <<executionEnvironment>> as K8S {
+  node "Deployment apuntado-ws\nHPA 10..30 pods\nmétrica: conexiones por pod (≤ 10.000)" <<executionEnvironment>> as WS {
+    artifact "NestJS · GameSocket\n@socket.io/redis-streams-adapter" as WSA
+  }
+  node "Deployment apuntado-api\nHPA 6..40 pods\nmétrica: CPU 60 % y p95 de comandos" <<executionEnvironment>> as API {
+    artifact "NestJS · PartidaController\nTurnOrchestrator · RegistroReglas\nplugins clasica / apuntado (sin cambios)" as APIA
+  }
+  node "Deployment apuntado-worker\n2..6 pods" <<executionEnvironment>> as WRK {
+    artifact "Outbox del pago del pozo\narchivado de partidas finalizadas" as WRKA
+  }
+}
+
+node "Redis Cluster gestionado\n(3 shards × réplica, multi-AZ)" <<device>> as REDIS {
+  database "Streams del adaptador Socket.IO\n(salas partida:{gameId} · usuario:{userId})" as RS
+  database "Caché: perfiles, catálogo de diseños,\njuego actual por usuario · rate limiting" as RC
+}
+
+node "MongoDB Atlas sharded cluster\n(4 shards × replica set de 3 nodos)" <<device>> as MDB {
+  database "partidas (calientes)\nshard key { _id: hashed }\n(1 partida por gameId)" as P
+  database "asientos_tokens\nshard key { usuarioId: hashed }" as A
+  database "User { userId } · Game { gameId } · Player { gameId }\n(hashed) · Card-design sin fragmentar" as U
+  database "partidas_archivo\n(frías, compactadas)" as H
+}
+
+SPA --> CDN : HTTPS (estáticos)
+SPA --> LB : HTTPS REST /api\n+ WSS /socket.io
+LB --> API : /api/*
+LB --> WS : /socket.io/*
+API --> RC : cache-aside (TTL)
+API --> P : 1 lectura + 1 updateOne condicional\n(el filtro lleva _id: va a un solo shard)
+API --> RS : XADD (eventos ya confirmados)
+WS --> RS : XREAD (consumidor por pod)
+WS --> SPA : emit a salas\n(vista pública / mano privada)
+WRK --> P : change stream\n(PARTIDA_FINALIZADA)
+WRK --> A : asiento PREMIO_POZO\n(referencia única, idempotente)
+WRK --> H : archivado
+API --> U : perfiles (si falla la caché)
+
+note bottom of RS
+  El EventBus local publica después del commit (ADR-05).
+  Con el adaptador, `wsServer.to(sala).emit()` llega a los
+  sockets de cualquier pod: el dominio no cambia.
+end note
+
+note bottom of P
+  Supuesto de carga: 100.000 jugadores ≈ 25.000 mesas de 4.
+  Pico ≈ 14.000 comandos/s ≈ 14.000 escrituras/s repartidas en 4 shards.
+end note
+
+legend right
+  <<device>> nodo físico o servicio gestionado · <<executionEnvironment>> entorno de ejecución
+  Las cifras de pods, shards y umbrales son estimaciones a validar con pruebas de carga (k6).
+endlegend
+@enduml
