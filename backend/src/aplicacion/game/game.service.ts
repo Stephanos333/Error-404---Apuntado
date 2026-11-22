@@ -225,57 +225,66 @@ export class GameService {
 		const player = await this.playerService.getActiveByUserId(userId, false);
 
 		if (!player) {
-			if (user.status.is(UserStatusConstants.PLAYING)) {
-				user.changeStatus(UserStatusConstants.ACTIVE);
-				await this.userService.update(user);
-			}
+			await this.releaseUserToActive(user);
 			return { message: 'Usuario liberado con éxito.' };
 		}
 
-		let game: Game | undefined;
-		try {
-			game = await this.getById(new GameId(player.gameId.toString()), false);
-		} catch {
-			game = undefined;
-		}
-
+		const game = await this.findPendingGame(player.gameId.toString());
 		if (game && !game.wasInitiated) {
 			const isHost = game.creatorId.toString() === userId.toString() || game.hostId.toString() === userId.toString();
 			if (isHost) {
-				const allPlayers = await this.playerService.getByGame(game.gameId);
-				for (const p of allPlayers) {
-					try {
-						const u = await this.userService.getById(p.userId);
-						if (u.status.is(UserStatusConstants.PLAYING)) {
-							u.changeStatus(UserStatusConstants.ACTIVE);
-							await this.userService.update(u);
-						}
-					} catch (e) {
-						this.logger.warn(`No se pudo actualizar estado de usuario ${p.userId.toString()}: ${e}`);
-					}
-				}
-				await this.playerService.deleteByGame(game.gameId);
-				await this.model.deleteOne({ gameId: game.gameId.toString() });
-				this.logger.log(`[${this.leaveOrCancel.name}] Sala ${game.gameId.toString()} cancelada por el host.`);
+				await this.cancelGameAsHost(game);
 			} else {
-				await this.playerService.delete(player.playerId);
-				if (user.status.is(UserStatusConstants.PLAYING)) {
-					user.changeStatus(UserStatusConstants.ACTIVE);
-					await this.userService.update(user);
-				}
-				game.removePlayer();
-				await this.update(game);
-				this.logger.log(`[${this.leaveOrCancel.name}] Jugador ${userId.toString()} abandonó la sala.`);
+				await this.leaveGameAsGuest(game, player, user);
 			}
 		} else {
-			await this.playerService.delete(player.playerId);
-			if (user.status.is(UserStatusConstants.PLAYING)) {
-				user.changeStatus(UserStatusConstants.ACTIVE);
-				await this.userService.update(user);
-			}
+			await this.cleanupOrphanPlayer(player, user);
 		}
 
 		this.logger.log(`[${this.leaveOrCancel.name}] FINISH ::`);
 		return { message: 'Partida cancelada o abandonada con éxito.' };
+	}
+
+	private async findPendingGame(gameIdStr: string): Promise<Game | undefined> {
+		try {
+			return await this.getById(new GameId(gameIdStr), false);
+		} catch {
+			return undefined;
+		}
+	}
+
+	private async releaseUserToActive(user: User): Promise<void> {
+		if (user.status.is(UserStatusConstants.PLAYING)) {
+			user.changeStatus(UserStatusConstants.ACTIVE);
+			await this.userService.update(user);
+		}
+	}
+
+	private async cancelGameAsHost(game: Game): Promise<void> {
+		const allPlayers = await this.playerService.getByGame(game.gameId);
+		for (const p of allPlayers) {
+			try {
+				const u = await this.userService.getById(p.userId);
+				await this.releaseUserToActive(u);
+			} catch (e) {
+				this.logger.warn(`No se pudo actualizar estado de usuario ${p.userId.toString()}: ${e}`);
+			}
+		}
+		await this.playerService.deleteByGame(game.gameId);
+		await this.model.deleteOne({ gameId: game.gameId.toString() });
+		this.logger.log(`[leaveOrCancel] Sala ${game.gameId.toString()} cancelada por el host.`);
+	}
+
+	private async leaveGameAsGuest(game: Game, player: Player, user: User): Promise<void> {
+		await this.playerService.delete(player.playerId);
+		await this.releaseUserToActive(user);
+		game.removePlayer();
+		await this.update(game);
+		this.logger.log(`[leaveOrCancel] Jugador ${user.userId.toString()} abandonó la sala.`);
+	}
+
+	private async cleanupOrphanPlayer(player: Player, user: User): Promise<void> {
+		await this.playerService.delete(player.playerId);
+		await this.releaseUserToActive(user);
 	}
 }

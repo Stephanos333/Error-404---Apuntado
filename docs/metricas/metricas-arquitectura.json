@@ -1,0 +1,827 @@
+{
+  "generado": "2026-11-22T15:46:22.524Z",
+  "definiciones": {
+    "umbralDistancia": 0.5
+  },
+  "complejidad": [
+    {
+      "alcance": "núcleo y plug-ins (FF-04)",
+      "funciones": 218,
+      "media": 1.67,
+      "mediana": 1,
+      "p90": 3,
+      "maxima": 7,
+      "sobreUmbral": 0,
+      "umbral": 10,
+      "top": [
+        {
+          "archivo": "backend/src/aplicacion/partida/turn-orchestrator.service.ts",
+          "linea": 229,
+          "funcion": "resolverConflicto",
+          "cc": 7
+        },
+        {
+          "archivo": "backend/src/dominio/partida/comandos-partida.ts",
+          "linea": 164,
+          "funcion": "validarGrupos",
+          "cc": 6
+        },
+        {
+          "archivo": "backend/src/aplicacion/partida/turn-orchestrator.service.ts",
+          "linea": 184,
+          "funcion": "ejecutar",
+          "cc": 5
+        },
+        {
+          "archivo": "backend/src/dominio/partida/comandos-partida.ts",
+          "linea": 358,
+          "funcion": "intentarCierre",
+          "cc": 5
+        },
+        {
+          "archivo": "backend/src/dominio/partida/comandos-partida.ts",
+          "linea": 463,
+          "funcion": "concluirRonda",
+          "cc": 5
+        }
+      ]
+    },
+    {
+      "alcance": "backend completo",
+      "funciones": 471,
+      "media": 1.57,
+      "mediana": 1,
+      "p90": 3,
+      "maxima": 8,
+      "sobreUmbral": 0,
+      "umbral": 15,
+      "top": [
+        {
+          "archivo": "backend/src/shared/exceptions/app.exception-filter.ts",
+          "linea": 25,
+          "funcion": "resolveMessage",
+          "cc": 8
+        },
+        {
+          "archivo": "backend/src/aplicacion/partida/turn-orchestrator.service.ts",
+          "linea": 229,
+          "funcion": "resolverConflicto",
+          "cc": 7
+        },
+        {
+          "archivo": "backend/src/dominio/player/player.ts",
+          "linea": 253,
+          "funcion": "changeStatus",
+          "cc": 7
+        },
+        {
+          "archivo": "backend/src/aplicacion/game/game.service.ts",
+          "linea": 222,
+          "funcion": "leaveOrCancel",
+          "cc": 6
+        },
+        {
+          "archivo": "backend/src/dominio/partida/comandos-partida.ts",
+          "linea": 164,
+          "funcion": "validarGrupos",
+          "cc": 6
+        }
+      ]
+    }
+  ],
+  "componentes": [
+    {
+      "componente": "plugins/apuntado",
+      "archivos": 2,
+      "ca": 1,
+      "ce": 2,
+      "inestabilidad": 0.67,
+      "abstractos": 1,
+      "concretos": 1,
+      "abstraccion": 0.5,
+      "distancia": 0.17,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/reglas/contrato",
+        "src/reglas/evaluador"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "plugins/clasica",
+      "archivos": 2,
+      "ca": 1,
+      "ce": 2,
+      "inestabilidad": 0.67,
+      "abstractos": 0,
+      "concretos": 1,
+      "abstraccion": 0,
+      "distancia": 0.33,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/reglas/contrato",
+        "src/reglas/evaluador"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "src/(raiz)",
+      "archivos": 3,
+      "ca": 0,
+      "ce": 13,
+      "inestabilidad": 1,
+      "abstractos": 0,
+      "concretos": 7,
+      "abstraccion": 0,
+      "distancia": 0,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "plugins/apuntado",
+        "plugins/clasica",
+        "src/aplicacion/partida",
+        "src/card-design",
+        "src/dominio/partida",
+        "src/game",
+        "src/match",
+        "src/partida",
+        "src/player",
+        "src/reglas/registro",
+        "src/security",
+        "src/shared",
+        "src/user"
+      ],
+      "usadoPor": [],
+      "paquetesExternos": 5
+    },
+    {
+      "componente": "src/aplicacion",
+      "archivos": 1,
+      "ca": 7,
+      "ce": 7,
+      "inestabilidad": 0.5,
+      "abstractos": 0,
+      "concretos": 1,
+      "abstraccion": 0,
+      "distancia": 0.5,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion/card-design",
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/aplicacion/player",
+        "src/aplicacion/user",
+        "src/database",
+        "src/dominio/partida"
+      ],
+      "usadoPor": [
+        "src/card-design",
+        "src/game",
+        "src/match",
+        "src/partida",
+        "src/player",
+        "src/security",
+        "src/user"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/aplicacion/card-design",
+      "archivos": 2,
+      "ca": 3,
+      "ce": 3,
+      "inestabilidad": 0.5,
+      "abstractos": 1,
+      "concretos": 1,
+      "abstraccion": 0.5,
+      "distancia": 0,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/card",
+        "src/database",
+        "src/dominio/card-design"
+      ],
+      "usadoPor": [
+        "src/aplicacion",
+        "src/card-design",
+        "src/user"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/aplicacion/game",
+      "archivos": 1,
+      "ca": 3,
+      "ce": 8,
+      "inestabilidad": 0.73,
+      "abstractos": 0,
+      "concretos": 1,
+      "abstraccion": 0,
+      "distancia": 0.27,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion/player",
+        "src/aplicacion/user",
+        "src/database",
+        "src/dominio/events",
+        "src/dominio/game",
+        "src/dominio/player",
+        "src/dominio/user",
+        "src/reglas/registro"
+      ],
+      "usadoPor": [
+        "src/aplicacion",
+        "src/game",
+        "src/security"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/aplicacion/partida",
+      "archivos": 3,
+      "ca": 5,
+      "ce": 8,
+      "inestabilidad": 0.62,
+      "abstractos": 3,
+      "concretos": 5,
+      "abstraccion": 0.38,
+      "distancia": 0.01,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/database",
+        "src/dominio/events",
+        "src/dominio/game",
+        "src/dominio/partida",
+        "src/dominio/user",
+        "src/reglas/contrato",
+        "src/reglas/registro",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)",
+        "src/aplicacion",
+        "src/game",
+        "src/match",
+        "src/partida"
+      ],
+      "paquetesExternos": 4
+    },
+    {
+      "componente": "src/aplicacion/player",
+      "archivos": 2,
+      "ca": 4,
+      "ce": 4,
+      "inestabilidad": 0.5,
+      "abstractos": 1,
+      "concretos": 1,
+      "abstraccion": 0.5,
+      "distancia": 0,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/database",
+        "src/dominio/game",
+        "src/dominio/player",
+        "src/dominio/user"
+      ],
+      "usadoPor": [
+        "src/aplicacion",
+        "src/aplicacion/game",
+        "src/game",
+        "src/player"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/aplicacion/user",
+      "archivos": 1,
+      "ca": 6,
+      "ce": 3,
+      "inestabilidad": 0.33,
+      "abstractos": 0,
+      "concretos": 1,
+      "abstraccion": 0,
+      "distancia": 0.67,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/database",
+        "src/dominio/card-design",
+        "src/dominio/user"
+      ],
+      "usadoPor": [
+        "src/aplicacion",
+        "src/aplicacion/game",
+        "src/card-design",
+        "src/player",
+        "src/security",
+        "src/user"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/card",
+      "archivos": 11,
+      "ca": 6,
+      "ce": 1,
+      "inestabilidad": 0.14,
+      "abstractos": 0,
+      "concretos": 8,
+      "abstraccion": 0,
+      "distancia": 0.86,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/aplicacion/card-design",
+        "src/dominio/card",
+        "src/dominio/card-design",
+        "src/dominio/player",
+        "src/dominio/user",
+        "src/user"
+      ],
+      "paquetesExternos": 1
+    },
+    {
+      "componente": "src/card-design",
+      "archivos": 5,
+      "ca": 1,
+      "ce": 7,
+      "inestabilidad": 0.88,
+      "abstractos": 0,
+      "concretos": 5,
+      "abstraccion": 0,
+      "distancia": 0.13,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/card-design",
+        "src/aplicacion/user",
+        "src/dominio/card-design",
+        "src/dominio/user",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/database",
+      "archivos": 11,
+      "ca": 6,
+      "ce": 0,
+      "inestabilidad": 0,
+      "abstractos": 9,
+      "concretos": 4,
+      "abstraccion": 0.69,
+      "distancia": 0.31,
+      "zona": "secuencia principal",
+      "dependeDe": [],
+      "usadoPor": [
+        "src/aplicacion",
+        "src/aplicacion/card-design",
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/aplicacion/player",
+        "src/aplicacion/user"
+      ],
+      "paquetesExternos": 5
+    },
+    {
+      "componente": "src/dominio/card",
+      "archivos": 1,
+      "ca": 1,
+      "ce": 1,
+      "inestabilidad": 0.5,
+      "abstractos": 0,
+      "concretos": 1,
+      "abstraccion": 0,
+      "distancia": 0.5,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/card"
+      ],
+      "usadoPor": [
+        "src/dominio/player"
+      ],
+      "paquetesExternos": 1
+    },
+    {
+      "componente": "src/dominio/card-design",
+      "archivos": 4,
+      "ca": 4,
+      "ce": 2,
+      "inestabilidad": 0.33,
+      "abstractos": 0,
+      "concretos": 5,
+      "abstraccion": 0,
+      "distancia": 0.67,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/card",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/aplicacion/card-design",
+        "src/aplicacion/user",
+        "src/card-design",
+        "src/user"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/dominio/events",
+      "archivos": 3,
+      "ca": 3,
+      "ce": 4,
+      "inestabilidad": 0.57,
+      "abstractos": 0,
+      "concretos": 3,
+      "abstraccion": 0,
+      "distancia": 0.43,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/dominio/game",
+        "src/dominio/partida",
+        "src/dominio/player",
+        "src/dominio/user"
+      ],
+      "usadoPor": [
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/game"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "src/dominio/game",
+      "archivos": 14,
+      "ca": 9,
+      "ce": 2,
+      "inestabilidad": 0.18,
+      "abstractos": 0,
+      "concretos": 14,
+      "abstraccion": 0,
+      "distancia": 0.82,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/dominio/user",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/aplicacion/player",
+        "src/dominio/events",
+        "src/dominio/player",
+        "src/game",
+        "src/match",
+        "src/partida",
+        "src/security"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/dominio/partida",
+      "archivos": 7,
+      "ca": 6,
+      "ce": 2,
+      "inestabilidad": 0.25,
+      "abstractos": 25,
+      "concretos": 42,
+      "abstraccion": 0.37,
+      "distancia": 0.38,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/reglas/contrato",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)",
+        "src/aplicacion",
+        "src/aplicacion/partida",
+        "src/dominio/events",
+        "src/game",
+        "src/partida"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/dominio/player",
+      "archivos": 8,
+      "ca": 5,
+      "ce": 5,
+      "inestabilidad": 0.5,
+      "abstractos": 0,
+      "concretos": 8,
+      "abstraccion": 0,
+      "distancia": 0.5,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/card",
+        "src/dominio/card",
+        "src/dominio/game",
+        "src/dominio/user",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/aplicacion/game",
+        "src/aplicacion/player",
+        "src/dominio/events",
+        "src/game",
+        "src/player"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/dominio/user",
+      "archivos": 17,
+      "ca": 13,
+      "ce": 2,
+      "inestabilidad": 0.13,
+      "abstractos": 0,
+      "concretos": 16,
+      "abstraccion": 0,
+      "distancia": 0.87,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/card",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/aplicacion/player",
+        "src/aplicacion/user",
+        "src/card-design",
+        "src/dominio/events",
+        "src/dominio/game",
+        "src/dominio/player",
+        "src/game",
+        "src/match",
+        "src/player",
+        "src/security",
+        "src/user"
+      ],
+      "paquetesExternos": 4
+    },
+    {
+      "componente": "src/game",
+      "archivos": 16,
+      "ca": 1,
+      "ce": 11,
+      "inestabilidad": 0.92,
+      "abstractos": 3,
+      "concretos": 16,
+      "abstraccion": 0.16,
+      "distancia": 0.07,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/game",
+        "src/aplicacion/partida",
+        "src/aplicacion/player",
+        "src/dominio/events",
+        "src/dominio/game",
+        "src/dominio/partida",
+        "src/dominio/player",
+        "src/dominio/user",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 6
+    },
+    {
+      "componente": "src/match",
+      "archivos": 3,
+      "ca": 1,
+      "ce": 6,
+      "inestabilidad": 0.86,
+      "abstractos": 0,
+      "concretos": 2,
+      "abstraccion": 0,
+      "distancia": 0.14,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/partida",
+        "src/dominio/game",
+        "src/dominio/user",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 2
+    },
+    {
+      "componente": "src/partida",
+      "archivos": 5,
+      "ca": 1,
+      "ce": 6,
+      "inestabilidad": 0.86,
+      "abstractos": 0,
+      "concretos": 7,
+      "abstraccion": 0,
+      "distancia": 0.14,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/partida",
+        "src/dominio/game",
+        "src/dominio/partida",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/player",
+      "archivos": 4,
+      "ca": 1,
+      "ce": 7,
+      "inestabilidad": 0.88,
+      "abstractos": 0,
+      "concretos": 3,
+      "abstraccion": 0,
+      "distancia": 0.13,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/player",
+        "src/aplicacion/user",
+        "src/dominio/player",
+        "src/dominio/user",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 3
+    },
+    {
+      "componente": "src/reglas/contrato",
+      "archivos": 1,
+      "ca": 6,
+      "ce": 0,
+      "inestabilidad": 0,
+      "abstractos": 10,
+      "concretos": 1,
+      "abstraccion": 0.91,
+      "distancia": 0.09,
+      "zona": "secuencia principal",
+      "dependeDe": [],
+      "usadoPor": [
+        "plugins/apuntado",
+        "plugins/clasica",
+        "src/aplicacion/partida",
+        "src/dominio/partida",
+        "src/reglas/evaluador",
+        "src/reglas/registro"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "src/reglas/evaluador",
+      "archivos": 1,
+      "ca": 2,
+      "ce": 1,
+      "inestabilidad": 0.33,
+      "abstractos": 1,
+      "concretos": 10,
+      "abstraccion": 0.09,
+      "distancia": 0.58,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/reglas/contrato"
+      ],
+      "usadoPor": [
+        "plugins/apuntado",
+        "plugins/clasica"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "src/reglas/registro",
+      "archivos": 1,
+      "ca": 3,
+      "ce": 1,
+      "inestabilidad": 0.25,
+      "abstractos": 1,
+      "concretos": 5,
+      "abstraccion": 0.17,
+      "distancia": 0.58,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/reglas/contrato"
+      ],
+      "usadoPor": [
+        "src/(raiz)",
+        "src/aplicacion/game",
+        "src/aplicacion/partida"
+      ],
+      "paquetesExternos": 0
+    },
+    {
+      "componente": "src/security",
+      "archivos": 19,
+      "ca": 7,
+      "ce": 6,
+      "inestabilidad": 0.46,
+      "abstractos": 0,
+      "concretos": 16,
+      "abstraccion": 0,
+      "distancia": 0.54,
+      "zona": "zona de dolor",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/game",
+        "src/aplicacion/user",
+        "src/dominio/game",
+        "src/dominio/user",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)",
+        "src/card-design",
+        "src/game",
+        "src/match",
+        "src/partida",
+        "src/player",
+        "src/user"
+      ],
+      "paquetesExternos": 10
+    },
+    {
+      "componente": "src/shared",
+      "archivos": 13,
+      "ca": 15,
+      "ce": 0,
+      "inestabilidad": 0,
+      "abstractos": 4,
+      "concretos": 8,
+      "abstraccion": 0.33,
+      "distancia": 0.67,
+      "zona": "zona de dolor",
+      "dependeDe": [],
+      "usadoPor": [
+        "src/(raiz)",
+        "src/aplicacion/partida",
+        "src/card",
+        "src/card-design",
+        "src/dominio/card-design",
+        "src/dominio/game",
+        "src/dominio/partida",
+        "src/dominio/player",
+        "src/dominio/user",
+        "src/game",
+        "src/match",
+        "src/partida",
+        "src/player",
+        "src/security",
+        "src/user"
+      ],
+      "paquetesExternos": 5
+    },
+    {
+      "componente": "src/user",
+      "archivos": 8,
+      "ca": 1,
+      "ce": 8,
+      "inestabilidad": 0.89,
+      "abstractos": 0,
+      "concretos": 8,
+      "abstraccion": 0,
+      "distancia": 0.11,
+      "zona": "secuencia principal",
+      "dependeDe": [
+        "src/aplicacion",
+        "src/aplicacion/card-design",
+        "src/aplicacion/user",
+        "src/card",
+        "src/dominio/card-design",
+        "src/dominio/user",
+        "src/security",
+        "src/shared"
+      ],
+      "usadoPor": [
+        "src/(raiz)"
+      ],
+      "paquetesExternos": 4
+    }
+  ]
+}

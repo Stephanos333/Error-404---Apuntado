@@ -61,7 +61,7 @@ Fitness functions en `tests/architecture/`:
 - **FF-03:** no hay ciclos entre archivos ni entre módulos (modo trinquete sobre la línea base del prototipo).
 - **FF-05:** el motor de reglas no depende de NestJS, Mongoose ni Socket.IO.
 
-Se ejecutan en el pipeline (`.github/workflows/architecture-fitness.yml`). Además, en la revisión de cada PR se verifica que todo componente nuevo tenga su declaración de responsabilidad.
+Se ejecutan en el pipeline (job `arquitectura` de `.github/workflows/ci.yml`; hasta el Entregable 3 estaban en `architecture-fitness.yml`). Además, en la revisión de cada PR se verifica que todo componente nuevo tenga su declaración de responsabilidad.
 
 ## Notas
 

@@ -19,7 +19,7 @@ construido como un monolito modular con núcleo **microkernel** de reglas (Richa
 | Consistencia | Cierre y liquidación en memoria y una sola escritura atómica; transacciones `snapshot`/`majority` para apuestas y pozo; concurrencia optimista con `version` e idempotencia con `idComando` |
 | Tiempo real | Sala pública `partida:{id}` (vista pública) y sala privada `usuario:{id}` (solo la mano del usuario); eventos publicados después del commit (ADR-05) |
 | Seguridad | JWT de acceso y refresco, guardias por juego, barajado con `crypto.randomInt`, contenedores sin privilegios de root |
-| Pruebas | 102 unitarias y de contrato (Jest), 8 de integración de concurrencia con replica set en memoria, 28 fitness functions (FF-01 a FF-06) y 16 del tablero del frontend (Vitest) |
+| Pruebas | 106 unitarias y de contrato (Jest), 8 de integración de concurrencia con replica set en memoria, 28 fitness functions (FF-01 a FF-06) y 16 del tablero del frontend (Vitest) |
 | Ejecución | `docker compose up --build` (o `start.sh` / `start.bat`): MongoDB, inicialización de la base, backend y frontend |
 
 ### Servicios y puertos

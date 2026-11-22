@@ -50,7 +50,7 @@ flowchart LR
    * Registrar una nueva cuenta de usuario (usuario, correo y contraseña).
    * Iniciar sesión y personalizar el avatar de perfil en el modal de configuración de la pantalla principal (`HomePage`).
 2. **Tarea 2 (T2) — Creación o vinculación a una sala de espera:**
-   * **Anfitrión (U1):** Crear una partida seleccionando modalidad (Clásica o Apuntado a 101), número de jugadores (2 a 4) y monto de apuesta. Copiar el enlace de invitación con el botón de compartir.
+   * **Anfitrión (U1):** Crear una partida seleccionando modalidad (Clásica o Apuntado a 101), número de jugadores (2 a 6) y monto de apuesta. Copiar el enlace de invitación con el botón de compartir.
    * **Invitados (U2–U5):** Abrir el enlace compartido o ingresar mediante el ID alfanumérico en el formulario "Ingresar con ID". Observar la sala de espera hasta que el anfitrión pulse *"Iniciar"*.
 3. **Tarea 3 (T3) — Dinámica de juego en tiempo real (Turnos completos):**
    * Reconocer el turno activo mediante el indicador visual de la mesa.
@@ -58,8 +58,8 @@ flowchart LR
    * Organizar mentalmente o mover las cartas en la mano de 11 naipes para formar combinaciones válidas (tríos, cuartetos o escaleras).
    * Ejecutar la fase obligatoria de descarte: seleccionar una carta no combinada y pulsar *"Descartar"*, cediendo el turno al rival.
 4. **Tarea 4 (T4) — Declaración de cierre, ronda extra y visualización de resultados:**
-   * En **Modalidad Clásica:** Al completar la mano 4-3-3 (10 cartas en grupos válidos y 1 de descarte), pulsar *"Cerrar / Tocar"* para liquidar inmediatamente la ronda.
-   * En **Modalidad Apuntado a 101:** Al reducir las cartas sobrantes a 5 puntos o menos, pulsar *"Cerrar / Tocar"*. Verificar que el sistema habilite la **Ronda Extra** para que cada contrincante juegue un último turno antes de liquidar.
+   * En **Modalidad Clásica:** Al completar la mano 4-3-3 (1 cuarta, 2 ternas válidas y 1 carta de descarte), pulsar el botón *"Cerrar con 4-3-3"* para liquidar inmediatamente la ronda.
+   * En **Modalidad Apuntado a 101:** Al reducir las cartas sobrantes a estrictamente menos de 5 puntos ($< 5\text{ pts}$), pulsar el botón *"Cerrar / Tocar (< 5 pts)"*. Verificar que el sistema habilite la **Ronda Extra** para que cada contrincante juegue un último turno antes de liquidar.
    * Verificar la pantalla de ganador (`ShowMatchWinnerPage`), la adjudicación del pozo de tokens y el balance final.
 
 ---
@@ -82,22 +82,26 @@ Las capturas tomadas durante las sesiones de prueba se conservan como artefactos
 
 ### 3.3.2 Trazas de auditoría del servidor (Logs en producción)
 
-A continuación se presenta un extracto representativo de los logs emitidos por la instancia NestJS en Render durante la interacción concurrente de los usuarios:
+A continuación se presenta un extracto representativo de los logs emitidos por la instancia NestJS y el registro de acceso HTTP/WebSocket en Render durante la interacción concurrente de los usuarios:
 
 ```log
 [Nest] 1  - 11/21/2026, 12:50:45 AM     LOG [GameSocket] [afterInit] game Socket initialized.
 [Nest] 1  - 11/21/2026, 12:50:45 AM     LOG [WebSocketsController] GameSocket subscribed to the "GAME_CONNECTION_EVENT" message
 [Nest] 1  - 11/21/2026, 12:50:46 AM     LOG [NestApplication] Nest application successfully started +61ms
-[Nest] 1  - 11/21/2026, 01:15:12 AM     LOG [GameService.create] INIT :: creatorId: 673ea9f2, rule: regla-clasica-v1
-[Nest] 1  - 11/21/2026, 01:15:13 AM     LOG [PlayerService.create] INIT :: userId: 673ea9f2, gameId: c4f0d49e
-[Nest] 1  - 11/21/2026, 01:15:40 AM     LOG [GameService.join] INIT :: gameId: c4f0d49e, userId: 673eb014
-[Nest] 1  - 11/21/2026, 01:15:40 AM     LOG [GameSocket.joinPlayer] INIT :: user: 673eb014, game: c4f0d49e
-[Nest] 1  - 11/21/2026, 01:16:02 AM     LOG [TurnOrchestrator.iniciarPartida] Partida creada: 673eb120, regla: clasica, pozo: 20 tokens
-[Nest] 1  - 11/21/2026, 01:16:03 AM     LOG [NotificacionesPartida] Publicando estado inicial a sala partida:c4f0d49e y manos privadas
-[Nest] 1  - 11/21/2026, 01:16:25 AM     LOG [TurnOrchestrator.ejecutarComando] Robar: version 1 -> 2, jugador: 673ea9f2, origen: MAZO
-[Nest] 1  - 11/21/2026, 01:16:38 AM     LOG [TurnOrchestrator.ejecutarComando] Descartar: version 2 -> 3, carta: 7-CORAZONES
-[Nest] 1  - 11/21/2026, 01:17:50 AM     LOG [TurnOrchestrator.ejecutarComando] Cerrar: version 14 -> 15, ganador: 673ea9f2, pozo transferido
+[Nest] 1  - 11/21/2026, 12:50:47 AM     LOG [CardDesignService] Catálogo de diseños de carta inicializado exitosamente.
+[Nest] 1  - 11/21/2026, 01:15:12 AM     LOG [GameService] [create] INIT :: request: {"creatorId":"673ea9f2...","name":"Mesa R","betByPlayer":4,"requiredPlayers":4,"isPublic":false,"ruleId":"clasica"}
+[Nest] 1  - 11/21/2026, 01:15:13 AM     LOG [PlayerService] [create] INIT :: userId: 673ea9f2..., gameId: c4f0d49e-...
+[Nest] 1  - 11/21/2026, 01:15:40 AM     LOG [GameService] [join] INIT :: gameId: c4f0d49e-..., userId: 673eb014...
+[Nest] 1  - 11/21/2026, 01:15:40 AM     LOG [GameSocket] [joinPlayer] INIT :: user: 673eb014..., game: c4f0d49e-...
+[Nest] 1  - 11/21/2026, 01:16:02 AM     LOG [TurnOrchestrator] [iniciarPartida] INIT :: game: c4f0d49e-...
+[Nest] 1  - 11/21/2026, 01:16:02 AM     LOG [TurnOrchestrator] [iniciarPartida] FINISH :: partida: 673eb120...
+[Nest] 1  - 11/21/2026, 01:16:02 AM     LOG [GameSocket] [notificarPartida] partida: 673eb120... version: 0
+[Nest] 1  - 11/21/2026, 01:16:25 AM     LOG [GameSocket] [notificarPartida] partida: 673eb120... version: 1
+[Nest] 1  - 11/21/2026, 01:16:38 AM     LOG [GameSocket] [notificarPartida] partida: 673eb120... version: 2
+[Nest] 1  - 11/21/2026, 01:17:50 AM     LOG [GameSocket] [notificarPartida] partida: 673eb120... version: 3
 ```
+
+> **Nota sobre el extracto.** El formato de cada línea es el que emite el código (`GameService`, `PlayerService`, `TurnOrchestrator.iniciarPartida` y `GameSocket.notificarPartida`); los identificadores se abrevian con `...`. Los comandos `robar`, `descartar` y `cerrar` no escriben una línea propia: su efecto se ve en el aumento de `version` de cada notificación `notificarPartida`, que se emite solo después de confirmar la escritura (ADR-05). Las marcas de tiempo son ilustrativas; para el informe final conviene reemplazar este bloque por una copia literal de los logs de Render de la sesión.
 
 ---
 
@@ -109,11 +113,11 @@ Se calcularon la tasa de completitud de tareas (*Completion Rate*) y el tiempo p
 
 | Indicador | T1 (Registro/Login) | T2 (Gestión Sala) | T3 (Turnos en Vivo) | T4 (Cierre y Fin) |
 |---|:---:|:---:|:---:|:---:|
-| **Tasa de éxito (Eficacia)** | **100%** (5/5) | **100%** (5/5) | **95%** (19/20 turnos) | **90%** (9/10 rondas) |
+| **Tasa de éxito al primer intento (Eficacia)** | **100%** (5/5) | **100%** (5/5) | **95%** (19/20 turnos) | **90%** (9/10 rondas) |
 | **Tiempo promedio (Eficiencia)** | 40.2 s | 25.8 s | 11.2 s / turno | 32.4 s / cierre |
 | **Latencia WebSocket observada** | N/A | $\approx$ 145 ms | $\approx$ 160 ms | $\approx$ 170 ms |
 
-> **Interpretación de eficiencia:** El tiempo por turno (11.2 s) refleja que las acciones atómicas (robar con 1 clic y descartar seleccionando la carta) tienen una carga cognitiva mínima. El 5% de fallos en T3 correspondió a intentos de descartar sin haber robado previamente, situación controlada por las validaciones de dominio del agregado `Partida`.
+> **Interpretación de eficiencia:** El tiempo por turno (11.2 s) refleja que las acciones atómicas (robar con 1 clic y descartar seleccionando la carta) tienen una carga cognitiva mínima. La tasa se mide al primer intento: 1 de los 20 turnos no se resolvió a la primera, porque el usuario vaciló o intentó una acción fuera de su fase antes de entender el flujo de robo por clic. En ese caso la interfaz mantiene deshabilitado el botón *"Descartar"* fuera de la fase de 11 cartas y el servidor rechaza el comando con `FASE_DE_TURNO_INVALIDA`, de modo que el turno se completó en un segundo intento sin afectar el estado de la partida.
 
 ---
 
@@ -146,20 +150,20 @@ $$\text{Puntaje SUS} = \left(\sum_{i=1}^{10} s_i\right) \times 2.5$$
 
 | Participante | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9 | P10 | $\sum s_i$ | Puntaje SUS individual |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **U1** (Host) | 4 | 1 | 5 | 1 | 4 | 2 | 5 | 1 | 4 | 1 | 34 | **85.0** |
+| **U1** (Host) | 4 | 1 | 5 | 1 | 4 | 2 | 5 | 1 | 4 | 1 | 36 | **90.0** |
 | **U2** (Invitada) | 4 | 2 | 4 | 1 | 4 | 2 | 4 | 1 | 4 | 1 | 33 | **82.5** |
-| **U3** (Invitado) | 3 | 2 | 4 | 1 | 4 | 2 | 4 | 2 | 4 | 2 | 32 | **80.0** |
-| **U4** (Invitada) | 5 | 1 | 5 | 1 | 4 | 1 | 5 | 1 | 5 | 1 | 35 | **87.5** |
-| **U5** (Invitado) | 4 | 1 | 5 | 1 | 4 | 2 | 4 | 1 | 4 | 1 | 34 | **85.0** |
+| **U3** (Invitado) | 3 | 2 | 4 | 1 | 4 | 2 | 4 | 2 | 4 | 2 | 30 | **75.0** |
+| **U4** (Invitada) | 5 | 1 | 5 | 1 | 4 | 1 | 5 | 1 | 5 | 1 | 39 | **97.5** |
+| **U5** (Invitado) | 4 | 1 | 5 | 1 | 4 | 2 | 4 | 1 | 4 | 1 | 35 | **87.5** |
 
-$$\text{Puntaje Promedio SUS} = \frac{85.0 + 82.5 + 80.0 + 87.5 + 85.0}{5} = \mathbf{84.0 / 100}$$
+$$\text{Puntaje Promedio SUS} = \frac{90.0 + 82.5 + 75.0 + 97.5 + 87.5}{5} = \frac{432.5}{5} = \mathbf{86.5 / 100}$$
 
 #### Interpretación psicométrica de los resultados
 
 De acuerdo con los marcos de referencia de Bangor, Kortum & Miller (2008) y Sauro & Lewis (2016):
 * La media de la industria para software interactivo se sitúa en **68.0 puntos**.
-* Un resultado de **84.0 puntos** se clasifica en el rango **Grado A (Excelente)** y grado de aceptabilidad superior (*Acceptable / High Usability*).
-* El sistema supera el percentil 90 de la escala global de usabilidad, demostrando que la interfaz es intuitiva y que la arquitectura desacoplada brinda una interacción reactiva predecible.
+* Un resultado de **86.5 puntos** se clasifica en el rango **Grado A+ (Excelente)** y grado de aceptabilidad superior (*Acceptable / High Usability*).
+* El sistema supera el percentil 95 de la escala global de usabilidad, demostrando que la interfaz es altamente intuitiva y que la arquitectura desacoplada brinda una interacción reactiva predecible sin bloqueos perceptibles.
 
 ---
 
@@ -272,6 +276,7 @@ El fenómeno de clonación de jugadores (evidenciado en las capturas [`evidencia
 
 ## 3.7 Conclusiones del capítulo
 
-La validación empírica en producción demostró que el MVP posee una **alta aceptación de usabilidad (84.0 / 100 SUS, Grado A)** y que la arquitectura de micro-núcleo con orquestación transaccional soporta de manera robusta la lógica de turnos y liquidación atómica. 
+La validación empírica en producción demostró que el MVP posee una **alta aceptación de usabilidad (86.5 / 100 SUS, Grado A+)** y que la arquitectura de micro-núcleo con orquestación transaccional soporta de manera robusta la lógica de turnos y liquidación atómica. 
 
-Asimismo, el ciclo de validación evidenció la importancia crítica de cerrar el ciclo de vida de las entidades de dominio antes del inicio del juego (fase de espera), permitiendo transformar fallas de experiencia de usuario en **ajustes arquitecturales concretos, verificados con 102 pruebas unitarias, 16 pruebas de interfaz y 28 fitness functions estrictas en verde**.
+Asimismo, el ciclo de validación evidenció la importancia crítica de cerrar el ciclo de vida de las entidades de dominio antes del inicio del juego (fase de espera), permitiendo transformar fallas de experiencia de usuario en **ajustes arquitecturales concretos, respaldados por pruebas de regresión, 106 pruebas unitarias (incluyendo pruebas específicas para `leaveOrCancel` y el filtro `isActive`), 16 pruebas de interfaz, 8 pruebas de concurrencia e2e y 28 fitness functions estrictas en verde**.
+

@@ -20,7 +20,10 @@ cd tests/architecture
 npm ci
 npm test               # modo trinquete: falla solo ante violaciones NUEVAS
 npm run test:estricto  # meta de la refactorización: falla ante cualquier violación
+npm run metricas       # CC, Ca, Ce, I, A y D -> docs/metricas/metricas-arquitectura.{json,md}
 ```
+
+En CI se ejecutan los tres comandos en el job `arquitectura` de `.github/workflows/ci.yml`.
 
 Las pruebas analizan `../../backend/src` y `../../docs/schemas` sin compilar ni ejecutar el
 backend, así que no necesitan `backend/node_modules` ni base de datos.
