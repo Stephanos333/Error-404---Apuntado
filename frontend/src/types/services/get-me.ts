@@ -1,8 +1,7 @@
 import {UserType} from '../user.type.ts';
 
 /**
- * Definición de la respuesta del servicio para traer la
- * información del usuario.
+ * Response of the current user service.
  */
 export type GetMeResponse = {
     success: boolean,

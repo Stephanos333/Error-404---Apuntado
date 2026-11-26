@@ -1,0 +1,50 @@
+.brand {
+    --brand-h: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--chalk);
+    text-decoration: none;
+}
+
+.brand-sm {
+    --brand-h: 28px;
+}
+
+.brand-lg {
+    --brand-h: 52px;
+    gap: 14px;
+}
+
+.brand-mark {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: var(--brand-h);
+    aspect-ratio: 0.74;
+    border-radius: calc(var(--brand-h) * 0.16);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 2px 0 var(--brass-500), 0 6px 14px rgba(3, 20, 20, 0.35);
+    transform: rotate(-6deg);
+    line-height: 0.9;
+}
+
+.brand-mark-letter {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: calc(var(--brand-h) * 0.46);
+}
+
+.brand-mark-suit {
+    font-size: calc(var(--brand-h) * 0.34);
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 88%;
+    font-size: calc(var(--brand-h) * 0.66);
+    letter-spacing: -0.02em;
+}

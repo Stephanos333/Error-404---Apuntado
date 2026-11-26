@@ -1,5 +1,5 @@
 import {JSX, useEffect, useState} from 'react';
-import './waiting-game.page.css';
+import {Navigate} from 'react-router-dom';
 import {BackendUtils} from '../../utils/backend.utils.tsx';
 import {AlertTypeConstants} from '../../utils/constants/alert.constants.ts';
 import {AlertComponent} from '../../components/alert/alert.component.tsx';
@@ -7,32 +7,44 @@ import {GetCurrentGameDetailResponse} from '../../types/services/get-current-gam
 import {BackendConstants} from '../../utils/constants/backend.constants.ts';
 import {GameType} from '../../types/game.type.ts';
 import {PlayerWithUserType} from '../../types/player-with-user.type.ts';
-import {WaitingPlayerListComponent} from './ui/waiting-player-list/waiting-player-list.component.tsx';
-import {WaitingGameActionsComponent} from './ui/waiting-game-actions/waiting-game-actions.component.tsx';
-import {WaitingGameInfoComponent} from './ui/waiting-game-info/waiting-game-info.component.tsx';
 import {useWebSocket} from '../../config/websocket.provider.tsx';
 import {SocketConstants} from '../../utils/constants/socket.constants.ts';
-import {Navigate} from 'react-router-dom';
-import {RoutesConstants} from '../../config/app.router.tsx';
+import {RoutesConstants} from '../../config/routes.constants.ts';
 import {GameConstants} from '../../utils/constants/game.constants.ts';
+import {LocaleStorageUtils} from '../../store/locale-storage.utils.ts';
+import {LocaleStorageConstants} from '../../store/locale-storage.constants.ts';
+import {GameTopBarComponent} from '../../components/game-top-bar/game-top-bar.component.tsx';
+import {WaitingTableComponent} from './ui/waiting-table/waiting-table.component.tsx';
+import {WaitingSidebarComponent} from './ui/waiting-sidebar/waiting-sidebar.component.tsx';
+import './waiting-game.page.css';
+
+/** Polling interval that keeps the room in sync if a socket event is lost. */
+const POLL_MS: number = 2000;
 
 /**
- * Página para esperar un juego.
- * @constructor
+ * Keeps one entry per user, skipping inactive seats (a player who left and came back).
+ * @param {PlayerWithUserType[]} players Players as returned by the backend.
+ */
+export function uniqueActivePlayers(players: PlayerWithUserType[]): PlayerWithUserType[] {
+    const seen = new Set<string>();
+    return players.filter((p) => {
+        if (p.isActive === false || seen.has(p.userId)) return false;
+        seen.add(p.userId);
+        return true;
+    });
+}
+
+/**
+ * Waiting room: players take their seats until the table is full and the host starts.
  */
 export function WaitingGamePage(): JSX.Element {
-
-    /**
-     * Hooks para el funcionamiento de la página.
-     */
     const [game, setGame] = useState<GameType | undefined>();
     const [players, setPlayers] = useState<PlayerWithUserType[] | undefined>();
-
     const [redirect, setRedirect] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const myId: string | null = LocaleStorageUtils.get<LocaleStorageConstants.KEY_USER_ID>(LocaleStorageConstants.KEY_USER_ID);
 
-    /**
-     * Configuración del websocket y los listeners.
-     */
+    /** Socket listeners: players joining, table full and match started. */
     const {socket, connectWebSocket} = useWebSocket();
     useEffect(() => {
         if (!socket) {
@@ -43,22 +55,16 @@ export function WaitingGamePage(): JSX.Element {
         socket.emit(SocketConstants.GAME_CONNECTION_EVENT);
 
         const handleJoinPlayer = (newPlayer: PlayerWithUserType) => {
-            setPlayers((prev) => {
-                const list = prev || [];
+            setPlayers((previous) => {
+                const list = previous || [];
                 if (list.some((p) => p.userId === newPlayer.userId)) {
                     return list.map((p) => (p.userId === newPlayer.userId ? newPlayer : p));
                 }
                 return [...list, newPlayer];
             });
         };
-
-        const handleGameReady = (readyGame: GameType) => {
-            setGame(readyGame);
-        };
-
-        const handleMatchStarted = () => {
-            setRedirect(true);
-        };
+        const handleGameReady = (readyGame: GameType) => setGame(readyGame);
+        const handleMatchStarted = () => setRedirect(true);
 
         socket.on(SocketConstants.JOIN_PLAYER_LISTENER, handleJoinPlayer);
         socket.on(SocketConstants.GAME_READY_TO_START_LISTENER, handleGameReady);
@@ -71,50 +77,21 @@ export function WaitingGamePage(): JSX.Element {
         };
     }, [socket]);
 
-    /**
-     * Hooks para la configuración del componente:
-     * - La configuración para los componentes de alertas.
-     */
-    const [errorMessage, setErrorMessage] = useState<string>('');
-
-    /**
-     * Utils para acceder al backend.
-     * @const {BackendUtils}
-     */
-    const backendUtils: BackendUtils = new BackendUtils(
-        (message: string) => {
-            setErrorMessage(message);
-        }
-    );
-
-    /**
-     * Hook que consume el backend para traer el juego actual del usuario
-     * con polling cada 2s para sincronizar altas y bajas de jugadores en tiempo real.
-     */
+    /** Loads the current table and polls it so players leaving or joining always show up. */
     useEffect(() => {
         let isMounted = true;
+        const backendUtils: BackendUtils = new BackendUtils((message: string) => setErrorMessage(message));
 
         async function fetchData(): Promise<void> {
             const res = await backendUtils.get<GetCurrentGameDetailResponse, never>(BackendConstants.GET_CURRENT_GAME_URL);
-            if (!isMounted) return;
-            if (res && res.game) {
-                if (res.game.status === GameConstants.GAME_STATUS_ACTIVE) setRedirect(true);
-                setGame(res.game);
-                const uniquePlayers: PlayerWithUserType[] = [];
-                const seenUserIds = new Set<string>();
-                for (const p of res.players || []) {
-                    if (p.isActive !== false && !seenUserIds.has(p.userId)) {
-                        seenUserIds.add(p.userId);
-                        uniquePlayers.push(p);
-                    }
-                }
-                setPlayers(uniquePlayers);
-            }
+            if (!isMounted || !res || !res.game) return;
+            if (res.game.status === GameConstants.GAME_STATUS_ACTIVE) setRedirect(true);
+            setGame(res.game);
+            setPlayers(uniqueActivePlayers(res.players || []));
         }
 
         fetchData().then();
-        const intervalId = setInterval(fetchData, 2000);
-
+        const intervalId = setInterval(fetchData, POLL_MS);
         return () => {
             isMounted = false;
             clearInterval(intervalId);
@@ -122,25 +99,26 @@ export function WaitingGamePage(): JSX.Element {
     }, []);
 
     return (
-        <>
-            <div
-                id='waiting-game-page-container'
-                className='page-container'
-            >
-                <div id='waiting-game-page-container-title'>
-                    <h1>Sala de espera</h1>
+        <div className='waiting-page page-container'>
+            <GameTopBarComponent title='Sala de espera'/>
+            <main className='waiting-page-main page-width'>
+                <header className='waiting-page-header'>
+                    <h1>{game?.name ?? 'Tu mesa'}</h1>
+                    <p className='muted'>
+                        {game ? `${players?.length ?? 0} de ${game.requiredPlayers} jugadores sentados` : 'Cargando la mesa…'}
+                    </p>
+                </header>
+                <div className='waiting-page-grid'>
+                    <WaitingTableComponent game={game} players={players} myId={myId}/>
+                    <WaitingSidebarComponent game={game} players={players} myId={myId}/>
                 </div>
-                <WaitingGameInfoComponent game={game}/>
-                <WaitingPlayerListComponent game={game} players={players}/>
-                <WaitingGameActionsComponent game={game}/>
-            </div>
+            </main>
             <AlertComponent
                 type={AlertTypeConstants.ERROR_ALERT}
                 rawMessage={errorMessage}
                 setRawMessage={setErrorMessage}
             />
             {redirect ? <Navigate to={RoutesConstants.GAME}/> : <></>}
-
-        </>
+        </div>
     );
 }

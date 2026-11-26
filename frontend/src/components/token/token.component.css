@@ -1,0 +1,32 @@
+/* Chip: a brass disc with edge notches, like casino chips. */
+.token-icon {
+    display: inline-block;
+    flex: none;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, var(--brass-400) 0 42%, var(--brass-700) 43% 48%, transparent 49%),
+    repeating-conic-gradient(var(--brass-500) 0 22.5deg, var(--paper) 22.5deg 45deg);
+    box-shadow: 0 0 0 1.5px var(--brass-700), 0 2px 4px rgba(3, 20, 20, 0.35);
+}
+
+.token-amount {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+
+    & .num {
+        font-size: 1.125rem;
+    }
+}
+
+.token-amount-sm .num {
+    font-size: 0.95rem;
+}
+
+.token-amount-lg {
+    gap: 10px;
+
+    & .num {
+        font-size: 2.25rem;
+    }
+}

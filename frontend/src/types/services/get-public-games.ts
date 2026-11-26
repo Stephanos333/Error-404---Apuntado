@@ -1,7 +1,7 @@
 import {GameType} from '../game.type.ts';
 
 /**
- * Definición de la respuesta para traer los juegos públicos.
+ * Response of the public games service.
  */
 export type GetPublicGamesResponse = {
     success: boolean,

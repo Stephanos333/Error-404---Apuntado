@@ -1,69 +1,56 @@
 import {JSX, useEffect, useState} from 'react';
-import {LocalLoadingComponent} from '../../components/loading/local/local-loading.component.tsx';
-import {Navigate} from 'react-router-dom';
-import {LocaleStorageConstants} from '../../store/locale-storage.constants.ts';
-import {LocaleStorageUtils} from '../../store/locale-storage.utils.ts';
-import {RoutesConstants} from '../../config/app.router.tsx';
+import {Navigate, useLocation} from 'react-router-dom';
+import {RoutesConstants} from '../../config/routes.constants.ts';
+import {hasSession} from '../../config/user.context.tsx';
 import {BackendUtils} from '../../utils/backend.utils.tsx';
 import {JoinGameRequest, JoinGameResponse} from '../../types/services/join-game.ts';
 import {BackendConstants} from '../../utils/constants/backend.constants.ts';
+import {CardBackComponent} from '../../components/card/card.component.tsx';
+import './join-game.page.css';
 
 /**
- * Página para poder ingresar y redireccionar a un juego.
- * @constructor
+ * Opens an invitation link (`#/game/join?gameId=…`): joins the game and goes to the
+ * waiting room. Without a session it asks to log in first and comes back here.
  */
 export function JoinGamePage(): JSX.Element {
-
-    /**
-     * Hooks para la configuración de la redirección.
-     */
-    const [redirect, setRedirect] = useState<boolean>(false);
+    const location = useLocation();
     const [redirectRoute, setRedirectRoute] = useState<string | undefined>();
 
-    /**
-     * Función que permite redireccionar.
-     * @param to La ruta a la que se debe redireccionar.
-     */
-    const redirectFunction = (to: string): void => {
-        setRedirectRoute(to);
-        setRedirect(true);
-    };
-
-    /**
-     * Lógica encargada de la redirección.
-     */
     useEffect(() => {
-        async function fetchData(): Promise<void> {
-            const key: LocaleStorageConstants = LocaleStorageConstants.KEY_ACCESS_TOKEN;
-            const data: string | null = LocaleStorageUtils.get<typeof key>(key);
-            const gameId: string | null = new URLSearchParams(window.location.search).get('gameId');
-            if (data && gameId) {
-                const backendUtils: BackendUtils = new BackendUtils(
-                    () => redirectFunction(RoutesConstants.HOME_ROUTE)
-                );
-                const res = await backendUtils.patch<JoinGameResponse, JoinGameRequest>(
-                    BackendConstants.JOIN_GAME_URL, {gameId}
-                );
-                if (res) {
-                    redirectFunction(RoutesConstants.WAITING_GAME_ROUTE);
-                } else {
-                    redirectFunction(RoutesConstants.HOME_ROUTE);
-                }
-            } else {
-                const extra: string = gameId ? `?redirect=${RoutesConstants.JOIN_GAME}?gameId=${gameId}` : '';
-                redirectFunction(`${RoutesConstants.DEFAULT_ROUTE}${extra}`);
+        async function join(): Promise<void> {
+            // With the hash router the query lives inside the hash, so it is read from the router.
+            const gameId: string | null = new URLSearchParams(location.search).get('gameId');
+            if (!gameId) {
+                setRedirectRoute(hasSession() ? RoutesConstants.HOME_ROUTE : RoutesConstants.DEFAULT_ROUTE);
+                return;
             }
+            if (!hasSession()) {
+                const back: string = encodeURIComponent(`${RoutesConstants.JOIN_GAME}?gameId=${gameId}`);
+                setRedirectRoute(`${RoutesConstants.LOGIN_ROUTE}?redirect=${back}`);
+                return;
+            }
+            let errorCode: string | undefined;
+            const backendUtils: BackendUtils = new BackendUtils((message) => {
+                errorCode = message;
+            });
+            const res = await backendUtils.patch<JoinGameResponse, JoinGameRequest>(BackendConstants.JOIN_GAME_URL, {gameId});
+            if (res) setRedirectRoute(RoutesConstants.WAITING_GAME_ROUTE);
+            else setRedirectRoute(`${RoutesConstants.HOME_ROUTE}?joinError=${encodeURIComponent(errorCode ?? 'UNKNOWN_ERROR')}`);
         }
 
-        fetchData().then();
-
+        join().then();
     }, []);
 
+    if (redirectRoute) return <Navigate to={redirectRoute} replace/>;
 
     return (
-        <>
-            <LocalLoadingComponent loading={true} showBackground={false}/>
-            {redirect && redirectRoute ? <Navigate to={redirectRoute}/> : <></>}
-        </>
+        <div className='join-game-page page-container' role='status'>
+            <div className='join-game-deck' aria-hidden='true'>
+                <CardBackComponent/>
+                <CardBackComponent/>
+                <CardBackComponent/>
+            </div>
+            <p>Buscando tu mesa…</p>
+        </div>
     );
 }

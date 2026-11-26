@@ -1,5 +1,5 @@
 /**
- * Definición de la respuesta con errores en los servicios.
+ * Error response of the services.
  */
 export type ErrorResponseType = {
     response?: {

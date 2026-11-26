@@ -1,0 +1,113 @@
+.profile-dialog {
+    position: relative;
+    padding: 28px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.profile-dialog-close {
+    position: absolute !important;
+    top: 12px;
+    right: 12px;
+}
+
+.profile-dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    & h2 {
+        font-size: var(--fs-xl);
+        margin-bottom: 6px;
+        overflow-wrap: anywhere;
+    }
+}
+
+.profile-dialog-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--brass-500);
+}
+
+.profile-dialog-section h3 {
+    font-size: var(--fs-md);
+    margin-bottom: 12px;
+}
+
+.profile-dialog-avatars {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.profile-dialog-avatar-option {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-spring);
+
+    & img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: block;
+    }
+
+    &:hover {
+        transform: scale(1.06);
+    }
+
+    &.is-current {
+        box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink);
+    }
+}
+
+.profile-dialog-avatar-saving {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(250, 246, 236, 0.75);
+    color: var(--ink);
+}
+
+.profile-dialog-design {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--paper-2);
+
+    & h3 {
+        margin-bottom: 2px;
+    }
+
+    & p {
+        margin-bottom: 10px;
+    }
+}
+
+.profile-dialog-design-card {
+    --card-w: 64px;
+    transform: rotate(-5deg);
+}
+
+.profile-dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-dialog-loading {
+    display: grid;
+    place-items: center;
+    min-height: 200px;
+}

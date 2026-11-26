@@ -1,12 +1,12 @@
 /**
- * Define los datos requeridos para refrescar el token del usuario.
+ * Request to refresh the user's access token.
  */
 export type RefreshTokenRequest = {
     refreshToken: string;
 }
 
 /**
- * Define la respuesta del servicio que refresca el token del usuario.
+ * Response of the refresh-token service.
  */
 export type RefreshTokenResponse = {
     success: boolean;

@@ -1,5 +1,5 @@
 /**
- * Definición de los datos requeridos para iniciar sesión.
+ * Log in request.
  */
 export type LoginRequest = {
     username: string;
@@ -7,7 +7,7 @@ export type LoginRequest = {
 }
 
 /**
- * Definición de los datos de respuesta al iniciar sesión.
+ * Log in response.
  */
 export type LoginResponse = {
     success: boolean;

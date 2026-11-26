@@ -1,17 +1,17 @@
 import React from 'react';
-import {LocaleStorageUtils} from '../store/locale-storage.utils.ts';
-import {LocaleStorageConstants} from '../store/locale-storage.constants.ts';
 import {Navigate, useLocation} from 'react-router-dom';
-import {RoutesConstants} from './app.router.tsx';
+import {RoutesConstants} from './routes.constants.ts';
+import {hasSession} from './user.context.tsx';
 
 /**
- * Guardia de la aplicación para las páginas que requieren acceso al aplicativo.
- * @param element La página que se renderiza en caso de que se pueda acceder.
- * @returns {React.ReactNode} La página que se renderizará.
- * @constructor
+ * Route guard for pages that need a session. Without one it sends the user to log in and
+ * keeps the requested route so the login can bring them back.
+ * @param element The page to render when allowed.
+ * @returns {React.ReactNode} The page or a redirect.
  */
 export const LoginGuard = ({element}: { element: React.ReactNode }): React.ReactNode => {
-    const key: LocaleStorageConstants = LocaleStorageConstants.KEY_ACCESS_TOKEN;
-    const data: string | null = LocaleStorageUtils.get<typeof key>(key);
-    return data ? <>{element}</> : <Navigate to={RoutesConstants.DEFAULT_ROUTE} replace state={{from: useLocation()}}/>;
+    const location = useLocation();
+    if (hasSession()) return <>{element}</>;
+    const redirect: string = encodeURIComponent(`${location.pathname}${location.search}`);
+    return <Navigate to={`${RoutesConstants.LOGIN_ROUTE}?redirect=${redirect}`} replace/>;
 };

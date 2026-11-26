@@ -1,7 +1,7 @@
 import {Socket} from 'socket.io-client';
 
 /**
- * Tipo que representa los datos del contexto del websocket.
+ * Websocket context data.
  */
 export interface WebsocketContextType {
     socket: Socket | undefined;

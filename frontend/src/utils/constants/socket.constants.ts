@@ -1,74 +1,74 @@
 /**
- * Constantes que definen la configuración del web socket.
+ * Socket.io namespace, events and listeners.
  * @readonly
  */
 export enum SocketConstants {
     /**
-     * Constante que define el namespace del websocket de los juegos.
+     * Namespace of the games socket.
      */
     GAME_SOCKET_NAMESPACE = 'game',
     /**
-     * Evento para conectarse a un juego.
+     * Event to connect to the current game's rooms.
      */
     GAME_CONNECTION_EVENT = 'GAME_CONNECTION_EVENT',
     /**
-     * El mensaje que indica que un usuario ingresó a un juego.
+     * A user joined the table.
      */
     JOIN_PLAYER_LISTENER = 'JOIN_PLAYER_LISTENER',
     /**
-     * El mensaje que indica que un juego está listo para iniciarse.
+     * The table is full and ready to start.
      */
     GAME_READY_TO_START_LISTENER = 'GAME_READY_TO_START_LISTENER',
     /**
-     * El mensaje que indica que una partida fue iniciada.
+     * The match started.
      */
     MATCH_STARTED_LISTENER = 'MATCH_STARTED_LISTENER',
     /**
-     * El mensaje que indica que un turno ha cambiado.
+     * The turn changed.
      */
     SHIFT_CHANGED_LISTENER = 'SHIFT_CHANGED_LISTENER',
     /**
-     * El mensaje que indica que un mazo de cartas fue rellenado.
+     * The draw pile was refilled.
      */
     CARD_DECK_FILLED_LISTENER = 'CARD_DECK_FILLED_LISTENER',
     /**
-     * El mensaje que indica que una carta fue jalada desde las cartas desechadas.
+     * A card was taken from the discard pile.
      */
     CARD_PULLED_FROM_DISCARDED_LISTENER = 'CARD_PULLED_FROM_DISCARDED_LISTENER',
     /**
-     * El mensaje que indica que un jugador no pudo ganar.
+     * A player's close attempt failed.
      */
     PLAYER_CANT_WIN_LISTENER = 'PLAYER_CANT_WIN_LISTENER',
     /**
-     * Sala pública: una ronda fue cerrada y liquidada.
+     * Public room: a round was closed and scored.
      */
     MATCH_WON_LISTENER = 'MATCH_WON_LISTENER',
     /**
-     * Sala pública: un jugador robó del mazo (sin revelar la carta).
+     * Public room: a player drew from the deck (the card is not revealed).
      */
     CARD_PULLED_FROM_DECK_LISTENER = 'CARD_PULLED_FROM_DECK_LISTENER',
     /**
-     * Sala pública: un jugador tocó y empieza la ronda extra.
+     * Public room: a player knocked and the extra round starts.
      */
     PLAYER_KNOCKED_LISTENER = 'PLAYER_KNOCKED_LISTENER',
     /**
-     * Sala pública: empezó una nueva ronda (Apuntado).
+     * Public room: a new round started (Apuntado).
      */
     ROUND_STARTED_LISTENER = 'ROUND_STARTED_LISTENER',
     /**
-     * Sala pública: la partida terminó y se pagó el pozo.
+     * Public room: the match ended and the pot was paid.
      */
     GAME_FINISHED_LISTENER = 'GAME_FINISHED_LISTENER',
     /**
-     * Sala privada `usuario:{id}`: la mano del jugador.
+     * Private room `usuario:{id}`: the player's hand.
      */
     PRIVATE_HAND_LISTENER = 'PRIVATE_HAND_LISTENER',
 }
 
 /**
- * Mensajes de la sala pública `partida:{id}` que traen la vista pública de la partida.
+ * Public room `partida:{id}` messages that carry the public match view.
  */
-export const MENSAJES_PUBLICOS_PARTIDA: SocketConstants[] = [
+export const PUBLIC_MATCH_MESSAGES: SocketConstants[] = [
     SocketConstants.MATCH_STARTED_LISTENER,
     SocketConstants.SHIFT_CHANGED_LISTENER,
     SocketConstants.CARD_DECK_FILLED_LISTENER,

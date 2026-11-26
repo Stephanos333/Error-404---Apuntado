@@ -1,22 +1,14 @@
 /**
- * @enum {string} Constantes que representan las pintas de las cartas.
+ * @enum {string} Card suits as used in the image file names.
  * @readonly
  */
 export enum CardSuitsConstants {
-    /**
-     * Representa los tréboles.
-     */
+    /** Clubs. */
     CLUB = 'CLUB',
-    /**
-     * Representa los diamantes.
-     */
+    /** Diamonds. */
     DIAMOND = 'DIAMOND',
-    /**
-     * Representa los corazones.
-     */
+    /** Hearts. */
     HEART = 'HEART',
-    /**
-     * Representa las picas.
-     */
+    /** Spades. */
     SPADE = 'SPADE',
 }

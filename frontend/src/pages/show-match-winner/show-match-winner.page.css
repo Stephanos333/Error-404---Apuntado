@@ -1,0 +1,156 @@
+.winner-page {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: var(--space-6) var(--space-4);
+    overflow: hidden;
+    background: radial-gradient(60% 50% at 50% 30%, rgba(245, 194, 90, 0.16), transparent 70%);
+}
+
+.winner-main {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    & h1 {
+        font-size: clamp(2.75rem, 9vw, var(--fs-4xl));
+        font-stretch: 80%;
+        line-height: 0.95;
+        color: var(--brass-400);
+        overflow-wrap: anywhere;
+    }
+}
+
+.winner-kicker {
+    margin-bottom: var(--space-3);
+    padding: 4px 12px;
+    border-radius: var(--r-pill);
+    background: rgba(234, 242, 239, 0.08);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--chalk-2);
+}
+
+.winner-lead {
+    margin-top: var(--space-3);
+}
+
+.winner-pot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: var(--space-5) 0;
+    padding: var(--space-4) var(--space-6);
+    border-radius: 20px;
+    background: var(--paper);
+    color: var(--ink);
+
+    & > span {
+        font-weight: 700;
+        font-size: var(--fs-sm);
+        color: var(--ink-2);
+    }
+}
+
+.winner-standings {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    & li {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(8, 38, 39, 0.45);
+        text-align: left;
+    }
+
+    & li.is-winner {
+        background: rgba(245, 194, 90, 0.16);
+        border: 1.5px solid var(--brass-400);
+    }
+
+    & li.is-eliminated {
+        opacity: 0.6;
+    }
+}
+
+.winner-place {
+    font-size: var(--fs-lg);
+    color: var(--chalk-3);
+}
+
+.winner-name {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    & small {
+        font-weight: 500;
+        color: var(--chalk-2);
+    }
+}
+
+.winner-state {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--brass-300);
+}
+
+.winner-points {
+    font-size: var(--fs-lg);
+
+    & small {
+        font-size: var(--fs-xs);
+        color: var(--chalk-3);
+    }
+}
+
+.winner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+/* Celebration: a handful of cards falling once when you win. */
+.winner-confetti span {
+    position: absolute;
+    top: -160px;
+    left: var(--x);
+    animation: winner-fall 2.6s var(--ease-out) both;
+    animation-delay: var(--delay);
+
+    & .playing-card {
+        --card-w: 64px;
+    }
+}
+
+@keyframes winner-fall {
+    from {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    to {
+        transform: translateY(calc(100vh + 200px)) rotate(calc(var(--spin) * 260deg));
+        opacity: 0.9;
+    }
+}

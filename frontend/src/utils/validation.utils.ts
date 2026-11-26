@@ -1,22 +1,14 @@
 import {Dispatch, SetStateAction} from 'react';
 import {ValidationErrorsConstants} from './constants/validation-errors.constants.ts';
 
-/**
- * Clase que contiene una serie de estructuras para válidar los datos de dominio
- * del sistema.
- * @class
- * @abstract
- */
+/** Form validations used by the auth and table forms. */
 export abstract class ValidationUtils {
 
     /**
-     * Permite validar el valor de la apuesta de un juego y mostrar los mensajes de error en caso
-     * de que sean necesarios
-     * @param {number | string} value El valor de un juego que se valida.
-     * @param {Dispatch<SetStateAction<string>>} setError Hook que permite actualizar el error
-     * del valor de la apuesta de un juego en caso de que haya algo inválido.
-     * @returns {boolean} Bandera que determina si es válido.
-     * @static
+     * Validates a table's bet per player.
+     * @param {number | string} value The bet.
+     * @param {Dispatch<SetStateAction<string>>} setError Sets the error message ('' when valid).
+     * @returns {boolean} Whether it is valid.
      */
     static validateBetByPlayer(value: number | string, setError: Dispatch<SetStateAction<string>>): boolean {
         let response: boolean = false;
@@ -30,13 +22,10 @@ export abstract class ValidationUtils {
     }
 
     /**
-     * Permite validar el nombre de un juego y mostrar los mensajes de error en caso
-     * de que sean necesarios
-     * @param {string} value El nombre del juego que se valida.
-     * @param {Dispatch<SetStateAction<string>>} setError Hook que permite actualizar el error
-     * del nombre del juego en caso de que haya algo inválido.
-     * @returns {boolean} Bandera que determina si es válido.
-     * @static
+     * Validates a table name.
+     * @param {string} value The name.
+     * @param {Dispatch<SetStateAction<string>>} setError Sets the error message ('' when valid).
+     * @returns {boolean} Whether it is valid.
      */
     static validateGameName(value: string, setError: Dispatch<SetStateAction<string>>): boolean {
         let response: boolean = false;
@@ -50,13 +39,10 @@ export abstract class ValidationUtils {
     }
 
     /**
-     * Permite validar la contraseña del usuario y mostrar los mensajes de error
-     * en caso de que sean necesarios.
-     * @param {string} value La contraseña que se valida.
-     * @param {Dispatch<SetStateAction<string>>} setError Hook que permite actualizar el error
-     * de la contraseña en caso de que haya algo inválido.
-     * @returns {boolean} Bandera que determina si es válido.
-     * @static
+     * Validates a password: 8+ characters with upper and lower case, a digit and a symbol.
+     * @param {string} value The password.
+     * @param {Dispatch<SetStateAction<string>>} setError Sets the error message ('' when valid).
+     * @returns {boolean} Whether it is valid.
      */
     static validatePassword(value: string, setError: Dispatch<SetStateAction<string>>): boolean {
         let response: boolean = false;
@@ -71,14 +57,11 @@ export abstract class ValidationUtils {
     }
 
     /**
-     * Permite validar la confirmación de la contraseña del usuario y mostrar los mensajes de error
-     * en caso de que sean necesarios.
-     * @param {string} value La confirmación de contraseña que se valida.
-     * @param {string} password La contraseña del usuario.
-     * @param {Dispatch<SetStateAction<string>>} setError Hook que permite actualizar el error
-     * de la confirmación contraseña en caso de que haya algo inválido.
-     * @returns {boolean} Bandera que determina si es válido.
-     * @static
+     * Validates the password confirmation.
+     * @param {string} value The confirmation.
+     * @param {string} password The password.
+     * @param {Dispatch<SetStateAction<string>>} setError Sets the error message ('' when valid).
+     * @returns {boolean} Whether it is valid.
      */
     static validatePasswordConfirmation(
         value: string, password: string,
@@ -95,18 +78,15 @@ export abstract class ValidationUtils {
     }
 
     /**
-     * Permite validar el nombre de usuario y mostrar los mensajes de error
-     * en caso de que sean necesarios.
-     * @param {string} value El nombre de usuario que se valida.
-     * @param {Dispatch<SetStateAction<string>>} setError Hook que permite actualizar el error
-     * del nombre de usuario en caso de que haya algo inválido.
-     * @returns {boolean} Determina si el nombre de usuario es válido.
-     * @static
+     * Validates a username (8+ characters).
+     * @param {string} value The username.
+     * @param {Dispatch<SetStateAction<string>>} setError Sets the error message ('' when valid).
+     * @returns {boolean} Whether it is valid.
      */
     static validateUsername(value: string, setError: Dispatch<SetStateAction<string>>): boolean {
         let response: boolean = false;
         if (!value) setError(ValidationErrorsConstants.REQUIRED_ERROR);
-        else if (value.length < 8) setError(ValidationErrorsConstants.LENGTH_OVER_6_ERROR);
+        else if (value.length < 8) setError(ValidationErrorsConstants.MIN_LENGTH_8_ERROR);
         else {
             setError('');
             response = true;

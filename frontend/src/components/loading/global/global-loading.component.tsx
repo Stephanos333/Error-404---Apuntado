@@ -2,10 +2,8 @@ import {Backdrop, CircularProgress} from '@mui/material';
 import {JSX} from 'react';
 
 /**
- * Componente que define, el componente de carga global de la aplicación.
- * @param props Los parámetros para el funcionamiento del componente.
- * @param props.loading Determina si se debe mostrar el componente.
- * @constructor
+ * Full-screen loading overlay.
+ * @param props.loading Whether to show it.
  */
 export function GlobalLoadingComponent(
     props: {
@@ -15,9 +13,9 @@ export function GlobalLoadingComponent(
     return (
         <Backdrop
             open={props.loading}
-            sx={{zIndex: (theme) => theme.zIndex.drawer - 1,}}
+            sx={{zIndex: (theme) => theme.zIndex.modal + 1}}
         >
-            <CircularProgress color='inherit'/>
+            <CircularProgress color='primary' thickness={5} aria-label='Cargando'/>
         </Backdrop>
     );
 }

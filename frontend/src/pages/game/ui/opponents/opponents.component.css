@@ -1,0 +1,206 @@
+.opponents {
+    list-style: none;
+    margin: 0;
+    padding: 18px clamp(12px, 3vw, 32px) 0;
+    display: flex;
+    justify-content: center;
+    gap: clamp(12px, 3vw, 40px);
+    min-height: 120px;
+}
+
+.opponent {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 4px 12px;
+    min-width: 0;
+    max-width: 240px;
+    padding: 10px 14px 10px 10px;
+    border-radius: 18px;
+    background: rgba(8, 38, 39, 0.55);
+    border: 1.5px solid var(--felt-line);
+    transition: border-color 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+
+    &.is-turn {
+        border-color: var(--brass-400);
+        box-shadow: 0 0 0 4px rgba(245, 194, 90, 0.18), 0 12px 30px -10px rgba(245, 194, 90, 0.5);
+    }
+
+    &.is-eliminated {
+        opacity: 0.45;
+    }
+
+    &.is-offline .opponent-avatar img {
+        filter: grayscale(1);
+    }
+}
+
+/* Card backs held above the seat: one per card in the hand. */
+.opponent-hand {
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    height: 0;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
+
+    & .playing-card {
+        --card-w: 22px;
+        margin-left: -14px;
+        transform-origin: 50% 140%;
+        transform: translateY(var(--d)) rotate(calc(var(--i) * 6deg));
+        transform-origin: 50% 140%;
+        box-shadow: 0 2px 4px rgba(3, 20, 20, 0.4);
+    }
+}
+
+.opponent-avatar {
+    position: relative;
+    grid-row: span 3;
+
+    & img, & .opponent-avatar-blank {
+        display: block;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--felt-600);
+    }
+}
+
+.opponent.is-turn .opponent-avatar img {
+    box-shadow: 0 0 0 3px var(--brass-400);
+    animation: opponent-turn 1.8s ease-in-out infinite;
+}
+
+@keyframes opponent-turn {
+    50% {
+        box-shadow: 0 0 0 6px rgba(245, 194, 90, 0.35);
+    }
+}
+
+.opponent-turn-badge {
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    transform: translateX(-50%);
+    padding: 1px 7px;
+    border-radius: var(--r-pill);
+    background: var(--brass-400);
+    color: var(--ink);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.opponent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.opponent-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 750;
+
+    & span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.opponent-meta {
+    font-size: var(--fs-xs);
+    color: var(--chalk-2);
+
+    & .num {
+        font-size: var(--fs-sm);
+    }
+}
+
+.opponent-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    & .num {
+        font-size: var(--fs-md);
+        line-height: 1;
+    }
+}
+
+.opponent-score-bar {
+    flex: 1;
+    min-width: 50px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(234, 242, 239, 0.14);
+    overflow: hidden;
+
+    & span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--mint);
+        transition: width 400ms var(--ease-out);
+    }
+
+    & span.is-danger {
+        background: var(--heart);
+    }
+}
+
+.opponent-tag {
+    position: absolute;
+    top: -10px;
+    right: 8px;
+    padding: 1px 8px;
+    border-radius: var(--r-pill);
+    background: var(--heart);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 800;
+}
+
+.opponent-tag-soft {
+    background: var(--paper);
+    color: var(--ink);
+}
+
+@media (max-width: 720px) {
+    .opponents {
+        justify-content: flex-start;
+        overflow-x: auto;
+        gap: 10px;
+        min-height: 0;
+        padding: 16px 12px 4px;
+        scrollbar-width: none;
+    }
+
+    .opponent {
+        flex: none;
+        grid-template-columns: auto auto;
+        padding: 6px 10px 6px 6px;
+        gap: 0 8px;
+    }
+
+    .opponent-avatar img, .opponent-avatar-blank {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .opponent-hand {
+        display: none;
+    }
+
+    .opponent-score-bar {
+        min-width: 32px;
+    }
+}

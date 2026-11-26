@@ -1,5 +1,5 @@
 /**
- * Definición de los diseños de cartas del sistema.
+ * A card design.
  */
 export type CardDesignType = {
     cardDesignId: string;

@@ -1,14 +1,10 @@
 /**
- * @enum {string} Constantes que representan configuraciones de los juegos.
+ * @enum {string} Game table statuses.
  * @readonly
  */
 export enum GameConstants {
-    /**
-     * El estado de un juego listo para iniciar.
-     */
+    /** The table is full and ready to start. */
     GAME_STATUS_WAITING_TO_START = 'WAITING_TO_START',
-    /**
-     * El estado de un juego activo.
-     */
+    /** The match is being played. */
     GAME_STATUS_ACTIVE = 'ACTIVE'
 }

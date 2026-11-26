@@ -1,35 +1,176 @@
-#create-game-component-container {
+.create-game {
+    padding: var(--space-6);
+
+    & h2 {
+        font-size: var(--fs-xl);
+        margin-bottom: var(--space-5);
+    }
+}
+
+.create-game-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.create-game-label, .create-game-modes legend {
+    display: block;
+    margin-bottom: 8px;
+    padding: 0;
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+}
+
+.create-game-modes {
+    border: 0;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+}
+
+.create-game-modes-grid {
     display: grid;
-    padding: 0 17% 0 17%;
-    grid-template-rows: max-content 1fr max-content;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
 
-    & h1 {
-        margin: 10px;
-        font-size: 2em;
+.create-game-mode {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 2px solid var(--paper-line);
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms var(--ease-out);
+
+    & input {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    &:hover {
+        border-color: var(--ink-3);
+    }
+
+    &.is-checked {
+        border-color: var(--ink);
+        background: var(--brass-400);
+    }
+
+    &:has(input:focus-visible) {
+        outline: 3px solid var(--brass-500);
+        outline-offset: 2px;
+    }
+}
+
+.create-game-mode-figure {
+    font-size: var(--fs-2xl);
+    line-height: 1;
+    color: var(--ink);
+}
+
+.create-game-mode-title {
+    margin-top: 6px;
+    font-weight: 750;
+    color: var(--ink);
+}
+
+.create-game-mode-text {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.35;
+}
+
+.create-game-mode.is-checked .create-game-mode-text {
+    color: #3d3014;
+}
+
+.create-game-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-2);
+}
+
+.create-game-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--r-pill);
+    background: var(--paper-2);
+}
+
+.create-game-stepper-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    height: 40px;
+    border-radius: var(--r-pill);
+    background: #fff;
+
+    & input {
+        width: 3.2ch;
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        font-size: var(--fs-lg);
         text-align: center;
+        outline: none;
+    }
+}
+
+.create-game-help {
+    display: block;
+    min-height: 1.4em;
+    margin-top: 6px;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+
+    &.is-error {
+        color: #b3332d;
+        font-weight: 600;
+    }
+}
+
+.create-game-visibility-help {
+    margin-top: -2px;
+}
+
+.create-game-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--paper-line);
+
+    & .token-amount .num {
+        color: var(--ink);
+    }
+}
+
+.create-game-pot .create-game-label {
+    margin-bottom: 4px;
+}
+
+@media (max-width: 520px) {
+    .create-game {
+        padding: var(--space-5);
     }
 
-    & #create-game-form-container {
-        height: 100%;
-        display: flex;
-        row-gap: 18px;
-        flex-flow: column;
-        align-items: start;
-
-        & .create-game-form-input {
-            width: 100%;
-        }
-    }
-
-    & #create-game-send-container {
-        width: 100%;
-        display: flex;
-        padding: 17px 0 25px 0;
-        box-sizing: border-box;
-        justify-content: center;
-
-        & button {
-            width: 70%;
-        }
+    .create-game-footer {
+        flex-direction: column;
+        align-items: stretch;
     }
 }

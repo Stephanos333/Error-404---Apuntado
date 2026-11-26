@@ -1,50 +1,57 @@
-#home-page-container {
+.home-header {
+    margin-bottom: var(--space-5);
+
+    & h1 {
+        font-size: clamp(var(--fs-2xl), 4.5vw, var(--fs-3xl));
+        font-stretch: 85%;
+        margin-bottom: 6px;
+        overflow-wrap: anywhere;
+    }
+}
+
+.home-active-game {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    border-radius: 18px;
+    border: 1.5px solid var(--brass-400);
+    background: rgba(234, 169, 43, 0.12);
+
+    & strong {
+        font-family: var(--font-display);
+        font-size: var(--fs-md);
+        color: var(--brass-300);
+    }
+
+    & p {
+        color: var(--chalk-2);
+        font-size: var(--fs-sm);
+    }
+}
+
+.home-active-game-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.home-grid {
     display: grid;
-    grid-template-rows: 15vh 85vh;
-    grid-template-columns: 49.8% 0.04% 49.8%;
-    box-sizing: border-box;
-
-    & #home-header-component-container {
-        grid-column: 1/4;
-    }
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: var(--space-5);
+    align-items: stretch;
 }
 
-@media (max-width: 1200px) {
-    @media (min-height: 800px) {
-        #home-page-container {
-            grid-template-rows: max-content 1fr 5% 1fr;
-            grid-template-columns: 1fr;
-
-            & #home-header-component-container {
-                grid-row: 1/2;
-                grid-column: 1/2;
-            }
-        }
-    }
-}
-
-@media (max-width: 830px) {
-    #home-page-container {
-        grid-template-rows: max-content 1fr 5% 1fr;
-        grid-template-columns: 100vw;
-        max-width: 100vw;
-        height: max-content;
+@media (max-width: 960px) {
+    .home-grid {
+        grid-template-columns: 1fr;
     }
 
-    & #home-header-component-container {
-        grid-row: 1/2;
-        grid-column: 1/2;
-    }
-
-    & #create-game-component-container {
-        grid-row: 2/3;
-    }
-
-    & #home-page-vertical-line {
-        grid-row: 3/4;
-    }
-
-    & #join-game-component-container {
-        grid-row: 4/5;
+    .home-active-game {
+        flex-direction: column;
+        align-items: stretch;
     }
 }

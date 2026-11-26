@@ -6,26 +6,19 @@ import {LocaleStorageConstants} from '../store/locale-storage.constants.ts';
 import {SocketConstants} from '../utils/constants/socket.constants.ts';
 
 
-/**
- * El contexto del websocket.
- */
+/** Websocket context. */
 const WebSocketContext = createContext<WebsocketContextType | undefined>(undefined);
 
 /**
- * Configuración del websocket de la aplicación.
- * @param children El elemento que se debe pindar.
- * @constructor
+ * Provides the app's socket (namespace `game`), connected on demand after logging in.
+ * @param children The app.
  */
 export const WebsocketProvider = ({children}: { children: ReactNode }) => {
 
-    /**
-     * Hook para gestionar el websocket de socket.io
-     */
+    /** The socket.io client. */
     const [socket, setSocket] = useState<Socket | undefined>(undefined);
 
-    /**
-     * Método para conectar el websocket.
-     */
+    /** Connects the socket with the stored access token. */
     const connect = (): void => {
         const token: string | null = LocaleStorageUtils.get<LocaleStorageConstants.KEY_ACCESS_TOKEN>(LocaleStorageConstants.KEY_ACCESS_TOKEN);
         if (token && !socket) {
@@ -50,9 +43,7 @@ export const WebsocketProvider = ({children}: { children: ReactNode }) => {
     );
 };
 
-/**
- * Hook para obtener el websocket.
- */
+/** Reads the socket context. */
 export const useWebSocket = (): WebsocketContextType => {
     const context: WebsocketContextType | undefined = useContext(WebSocketContext);
     if (!context) throw new Error('useWebSocket must be used within a WebSocketProvider');
