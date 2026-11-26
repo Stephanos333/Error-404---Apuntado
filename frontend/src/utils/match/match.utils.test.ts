@@ -15,6 +15,7 @@ import {
     reconcileGroups,
     shouldRefresh,
     sortCards,
+    unmatchedCards,
 } from './match.utils.ts';
 
 const c = (value: CardRank, suit: CardSuit, deckNumber = 1): MatchCard => ({rank: value, suit, deckNumber});
@@ -35,7 +36,7 @@ describe('generateCommandId', () => {
 });
 
 describe('translating intents into the backend contract', () => {
-    it('draw: DISCARD_PILE is sent as DESCARTE', () => {
+    it('draw: the source is sent as DISCARD_PILE or DECK', () => {
         expect(drawBody({source: 'DISCARD_PILE'}, 7, 'id')).toEqual({source: 'DISCARD_PILE', version: 7, commandId: 'id'});
         expect(drawBody({source: 'DECK'}, 7, 'id').source).toBe('DECK');
     });
@@ -113,6 +114,23 @@ describe('meld feedback (same rule as the backend evaluator)', () => {
         expect(meldKind([c('TWO', 'HEARTS'), c('FOUR', 'HEARTS'), c('FIVE', 'HEARTS')])).toBeNull();
         expect(meldKind(THREE.slice(0, 2))).toBeNull();
         expect(meldKind([...FOUR, DISCARD])).toBeNull();
+    });
+
+    it('unmatched points include the cards of groups that are not melds (same rule as the backend)', () => {
+        const run = [c('SIX', 'CLUBS'), c('EIGHT', 'CLUBS'), c('SEVEN', 'CLUBS')];
+        const set = [c('FIVE', 'DIAMONDS'), c('FIVE', 'HEARTS'), c('FIVE', 'CLUBS')];
+        const incomplete = [c('TEN', 'DIAMONDS'), c('NINE', 'DIAMONDS')];
+        const noMeld = [c('TWO', 'SPADES'), c('THREE', 'HEARTS'), c('FOUR', 'SPADES')];
+        const loose = [c('FOUR', 'CLUBS'), c('TEN', 'HEARTS'), c('Q', 'DIAMONDS')];
+
+        const unmatched = unmatchedCards([run, set, incomplete], loose);
+        expect(unmatched.inInvalidGroups).toBe(2);
+        expect(unmatched.cards).toHaveLength(5);
+        expect(points(unmatched.cards)).toBe(43);
+
+        expect(points(unmatchedCards([run, set, noMeld], loose).cards)).toBe(24 + 9);
+        expect(unmatchedCards([run, set], loose)).toEqual({cards: loose, inInvalidGroups: 0});
+        expect(unmatchedCards([[]], [])).toEqual({cards: [], inInvalidGroups: 0});
     });
 
     it('sorts loose cards for display by rank or suit', () => {

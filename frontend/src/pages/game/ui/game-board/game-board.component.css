@@ -343,6 +343,11 @@
     }
 }
 
+.board-loose-note {
+    color: var(--chalk-2);
+    font-size: var(--fs-xs);
+}
+
 .board-loose {
     --card-w: clamp(56px, 7.2vw, 96px);
     display: flex;
