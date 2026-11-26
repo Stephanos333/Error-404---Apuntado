@@ -4,7 +4,7 @@ import {PrivateHandMessage, PrivateHandView, PublicMatchMessage, PublicMatchView
 import {MatchResponse} from '../../types/services/match.ts';
 import {PUBLIC_MATCH_MESSAGES, SocketConstants} from '../../utils/constants/socket.constants.ts';
 import {CommandResult, MatchClient} from '../../utils/match/match.client.ts';
-import {compareVersion} from '../../utils/match/match.utils.ts';
+import {compareVersion, handAfterPublicUpdate} from '../../utils/match/match.utils.ts';
 
 /** Live match state consumed by the table. */
 export type LiveMatch = {
@@ -90,6 +90,8 @@ export function useMatch(socket: Socket | undefined, onMessage: (message: Public
                 return;
             }
             putMatch(message.match);
+            // An eliminated player gets no private message: drop the hand of the previous round.
+            if (handAfterPublicUpdate(message.match, handRef.current) === null && handRef.current) putHand(null);
             onMessageRef.current(message);
         };
         const handlePrivate = (message: PrivateHandMessage): void => putHand(message.hand);

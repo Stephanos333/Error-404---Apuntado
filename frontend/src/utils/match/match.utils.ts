@@ -2,7 +2,7 @@
  * Pure logic of the match table (no React, no network): card identity, translating cards
  * to indexes for the backend, meld checks, the close shape and versions.
  */
-import {CardRank, CardSuit, CloseType, MatchCard} from '../../types/match.type.ts';
+import {CardRank, CardSuit, CloseType, MatchCard, PrivateHandView, PublicMatchView} from '../../types/match.type.ts';
 import {CloseIntent, CloseRequest, DiscardIntent, DiscardRequest, DrawIntent, DrawRequest} from '../../types/services/match.ts';
 
 /** Unique key of a card in a hand (with two decks there are repeated cards). */
@@ -201,4 +201,17 @@ export function compareVersion(current: number | undefined, received: number): '
 export function unmatchedCards(groups: MatchCard[][], loose: MatchCard[]): { cards: MatchCard[]; inInvalidGroups: number } {
     const inInvalidGroups: MatchCard[] = groups.filter((g) => g.length > 0 && meldKind(g) === null).flat();
     return {cards: [...inInvalidGroups, ...loose], inInvalidGroups: inInvalidGroups.length};
+}
+
+/**
+ * Hand to keep after a public update: an eliminated player is no longer dealt in, and the server
+ * sends no private message for that, so the board would keep showing the previous hand.
+ * @param {PublicMatchView} match The match of the public message.
+ * @param {PrivateHandView | null | undefined} hand The hand currently shown.
+ * @returns The same hand, or `null` when its owner is eliminated.
+ */
+export function handAfterPublicUpdate(match: PublicMatchView, hand: PrivateHandView | null | undefined): PrivateHandView | null | undefined {
+    if (!hand) return hand;
+    const owner = match.players.find((p) => p.playerId === hand.playerId);
+    return owner?.status === 'ELIMINATED' ? null : hand;
 }

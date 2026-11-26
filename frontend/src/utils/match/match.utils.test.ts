@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {CardRank, CardSuit, MatchCard} from '../../types/match.type.ts';
+import {CardRank, CardSuit, MatchCard, PrivateHandView, PublicMatchView} from '../../types/match.type.ts';
 import {
     cardImage,
     closeBody,
@@ -15,6 +15,7 @@ import {
     reconcileGroups,
     shouldRefresh,
     sortCards,
+    handAfterPublicUpdate,
     unmatchedCards,
 } from './match.utils.ts';
 
@@ -172,5 +173,22 @@ describe('card image', () => {
     it('maps rank and suit to the file names', () => {
         expect(cardImage(c('ACE', 'CLUBS'))).toEqual({suit: 'CLUB', type: 'A'});
         expect(cardImage(c('TEN', 'HEARTS'))).toEqual({suit: 'HEART', type: 'C10'});
+    });
+});
+
+describe('hand after a public update', () => {
+    const hand: PrivateHandView = {matchId: 'm', version: 4, playerId: 'p1', cards: HAND, groups: []};
+    const match = (status: 'ACTIVE' | 'ELIMINATED'): PublicMatchView => ({
+        matchId: 'm', version: 5, status: 'IN_PROGRESS', mode: 'apuntado', winnerId: null, pot: {total: 25}, round: null, scoreboard: [],
+        players: [{playerId: 'p1', username: 'ana', position: 0, status, score: 121, connected: true, cardsInHand: 0}],
+    });
+
+    it('drops the hand of a player who was just eliminated', () => {
+        expect(handAfterPublicUpdate(match('ELIMINATED'), hand)).toBeNull();
+    });
+
+    it('keeps the hand of an active player and leaves a missing hand as it is', () => {
+        expect(handAfterPublicUpdate(match('ACTIVE'), hand)).toBe(hand);
+        expect(handAfterPublicUpdate(match('ELIMINATED'), undefined)).toBeUndefined();
     });
 });
