@@ -2,8 +2,8 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UserDecoratorType } from './user.decorator';
 
 /**
- * Decorador que extrae la información del juego del request después
- * de validar la guardia.
+ * Decorator that extracts the game information from the request after
+ * the guard has validated it.
  * @const
  */
 export const GameDecorator = createParamDecorator(

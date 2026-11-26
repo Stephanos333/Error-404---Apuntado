@@ -1,0 +1,255 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "matchId": {
+        "bsonType": "objectId"
+      },
+      "roundNumber": {
+        "bsonType": "int",
+        "minimum": 1
+      },
+      "closed": {
+        "bsonType": "bool"
+      },
+      "count": {
+        "bsonType": "int",
+        "minimum": 0,
+        "maximum": 1000
+      },
+      "events": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "sequence": {
+              "bsonType": "int",
+              "minimum": 1
+            },
+            "type": {
+              "bsonType": "string",
+              "enum": [
+                "DEAL",
+                "DRAW_FROM_DECK",
+                "DRAW_FROM_DISCARD_PILE",
+                "DISCARD",
+                "ORGANIZATION",
+                "CLOSE_ATTEMPT",
+                "VALID_CLOSE",
+                "PENALTY",
+                "EXTRA_ROUND",
+                "AUTO_TURN",
+                "DECK_REFILLED",
+                "ELIMINATION",
+                "REBUY",
+                "DISCONNECTION",
+                "RECONNECTION"
+              ]
+            },
+            "playerId": {
+              "bsonType": [
+                "string",
+                "null"
+              ]
+            },
+            "card": {
+              "bsonType": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "rank": {
+                  "bsonType": "string",
+                  "enum": [
+                    "ACE",
+                    "TWO",
+                    "THREE",
+                    "FOUR",
+                    "FIVE",
+                    "SIX",
+                    "SEVEN",
+                    "EIGHT",
+                    "NINE",
+                    "TEN",
+                    "J",
+                    "Q",
+                    "K",
+                    "JOKER"
+                  ]
+                },
+                "suit": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "SPADES",
+                    "HEARTS",
+                    "DIAMONDS",
+                    "CLUBS",
+                    null
+                  ],
+                  "description": "null only for JOKER"
+                },
+                "deckNumber": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 or 2 (two decks from PS-08 players)"
+                },
+                "designId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "design of the player who discarded it; only in the discard pile"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "rank",
+                "suit",
+                "deckNumber"
+              ],
+              "description": "Card (embedded document, no _id)"
+            },
+            "detail": {
+              "bsonType": [
+                "object",
+                "null"
+              ],
+              "description": "event-specific data (e.g. the penalty reason)"
+            },
+            "version": {
+              "bsonType": "int",
+              "minimum": 1,
+              "description": "match version after applying the event"
+            },
+            "createdAt": {
+              "bsonType": "date"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "sequence",
+            "type",
+            "version",
+            "createdAt"
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 1000
+      },
+      "revealedHands": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "playerId": {
+              "bsonType": "string"
+            },
+            "cards": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "object",
+                "properties": {
+                  "rank": {
+                    "bsonType": "string",
+                    "enum": [
+                      "ACE",
+                      "TWO",
+                      "THREE",
+                      "FOUR",
+                      "FIVE",
+                      "SIX",
+                      "SEVEN",
+                      "EIGHT",
+                      "NINE",
+                      "TEN",
+                      "J",
+                      "Q",
+                      "K",
+                      "JOKER"
+                    ]
+                  },
+                  "suit": {
+                    "bsonType": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "SPADES",
+                      "HEARTS",
+                      "DIAMONDS",
+                      "CLUBS",
+                      null
+                    ],
+                    "description": "null only for JOKER"
+                  },
+                  "deckNumber": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 2,
+                    "description": "1 or 2 (two decks from PS-08 players)"
+                  },
+                  "designId": {
+                    "bsonType": [
+                      "objectId",
+                      "null"
+                    ],
+                    "description": "design of the player who discarded it; only in the discard pile"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "rank",
+                  "suit",
+                  "deckNumber"
+                ],
+                "description": "Card (embedded document, no _id)"
+              },
+              "minItems": 10,
+              "maxItems": 11
+            },
+            "groups": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "int",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "minItems": 0,
+              "maxItems": 4
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "playerId",
+            "cards",
+            "groups"
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 6
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "matchId",
+      "roundNumber",
+      "closed",
+      "count",
+      "events"
+    ],
+    "description": "Per-round play log (bucket pattern): traceability of draws, discards, penalties and states"
+  }
+}

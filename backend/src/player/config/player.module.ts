@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { AplicacionModule } from '../../aplicacion/aplicacion.module';
+import { ApplicationModule } from '../../application/application.module';
 import { PlayerController } from '../controller/player.controller';
 /**
- * Clase que representa el módulo de los jugadores y sus respectivas
- * configuraciones.
- * Configura:
- * - Los controladores de los jugadores.
- * Los servicios los provee el módulo de aplicación.
+ * Module of the players and their
+ * configuration.
+ * It configures:
+ * - The player controllers.
+ * The services are provided by the application module.
  */
 @Module({
-	imports: [AplicacionModule, CqrsModule],
+	imports: [ApplicationModule, CqrsModule],
 	controllers: [PlayerController],
 })
 export class PlayerModule {

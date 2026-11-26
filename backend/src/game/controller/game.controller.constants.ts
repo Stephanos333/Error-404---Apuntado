@@ -1,28 +1,28 @@
 /**
- * @enum {string} Constantes que representan la configuración de los controladores
- * de los usuarios.
+ * @enum {string} Constants with the configuration of the game
+ * controllers.
  * @readonly
  */
 export enum GameControllerConstants {
 	/**
-	 * Prefijo utilizado para todos los controladores de los juegos.
+	 * Prefix used by every game controller.
 	 */
 	CONTROLLER_PREFIX = 'game',
 	/**
-	 * Tag que agrupa todos los controladores de los juegos.
+	 * Tag that groups every game controller.
 	 */
 	CONTROLLER_TAG = 'Game',
 	/**
-	 * Url utilizada para el controlador que trae el detalle del juego actual.
+	 * Url of the controller that fetches the detail of the current game.
 	 */
 	GET_CURRENT_GAME_DETAIL_URL = 'current',
 	/**
-	 * Url utilizada para el controlador que trae todas las partidas públicas.
+	 * Url of the controller that fetches every public game.
 	 */
 	GET_PUBLIC_GAMES_URL = 'public',
 	/**
-	 * Url utilizada para el controlador que permite ingresar a
-	 * un juego.
+	 * Url of the controller that lets a user join
+	 * a game.
 	 */
 	JOIN_GAME_URL = 'join',
 }

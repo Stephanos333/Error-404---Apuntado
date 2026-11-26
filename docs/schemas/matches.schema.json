@@ -1,0 +1,916 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "invitationCode": {
+        "bsonType": "string",
+        "pattern": "^[A-Z0-9]{6}$",
+        "description": "code for private tables"
+      },
+      "name": {
+        "bsonType": "string",
+        "minLength": 3,
+        "maxLength": 30,
+        "description": "PP-01"
+      },
+      "status": {
+        "bsonType": "string",
+        "enum": [
+          "WAITING",
+          "IN_PROGRESS",
+          "SHOWING_RESULTS",
+          "FINISHED",
+          "CANCELLED"
+        ]
+      },
+      "hostId": {
+        "bsonType": "objectId"
+      },
+      "settings": {
+        "anyOf": [
+          {
+            "bsonType": "object",
+            "properties": {
+              "plugin": {
+                "bsonType": "object",
+                "properties": {
+                  "id": {
+                    "bsonType": "string",
+                    "enum": [
+                      "classic",
+                      "apuntado"
+                    ]
+                  },
+                  "version": {
+                    "bsonType": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "description": "Rule plug-in and version the match was created with (ADR-03)"
+              },
+              "capacity": {
+                "bsonType": "int",
+                "minimum": 2,
+                "maximum": 6,
+                "description": "PP-03"
+              },
+              "betPerPlayer": {
+                "bsonType": "int",
+                "minimum": 1,
+                "description": "PP-04"
+              },
+              "visibility": {
+                "bsonType": "string",
+                "enum": [
+                  "PUBLIC",
+                  "PRIVATE"
+                ],
+                "description": "PP-05"
+              },
+              "runType": {
+                "bsonType": "string",
+                "enum": [
+                  "WITH_WRAP",
+                  "WITHOUT_WRAP"
+                ],
+                "description": "PP-06"
+              },
+              "jokersEnabled": {
+                "bsonType": "bool",
+                "description": "PP-07"
+              },
+              "parameters": {
+                "bsonType": "object",
+                "properties": {
+                  "eliminationLimit": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "description": "PS-01, score >= eliminates"
+                  },
+                  "knockThreshold": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "PS-02, leftover strictly lower"
+                  },
+                  "invalidClosePenalty": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-03"
+                  },
+                  "closeBonus": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-04 (negative)"
+                  },
+                  "negativeVictoryThreshold": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-05, score <= wins"
+                  },
+                  "jokerValue": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-06"
+                  },
+                  "jokersPerDeck": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "description": "PS-07"
+                  },
+                  "twoDeckPlayers": {
+                    "bsonType": "int",
+                    "minimum": 2,
+                    "maximum": 7,
+                    "description": "PS-08"
+                  },
+                  "disconnectGraceSec": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-09"
+                  },
+                  "resultsWindowSec": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-10"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "eliminationLimit",
+                  "knockThreshold",
+                  "invalidClosePenalty",
+                  "closeBonus",
+                  "negativeVictoryThreshold",
+                  "jokerValue",
+                  "jokersPerDeck",
+                  "twoDeckPlayers",
+                  "disconnectGraceSec",
+                  "resultsWindowSec"
+                ],
+                "description": "Frozen copy of the system parameters when the match is created (RD-36)"
+              },
+              "mode": {
+                "bsonType": "string",
+                "enum": [
+                  "classic"
+                ],
+                "description": "PP-02"
+              },
+              "rebuyEnabled": {
+                "bsonType": "bool",
+                "enum": [
+                  false
+                ],
+                "description": "Classic has a single round: not applicable"
+              },
+              "negativeVictoryEnabled": {
+                "bsonType": "bool",
+                "enum": [
+                  false
+                ],
+                "description": "not applicable in Classic"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "plugin",
+              "capacity",
+              "betPerPlayer",
+              "visibility",
+              "runType",
+              "jokersEnabled",
+              "rebuyEnabled",
+              "negativeVictoryEnabled",
+              "parameters"
+            ]
+          },
+          {
+            "bsonType": "object",
+            "properties": {
+              "plugin": {
+                "bsonType": "object",
+                "properties": {
+                  "id": {
+                    "bsonType": "string",
+                    "enum": [
+                      "classic",
+                      "apuntado"
+                    ]
+                  },
+                  "version": {
+                    "bsonType": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "description": "Rule plug-in and version the match was created with (ADR-03)"
+              },
+              "capacity": {
+                "bsonType": "int",
+                "minimum": 2,
+                "maximum": 6,
+                "description": "PP-03"
+              },
+              "betPerPlayer": {
+                "bsonType": "int",
+                "minimum": 1,
+                "description": "PP-04"
+              },
+              "visibility": {
+                "bsonType": "string",
+                "enum": [
+                  "PUBLIC",
+                  "PRIVATE"
+                ],
+                "description": "PP-05"
+              },
+              "runType": {
+                "bsonType": "string",
+                "enum": [
+                  "WITH_WRAP",
+                  "WITHOUT_WRAP"
+                ],
+                "description": "PP-06"
+              },
+              "jokersEnabled": {
+                "bsonType": "bool",
+                "description": "PP-07"
+              },
+              "parameters": {
+                "bsonType": "object",
+                "properties": {
+                  "eliminationLimit": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "description": "PS-01, score >= eliminates"
+                  },
+                  "knockThreshold": {
+                    "bsonType": "int",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "PS-02, leftover strictly lower"
+                  },
+                  "invalidClosePenalty": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-03"
+                  },
+                  "closeBonus": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-04 (negative)"
+                  },
+                  "negativeVictoryThreshold": {
+                    "bsonType": "int",
+                    "maximum": 0,
+                    "description": "PS-05, score <= wins"
+                  },
+                  "jokerValue": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-06"
+                  },
+                  "jokersPerDeck": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "description": "PS-07"
+                  },
+                  "twoDeckPlayers": {
+                    "bsonType": "int",
+                    "minimum": 2,
+                    "maximum": 7,
+                    "description": "PS-08"
+                  },
+                  "disconnectGraceSec": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-09"
+                  },
+                  "resultsWindowSec": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "PS-10"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "eliminationLimit",
+                  "knockThreshold",
+                  "invalidClosePenalty",
+                  "closeBonus",
+                  "negativeVictoryThreshold",
+                  "jokerValue",
+                  "jokersPerDeck",
+                  "twoDeckPlayers",
+                  "disconnectGraceSec",
+                  "resultsWindowSec"
+                ],
+                "description": "Frozen copy of the system parameters when the match is created (RD-36)"
+              },
+              "mode": {
+                "bsonType": "string",
+                "enum": [
+                  "apuntado"
+                ],
+                "description": "PP-02"
+              },
+              "rebuyEnabled": {
+                "bsonType": "bool",
+                "description": "PP-08"
+              },
+              "negativeVictoryEnabled": {
+                "bsonType": "bool",
+                "description": "PP-09"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "plugin",
+              "capacity",
+              "betPerPlayer",
+              "visibility",
+              "runType",
+              "jokersEnabled",
+              "rebuyEnabled",
+              "negativeVictoryEnabled",
+              "parameters"
+            ]
+          }
+        ]
+      },
+      "players": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "playerId": {
+              "bsonType": "string"
+            },
+            "userId": {
+              "bsonType": "objectId"
+            },
+            "username": {
+              "bsonType": "string",
+              "description": "denormalized to avoid joins when showing the table"
+            },
+            "position": {
+              "bsonType": "int",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "status": {
+              "bsonType": "string",
+              "enum": [
+                "IN_LOBBY",
+                "ACTIVE",
+                "ELIMINATED",
+                "WINNER",
+                "LOSER"
+              ]
+            },
+            "score": {
+              "bsonType": "int",
+              "description": "cumulative (Apuntado only; 0 in Classic)"
+            },
+            "usedRebuy": {
+              "bsonType": "bool"
+            },
+            "connected": {
+              "bsonType": "bool"
+            },
+            "disconnectedSince": {
+              "bsonType": [
+                "date",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "playerId",
+            "userId",
+            "username",
+            "position",
+            "status",
+            "score",
+            "usedRebuy",
+            "connected"
+          ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+      },
+      "pot": {
+        "bsonType": "object",
+        "properties": {
+          "total": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "contributions": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "userId": {
+                  "bsonType": "objectId"
+                },
+                "type": {
+                  "bsonType": "string",
+                  "enum": [
+                    "BET",
+                    "REBUY"
+                  ]
+                },
+                "amount": {
+                  "bsonType": "int",
+                  "minimum": 1
+                },
+                "ledgerEntryId": {
+                  "bsonType": "objectId"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "userId",
+                "type",
+                "amount",
+                "ledgerEntryId"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 12
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "total",
+          "contributions"
+        ]
+      },
+      "currentRound": {
+        "bsonType": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "number": {
+            "bsonType": "int",
+            "minimum": 1
+          },
+          "status": {
+            "bsonType": "string",
+            "enum": [
+              "DEALING",
+              "IN_TURNS",
+              "EXTRA_ROUND",
+              "SETTLING",
+              "CLOSED"
+            ]
+          },
+          "startPosition": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "turn": {
+            "bsonType": "object",
+            "properties": {
+              "playerId": {
+                "bsonType": "string"
+              },
+              "phase": {
+                "bsonType": "string",
+                "enum": [
+                  "AWAITING_DRAW",
+                  "HOLDING_11_CARDS"
+                ]
+              },
+              "closeAttempted": {
+                "bsonType": "bool"
+              },
+              "number": {
+                "bsonType": "int",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "playerId",
+              "phase",
+              "closeAttempted",
+              "number"
+            ]
+          },
+          "deck": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "rank": {
+                  "bsonType": "string",
+                  "enum": [
+                    "ACE",
+                    "TWO",
+                    "THREE",
+                    "FOUR",
+                    "FIVE",
+                    "SIX",
+                    "SEVEN",
+                    "EIGHT",
+                    "NINE",
+                    "TEN",
+                    "J",
+                    "Q",
+                    "K",
+                    "JOKER"
+                  ]
+                },
+                "suit": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "SPADES",
+                    "HEARTS",
+                    "DIAMONDS",
+                    "CLUBS",
+                    null
+                  ],
+                  "description": "null only for JOKER"
+                },
+                "deckNumber": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 or 2 (two decks from PS-08 players)"
+                },
+                "designId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "design of the player who discarded it; only in the discard pile"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "rank",
+                "suit",
+                "deckNumber"
+              ],
+              "description": "Card (embedded document, no _id)"
+            },
+            "minItems": 0,
+            "maxItems": 108
+          },
+          "discardPile": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "rank": {
+                  "bsonType": "string",
+                  "enum": [
+                    "ACE",
+                    "TWO",
+                    "THREE",
+                    "FOUR",
+                    "FIVE",
+                    "SIX",
+                    "SEVEN",
+                    "EIGHT",
+                    "NINE",
+                    "TEN",
+                    "J",
+                    "Q",
+                    "K",
+                    "JOKER"
+                  ]
+                },
+                "suit": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "SPADES",
+                    "HEARTS",
+                    "DIAMONDS",
+                    "CLUBS",
+                    null
+                  ],
+                  "description": "null only for JOKER"
+                },
+                "deckNumber": {
+                  "bsonType": "int",
+                  "minimum": 1,
+                  "maximum": 2,
+                  "description": "1 or 2 (two decks from PS-08 players)"
+                },
+                "designId": {
+                  "bsonType": [
+                    "objectId",
+                    "null"
+                  ],
+                  "description": "design of the player who discarded it; only in the discard pile"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "rank",
+                "suit",
+                "deckNumber"
+              ],
+              "description": "Card (embedded document, no _id)"
+            },
+            "minItems": 0,
+            "maxItems": 108
+          },
+          "hands": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "playerId": {
+                  "bsonType": "string"
+                },
+                "cards": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "object",
+                    "properties": {
+                      "rank": {
+                        "bsonType": "string",
+                        "enum": [
+                          "ACE",
+                          "TWO",
+                          "THREE",
+                          "FOUR",
+                          "FIVE",
+                          "SIX",
+                          "SEVEN",
+                          "EIGHT",
+                          "NINE",
+                          "TEN",
+                          "J",
+                          "Q",
+                          "K",
+                          "JOKER"
+                        ]
+                      },
+                      "suit": {
+                        "bsonType": [
+                          "string",
+                          "null"
+                        ],
+                        "enum": [
+                          "SPADES",
+                          "HEARTS",
+                          "DIAMONDS",
+                          "CLUBS",
+                          null
+                        ],
+                        "description": "null only for JOKER"
+                      },
+                      "deckNumber": {
+                        "bsonType": "int",
+                        "minimum": 1,
+                        "maximum": 2,
+                        "description": "1 or 2 (two decks from PS-08 players)"
+                      },
+                      "designId": {
+                        "bsonType": [
+                          "objectId",
+                          "null"
+                        ],
+                        "description": "design of the player who discarded it; only in the discard pile"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "rank",
+                      "suit",
+                      "deckNumber"
+                    ],
+                    "description": "Card (embedded document, no _id)"
+                  },
+                  "minItems": 10,
+                  "maxItems": 11
+                },
+                "groups": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "array",
+                    "items": {
+                      "bsonType": "int",
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "minItems": 1,
+                    "maxItems": 4
+                  },
+                  "minItems": 0,
+                  "maxItems": 4,
+                  "description": "player's organization: indexes of 'cards' per group; defines the settlement (RD-24)"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "playerId",
+                "cards",
+                "groups"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 6
+          },
+          "extraRound": {
+            "bsonType": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "knockerId": {
+                "bsonType": "string"
+              },
+              "pending": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "string"
+                },
+                "minItems": 0,
+                "maxItems": 5
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "knockerId",
+              "pending"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "number",
+          "status",
+          "startPosition",
+          "turn",
+          "deck",
+          "discardPile",
+          "hands"
+        ]
+      },
+      "scoreboard": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "roundNumber": {
+              "bsonType": "int",
+              "minimum": 1
+            },
+            "winnerId": {
+              "bsonType": "string"
+            },
+            "closeType": {
+              "bsonType": "string",
+              "enum": [
+                "WIN_4_3_3",
+                "KNOCK"
+              ]
+            },
+            "points": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "object",
+                "properties": {
+                  "playerId": {
+                    "bsonType": "string"
+                  },
+                  "roundPoints": {
+                    "bsonType": "int",
+                    "description": "loose cards, bonus or leftover of the round"
+                  },
+                  "penalties": {
+                    "bsonType": "int",
+                    "minimum": 0,
+                    "description": "penalties for invalid closes in the round"
+                  },
+                  "cumulative": {
+                    "bsonType": "int"
+                  },
+                  "eliminated": {
+                    "bsonType": "bool"
+                  },
+                  "rebought": {
+                    "bsonType": "bool"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "playerId",
+                  "roundPoints",
+                  "penalties",
+                  "cumulative",
+                  "eliminated",
+                  "rebought"
+                ]
+              },
+              "minItems": 2,
+              "maxItems": 6
+            },
+            "closedAt": {
+              "bsonType": "date"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "roundNumber",
+            "winnerId",
+            "closeType",
+            "points",
+            "closedAt"
+          ],
+          "description": "Penalty history and scoreboard per round (Apuntado only; empty in Classic)"
+        },
+        "minItems": 0,
+        "maxItems": 200
+      },
+      "winnerId": {
+        "bsonType": [
+          "string",
+          "null"
+        ]
+      },
+      "resultsWindowUntil": {
+        "bsonType": [
+          "date",
+          "null"
+        ],
+        "description": "end of the results/rebuy window (PS-10); lets the timer be re-armed after a restart"
+      },
+      "recentCommands": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "string"
+        },
+        "minItems": 0,
+        "maxItems": 20,
+        "description": "commandId of the latest applied actions (idempotency)"
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "optimistic concurrency control"
+      },
+      "createdAt": {
+        "bsonType": "date"
+      },
+      "updatedAt": {
+        "bsonType": "date"
+      },
+      "finishedAt": {
+        "bsonType": [
+          "date",
+          "null"
+        ]
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "invitationCode",
+      "name",
+      "status",
+      "hostId",
+      "settings",
+      "players",
+      "pot",
+      "scoreboard",
+      "recentCommands",
+      "version",
+      "createdAt",
+      "updatedAt"
+    ],
+    "description": "Match aggregate (GameSessionEntity): consistency unit for the whole game state"
+  }
+}

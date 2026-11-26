@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**
- * Clase que representa la respuesta para el controlador que
- * refresca el token de acceso un usuario.
+ * Response of the controller that
+ * refreshes the access token of a user.
  * @class
  */
 export class RefreshTokenControllerResponse extends DefaultResponse {

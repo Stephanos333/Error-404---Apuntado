@@ -1,0 +1,11 @@
+{
+  "name": "@apuntado/plugin-classic",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rule plug-in for the Classic 4-3-3 mode (a single round, no scoreboard). ADR-03.",
+  "main": "index.ts",
+  "apuntado": {
+    "id": "classic",
+    "contractVersion": "1.0.0"
+  }
+}

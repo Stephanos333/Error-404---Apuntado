@@ -3,7 +3,7 @@ import { StringValueObject } from './string.value-object';
 export abstract class DiscreteValueObject extends StringValueObject {
 
 	/**
-	 * @param {string} value El valor que se está almacenando.
+	 * @param {string} value The stored value.
 	 * @protected
 	 */
 	constructor(value: string) {
@@ -12,8 +12,8 @@ export abstract class DiscreteValueObject extends StringValueObject {
 	}
 
 	/**
-	 * Función encargada de validar si el estado de un objeto es válido.
-	 * @param {string} value El estado para validar.
+	 * Validates whether the status of an object is valid.
+	 * @param {string} value The status to validate.
 	 */
 	protected abstract validate(value: string): void;
 }

@@ -1,7 +1,7 @@
 /**
- * Clase que representa los objetos de dominio de la aplicación.
+ * Domain objects of the application.
  *
- * @template T El DTO del objeto de dominio.
+ * @template T The DTO of the domain object.
  * @class
  * @abstract
  */

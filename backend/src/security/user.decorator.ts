@@ -1,14 +1,14 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 /**
- * Tipo que representa la información extraída en el decorador del usuario.
+ * Information extracted by the user decorator.
  * @type { userId: string }
  */
 export type UserDecoratorType = { userId: string; }
 
 /**
- * Decorador que extrae la información del usuario del request después
- * de validar el token.
+ * Decorator that extracts the user information from the request after
+ * the token has been validated.
  * @const
  */
 export const UserDecorator = createParamDecorator(

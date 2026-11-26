@@ -1,17 +1,17 @@
 import { ExceptionMessagesConstants } from './exception-messages.constants';
 
 /**
- * Excepción de dominio sin dependencias de framework.
+ * Domain exception without framework dependencies.
  *
- * La usan los módulos que deben ser código TypeScript puro (por ejemplo `card/`, FF-05).
- * Representa un dato de entrada que viola una regla del dominio; el filtro global
- * `AppExceptionFilter` la traduce a una respuesta HTTP 400 o a un mensaje de error del socket.
+ * Used by the modules that must be plain TypeScript code (for example `card/`, FF-05).
+ * It represents an input that breaks a domain rule; the global `AppExceptionFilter`
+ * translates it into an HTTP 400 response or a socket error message.
  * @class
  * @extends Error
  */
 export class DomainException extends Error {
 	/**
-	 * @param {ExceptionMessagesConstants} customMessage El mensaje de error.
+	 * @param {ExceptionMessagesConstants} customMessage The error message.
 	 */
 	constructor(public readonly customMessage: ExceptionMessagesConstants) {
 		super(customMessage);

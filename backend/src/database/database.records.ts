@@ -1,15 +1,15 @@
 /**
- * Modelo de persistencia propio de la capa `database/` (inversión de dependencias).
+ * Persistence model owned by the `database/` layer (dependency inversion).
  *
- * Los esquemas de Mongoose y las colecciones nativas se definen sobre estas interfaces y
- * no sobre los tipos del dominio. Así `database/` no importa ningún módulo de dominio y
- * no forma parte de ningún ciclo de dependencias (FF-03). La capa `aplicacion/` traduce
- * entre estos registros y el dominio.
+ * The Mongoose schemas and the native collections are defined on these interfaces and
+ * not on the domain types. That way `database/` imports no domain module and takes part
+ * in no dependency cycle (FF-03). The `application/` layer translates between these
+ * records and the domain.
  */
 import { Types } from 'mongoose';
 
 /**
- * Registro persistido de una carta (modelo heredado del prototipo, colección `Player`).
+ * Persisted record of a card (model inherited from the prototype, `Player` collection).
  */
 export interface CardRecord {
 	type: string;
@@ -17,7 +17,7 @@ export interface CardRecord {
 }
 
 /**
- * Registro persistido de un diseño de carta.
+ * Persisted record of a card design.
  */
 export interface CardDesignRecord {
 	cardDesignId: string;
@@ -29,7 +29,7 @@ export interface CardDesignRecord {
 }
 
 /**
- * Registro persistido de un juego (sala de espera).
+ * Persisted record of a game (waiting room).
  */
 export interface GameRecord {
 	gameId: string;
@@ -42,13 +42,13 @@ export interface GameRecord {
 	betByPlayer: number;
 	isPublic: boolean;
 	wasInitiated: boolean;
-	/** `_id` (hexadecimal) del documento de `partidas` creado al iniciar el juego. */
-	partidaId?: string;
+	/** `_id` (hexadecimal) of the `matches` document created when the game starts. */
+	matchId?: string;
 	ruleId?: string;
 }
 
 /**
- * Registro persistido de un jugador (membresía de la sala).
+ * Persisted record of a player (room membership).
  */
 export interface PlayerRecord {
 	playerId: string;
@@ -67,7 +67,7 @@ export interface PlayerRecord {
 }
 
 /**
- * Registro persistido de un usuario.
+ * Persisted record of a user.
  */
 export interface UserRecord {
 	userId: string;
@@ -82,94 +82,94 @@ export interface UserRecord {
 }
 
 /**
- * Carta embebida del agregado `partidas` (`docs/schemas/partidas.schema.json`).
+ * Card embedded in the `matches` aggregate (`docs/schemas/matches.schema.json`).
  */
-export interface CartaPartidaRecord {
-	valor: string;
-	palo: string;
-	baraja: number;
+export interface MatchCardRecord {
+	rank: string;
+	suit: string;
+	deckNumber: number;
 }
 
 /**
- * Documento del agregado Partida (ADR-04). Sigue `docs/schemas/partidas.schema.json`;
- * los identificadores de MongoDB son `ObjectId`.
+ * Document of the Match aggregate (ADR-04). It follows `docs/schemas/matches.schema.json`;
+ * the MongoDB identifiers are `ObjectId`.
  */
-export interface PartidaRecord {
+export interface MatchRecord {
 	_id: Types.ObjectId;
-	codigoInvitacion: string;
-	nombre: string;
-	estado: string;
-	anfitrionId: Types.ObjectId;
-	configuracion: {
-		modalidad: string;
+	invitationCode: string;
+	name: string;
+	status: string;
+	hostId: Types.ObjectId;
+	settings: {
+		mode: string;
 		plugin: { id: string; version: string };
-		cupo: number;
-		apuestaPorJugador: number;
-		visibilidad: string;
-		tipoEscalera: string;
-		comodinesActivos: boolean;
-		reengancheActivo: boolean;
-		victoriaNegativaActiva: boolean;
-		parametros: Record<string, number>;
+		capacity: number;
+		betPerPlayer: number;
+		visibility: string;
+		runType: string;
+		jokersEnabled: boolean;
+		rebuyEnabled: boolean;
+		negativeVictoryEnabled: boolean;
+		parameters: Record<string, number>;
 	};
-	jugadores: Array<{
-		jugadorId: string;
-		usuarioId: Types.ObjectId;
-		nombreUsuario: string;
-		posicion: number;
-		estado: string;
-		puntaje: number;
-		usoReenganche: boolean;
-		conectado: boolean;
-		desconectadoDesde: Date | null;
+	players: Array<{
+		playerId: string;
+		userId: Types.ObjectId;
+		username: string;
+		position: number;
+		status: string;
+		score: number;
+		usedRebuy: boolean;
+		connected: boolean;
+		disconnectedSince: Date | null;
 	}>;
-	pozo: {
+	pot: {
 		total: number;
-		aportes: Array<{ usuarioId: Types.ObjectId; tipo: string; monto: number; asientoId: Types.ObjectId }>;
+		contributions: Array<{ userId: Types.ObjectId; type: string; amount: number; ledgerEntryId: Types.ObjectId }>;
 	};
-	rondaActual: {
-		numero: number;
-		estado: string;
-		posicionInicial: number;
-		turno: { jugadorId: string; fase: string; intentoCierre: boolean; numero: number };
-		mazo: CartaPartidaRecord[];
-		pozoDescarte: CartaPartidaRecord[];
-		manos: Array<{ jugadorId: string; cartas: CartaPartidaRecord[]; grupos: number[][] }>;
-		rondaExtra: { tocadorId: string; pendientes: string[] } | null;
+	currentRound: {
+		number: number;
+		status: string;
+		startPosition: number;
+		turn: { playerId: string; phase: string; closeAttempted: boolean; number: number };
+		deck: MatchCardRecord[];
+		discardPile: MatchCardRecord[];
+		hands: Array<{ playerId: string; cards: MatchCardRecord[]; groups: number[][] }>;
+		extraRound: { knockerId: string; pending: string[] } | null;
 	} | null;
-	marcador: Array<{
-		numeroRonda: number;
-		ganadorId: string;
-		tipoCierre: string;
-		puntos: Array<{
-			jugadorId: string;
-			puntosRonda: number;
-			castigos: number;
-			acumulado: number;
-			eliminado: boolean;
-			reenganchado: boolean;
+	scoreboard: Array<{
+		roundNumber: number;
+		winnerId: string;
+		closeType: string;
+		points: Array<{
+			playerId: string;
+			roundPoints: number;
+			penalties: number;
+			cumulative: number;
+			eliminated: boolean;
+			rebought: boolean;
 		}>;
-		cerradaEn: Date;
+		closedAt: Date;
 	}>;
-	ganadorId: string | null;
-	ventanaHasta: Date | null;
-	comandosRecientes: string[];
+	winnerId: string | null;
+	resultsWindowUntil: Date | null;
+	recentCommands: string[];
 	version: number;
-	creadaEn: Date;
-	actualizadaEn: Date;
-	finalizadaEn: Date | null;
+	createdAt: Date;
+	updatedAt: Date;
+	finishedAt: Date | null;
 }
 
 /**
- * Asiento del libro de tokens `asientos_tokens` (append-only, ADR-04).
- * `monto` positivo es crédito y negativo es débito. `referencia` es única (idempotencia).
+ * Entry of the `token_ledger` (append-only, ADR-04).
+ * A positive `amount` is a credit and a negative one a debit. `reference` is unique (idempotency).
  */
-export interface AsientoTokensRecord {
+export interface TokenLedgerEntryRecord {
 	_id: Types.ObjectId;
-	usuarioId: Types.ObjectId;
-	tipo: 'SALDO_INICIAL' | 'APUESTA' | 'REEMBOLSO' | 'PREMIO_POZO' | 'REENGANCHE' | 'COMPRA_DISENO' | 'RECARGA';
-	monto: number;
-	referencia: string;
-	partidaId: Types.ObjectId | null;
-	en: Date;
+	userId: Types.ObjectId;
+	type: 'INITIAL_BALANCE' | 'BET' | 'REFUND' | 'POT_PRIZE' | 'REBUY' | 'DESIGN_PURCHASE' | 'TOP_UP';
+	amount: number;
+	reference: string;
+	matchId: Types.ObjectId | null;
+	createdAt: Date;
 }

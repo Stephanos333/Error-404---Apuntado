@@ -5,12 +5,12 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { DatabaseConstants } from './database.constants';
 
 /**
- * Representa el modelo para interactuar con los diseños de cartas en mongodb.
+ * Model to interact with the card designs in mongodb.
  */
 export type CardDesignDocument = HydratedDocument<CardDesignRecord>;
 
 /**
- * Representa la definición completa de un diseño de carta en mongodb.
+ * Full definition of a card design in mongodb.
  */
 const definition: Required<SchemaDefinition<CardDesignRecord>> = {
 	cardDesignId: {
@@ -46,14 +46,14 @@ const definition: Required<SchemaDefinition<CardDesignRecord>> = {
 };
 
 /**
- * Constante que representa el esquema de los diseños de cartas.
+ * Schema of the card designs.
  * @const {Schema<CardDesignRecord>}
  */
 export const CardDesignSchema: Schema<CardDesignRecord> = new Schema<CardDesignRecord>(definition, { timestamps: true });
 
 /**
- * Constante que representa la conexión del esquema de
- * diseños de cartas en la base de datos.
+ * Connection of the card designs schema
+ * in the database.
  */
 export const CardDesignSchemaProvider: FactoryProvider = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],

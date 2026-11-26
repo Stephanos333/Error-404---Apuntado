@@ -1,382 +1,382 @@
 /**
- * @enum {string} Los mensajes de error de la aplicación.
+ * @enum {string} The error messages of the application.
  * @readonly
  */
 export enum ExceptionMessagesConstants {
 	/**
-	 * Se utiliza cuando se solicita el parámetro "betByPlayer" y no se envía.
+	 * Used when the "betByPlayer" parameter is required and not sent.
 	 */
 	BET_BY_PLAYER_IS_REQUIRED_ERROR = 'BET_BY_PLAYER_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "betByPlayer" y no es un número válido.
+	 * Used when the "betByPlayer" parameter is validated and is not a valid number.
 	 */
 	BET_BY_PLAYER_MUST_BE_A_INTEGER_ERROR = 'BET_BY_PLAYER_MUST_BE_A_INTEGER_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "betByPlayer" y no cumple con el
-	 * rango especificado por el sistema.
+	 * Used when the "betByPlayer" parameter is validated and is not within the
+	 * range specified by the system.
 	 */
 	BET_BY_PLAYER_MUST_BE_GREATER_THAN_0_ERROR = 'BET_BY_PLAYER_MUST_BE_GREATER_THAN_0_ERROR',
 	/**
-	 * Se utiliza cuando se solicita el parámetro "cardDesignId" y no se envía.
+	 * Used when the "cardDesignId" parameter is required and not sent.
 	 */
 	CARD_DESIGN_ID_IS_REQUIRED_ERROR = 'CARD_DESIGN_ID_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando el ID de un diseño de carta y no es
-	 * de tipo string.
+	 * Used when the ID of a card design is not
+	 * a string.
 	 */
 	CARD_DESIGN_ID_MUST_BE_A_STRING_ERROR = 'CARD_DESIGN_ID_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un diseño de carta que no existe.
+	 * Used when a card design that does not exist is requested.
 	 */
 	CARD_DESIGN_NOT_FOUND_ERROR = 'CARD_DESIGN_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza cuando se intenta usar un diseño de carta que
-	 * no ha sido comprado.
+	 * Used when trying to use a card design that
+	 * has not been bought.
 	 */
 	CARD_DESIGN_WITHOUT_PURCHASING_ERROR = 'CARD_DESIGN_WITHOUT_PURCHASING_ERROR',
 	/**
-	 * Se utiliza para indicar que la pinta de una carta es requerida.
+	 * Signals that the suit of a card is required.
 	 */
 	CARD_SUIT_IS_REQUIRED_ERROR = 'CARD_SUIT_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza para indicar que el tipo de una carta es requerida.
+	 * Signals that the type of a card is required.
 	 */
 	CARD_TYPE_IS_REQUIRED_ERROR = 'CARD_TYPE_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se solicita el diseño de cartas que no existe.
+	 * Used when the requested card design does not exist.
 	 */
 	DEFAULT_CARD_DESIGN_NOT_FOUND_ERROR = 'DEFAULT_CARD_DESIGN_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza cuando no se puede iniciar un juego.
+	 * Used when a game cannot be started.
 	 */
 	GAME_CANNOT_BE_STARTED_ERROR = 'GAME_CANNOT_BE_STARTED_ERROR',
 	/**
-	 * Se utiliza cuando se intenta agregar un jugador a un juego que ya está lleno.
+	 * Used when trying to add a player to a game that is already full.
 	 */
 	GAME_EXCEEDS_ITS_PLAYER_COUNT_ERROR = 'GAME_EXCEEDS_ITS_PLAYER_COUNT_ERROR',
 	/**
-	 * Se utiliza cuando se intenta ingresar a un juego que
-	 * ya fue iniciado.
+	 * Used when trying to join a game that
+	 * has already started.
 	 */
 	GAME_IS_ALREADY_STARTED = 'GAME_IS_ALREADY_STARTED',
 	/**
-	 * Se utiliza cuando se solicita el ID de un juego y no se envía.
+	 * Used when the ID of a game is required and not sent.
 	 */
 	GAME_ID_IS_REQUIRED_ERROR = 'GAME_ID_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida el ID de un juego y no es un string.
+	 * Used when the ID of a game is validated and is not a string.
 	 */
 	GAME_ID_MUST_BE_A_STRING_ERROR = 'GAME_ID_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando se intenta acceder a los recursos de un juego
-	 * que ya fue finalizado.
+	 * Used when trying to access the resources of a game
+	 * that has already finished.
 	 */
 	GAME_IS_ALREADY_FINISHED_ERROR = 'GAME_IS_ALREADY_FINISHED_ERROR',
 	/**
-	 * Se utiliza cuando se solicita el nombre de un juego y no se envía.
+	 * Used when the name of a game is required and not sent.
 	 */
 	GAME_NAME_IS_REQUIRED_ERROR = 'GAME_NAME_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida el nombre de un juego y no es un string.
+	 * Used when the name of a game is validated and is not a string.
 	 */
 	GAME_NAME_MUST_BE_A_STRING_ERROR = 'GAME_NAME_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un juego que no existe.
+	 * Used when a game that does not exist is requested.
 	 */
 	GAME_NOT_FOUND_ERROR = 'GAME_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza cuando se solicita la actualización de un juego,
-	 * pero algo falla.
+	 * Used when the update of a game is requested
+	 * but something fails.
 	 */
 	GAME_NOT_UPDATED_ERROR = 'GAME_NOT_UPDATED_ERROR',
 	/**
-	 * Se utiliza cuando se quiere expresar un error del servidor que
-	 * no debe ser comunicado al usuario final.
+	 * Used to express a server error that
+	 * must not be communicated to the end user.
 	 */
 	INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
 	/**
-	 * Se utiliza cuando un ID de diseño de carta no cumple con las características
-	 * requeridas por el sistema.
+	 * Used when a card design ID does not meet the requirements
+	 * of the system.
 	 */
 	INVALID_CARD_DESIGN_ID_ERROR = 'INVALID_CARD_DESIGN_ID_ERROR',
 	/**
-	 * Se utiliza cuando la pinta de una carta no se encuentra en el
-	 * archivo de constantes.
+	 * Used when the suit of a card is not in the
+	 * constants file.
 	 */
 	INVALID_CARD_SUIT_ERROR = 'INVALID_CARD_SUIT_ERROR',
 	/**
-	 * Se utiliza cuando el tipo de una carta no se encuentra en
-	 * el archivo de constantes.
+	 * Used when the type of a card is not in
+	 * the constants file.
 	 */
 	INVALID_CARD_TYPE_ERROR = 'INVALID_CARD_TYPE_ERROR',
 	/**
-	 * Se utiliza cuando las credenciales de inicio de sesión de un usuario no
-	 * son válidas.
+	 * Used when the login credentials of a user are not
+	 * valid.
 	 */
 	INVALID_CREDENTIALS_ERROR = 'INVALID_CREDENTIALS_ERROR',
 	/**
-	 * Se utiliza cuando un ID de un juego no cumple con las
-	 * características requeridas por el sistema.
+	 * Used when a game ID does not meet the
+	 * requirements of the system.
 	 */
 	INVALID_GAME_ID_ERROR = 'INVALID_GAME_ID_ERROR',
 	/**
-	 * Se utiliza cuando la cantidad de jugadores requeridos
-	 * para un juego no es válida.
+	 * Used when the number of players required
+	 * for a game is not valid.
 	 */
 	INVALID_GAME_REQUIRED_PLAYERS_ERROR = 'INVALID_GAME_REQUIRED_PLAYERS_ERROR',
 	/**
-	 * Se utiliza cuando se intenta crear un juego con una regla (plug-in)
-	 * que no está registrada.
+	 * Used when trying to create a game with a rule (plug-in)
+	 * that is not registered.
 	 */
 	INVALID_GAME_RULE_ERROR = 'INVALID_GAME_RULE_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "ruleId" y no es un string.
+	 * Used when the "ruleId" parameter is validated and is not a string.
 	 */
 	GAME_RULE_MUST_BE_A_STRING_ERROR = 'GAME_RULE_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando se solicita una partida (agregado `partidas`) que no existe.
+	 * Used when a match (`matches` aggregate) that does not exist is requested.
 	 */
-	PARTIDA_NO_ENCONTRADA = 'PARTIDA_NO_ENCONTRADA',
+	MATCH_NOT_FOUND = 'MATCH_NOT_FOUND',
 	/**
-	 * Se utiliza cuando un comando llega después de que la ronda (o la partida) ya se cerró.
+	 * Used when a command arrives after the round (or the match) is already closed.
 	 */
-	RONDA_YA_CERRADA = 'RONDA_YA_CERRADA',
+	ROUND_ALREADY_CLOSED = 'ROUND_ALREADY_CLOSED',
 	/**
-	 * Se utiliza cuando un jugador intenta actuar fuera de su turno.
+	 * Used when a player tries to act out of turn.
 	 */
-	TURNO_NO_CORRESPONDE = 'TURNO_NO_CORRESPONDE',
+	NOT_YOUR_TURN = 'NOT_YOUR_TURN',
 	/**
-	 * Se utiliza cuando el comando se basa en una versión de la partida que ya cambió
-	 * (control de concurrencia optimista): el cliente debe pedir el estado actual.
+	 * Used when the command is based on a version of the match that already changed
+	 * (optimistic concurrency control): the client must request the current state.
 	 */
-	VERSION_DESACTUALIZADA = 'VERSION_DESACTUALIZADA',
+	STALE_VERSION = 'STALE_VERSION',
 	/**
-	 * Se utiliza cuando la acción no corresponde a la fase del turno
-	 * (p. ej. robar dos veces o descartar sin haber robado).
+	 * Used when the action does not match the turn phase
+	 * (e.g. drawing twice or discarding without drawing).
 	 */
-	FASE_DE_TURNO_INVALIDA = 'FASE_DE_TURNO_INVALIDA',
+	INVALID_TURN_PHASE = 'INVALID_TURN_PHASE',
 	/**
-	 * Se utiliza cuando el índice de una carta no existe en la mano del jugador.
+	 * Used when the index of a card does not exist in the player's hand.
 	 */
-	CARTA_NO_ESTA_EN_LA_MANO = 'CARTA_NO_ESTA_EN_LA_MANO',
+	CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND',
 	/**
-	 * Se utiliza cuando la organización de grupos enviada no es válida
-	 * (índices repetidos, fuera de rango o grupos de tamaño no permitido).
+	 * Used when the sent group organization is not valid
+	 * (repeated indexes, out of range or groups of a size that is not allowed).
 	 */
-	GRUPOS_INVALIDOS = 'GRUPOS_INVALIDOS',
+	INVALID_GROUPS = 'INVALID_GROUPS',
 	/**
-	 * Se utiliza cuando se intenta robar del pozo de descarte y está vacío.
+	 * Used when trying to draw from the discard pile while it is empty.
 	 */
-	POZO_DESCARTE_VACIO = 'POZO_DESCARTE_VACIO',
+	EMPTY_DISCARD_PILE = 'EMPTY_DISCARD_PILE',
 	/**
-	 * Se utiliza cuando no quedan cartas para robar ni en el mazo ni en el pozo de descarte.
+	 * Used when there are no cards left to draw in the deck or the discard pile.
 	 */
-	MAZO_VACIO = 'MAZO_VACIO',
+	EMPTY_DECK = 'EMPTY_DECK',
 	/**
-	 * Se utiliza cuando el jugador ya intentó cerrar en su turno actual.
+	 * Used when the player already tried to close in their current turn.
 	 */
-	YA_INTENTO_CIERRE_EN_EL_TURNO = 'YA_INTENTO_CIERRE_EN_EL_TURNO',
+	CLOSE_ALREADY_ATTEMPTED = 'CLOSE_ALREADY_ATTEMPTED',
 	/**
-	 * Se utiliza cuando la regla del juego no admite el tipo de cierre solicitado
-	 * (p. ej. tocar en la Clásica o volver a tocar durante la ronda extra).
+	 * Used when the game rule does not allow the requested close type
+	 * (e.g. knocking in Classic or knocking again during the extra round).
 	 */
-	CIERRE_NO_PERMITIDO = 'CIERRE_NO_PERMITIDO',
+	CLOSE_NOT_ALLOWED = 'CLOSE_NOT_ALLOWED',
 	/**
-	 * Se utiliza cuando el usuario no es jugador de la partida.
+	 * Used when the user is not a player of the match.
 	 */
-	JUGADOR_NO_PERTENECE_A_LA_PARTIDA = 'JUGADOR_NO_PERTENECE_A_LA_PARTIDA',
+	PLAYER_NOT_IN_MATCH = 'PLAYER_NOT_IN_MATCH',
 	/**
-	 * Se utiliza cuando se valida el parámetro "version" y no es un entero válido.
+	 * Used when the "version" parameter is validated and is not a valid integer.
 	 */
 	VERSION_MUST_BE_A_NON_NEGATIVE_INTEGER_ERROR = 'VERSION_MUST_BE_A_NON_NEGATIVE_INTEGER_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "idComando" y no es válido.
+	 * Used when the "commandId" parameter is validated and is not valid.
 	 */
-	ID_COMANDO_INVALIDO_ERROR = 'ID_COMANDO_INVALIDO_ERROR',
+	INVALID_COMMAND_ID_ERROR = 'INVALID_COMMAND_ID_ERROR',
 	/**
-	 * Se utiliza cuando el estado de un juego no se encuentra en
-	 * el archivo de constantes.
+	 * Used when the status of a game is not in
+	 * the constants file.
 	 */
 	INVALID_GAME_STATUS_ERROR = 'INVALID_GAME_STATUS_ERROR',
 	/**
-	 * Se utiliza cuando el ID de una partida no cumple con las características requeridas por el sistema.
+	 * Used when the ID of a match does not meet the requirements of the system.
 	 */
 	INVALID_MATCH_ID_ERROR = 'INVALID_MATCH_ID_ERROR',
 	/**
-	 * Se utiliza para indicar que el estado de una partida no es válido.
+	 * Signals that the status of a match is not valid.
 	 */
 	INVALID_MATCH_STATUS_ERROR = 'INVALID_MATCH_STATUS_ERROR',
 	/**
-	 * Se utiliza cuando la contraseña de un usuario no cumple con
-	 * las características requeridas por el sistema.
+	 * Used when the password of a user does not meet
+	 * the requirements of the system.
 	 */
 	INVALID_PASSWORD_ERROR = 'INVALID_PASSWORD_ERROR',
 	/**
-	 * Se utiliza cuando un ID de un jugador no cumple con las características
-	 * requeridas por el sistema.
+	 * Used when a player ID does not meet the requirements
+	 * of the system.
 	 */
 	INVALID_PLAYER_ID_ERROR = 'INVALID_PLAYER_ID_ERROR',
 	/**
-	 * Se utiliza cuando el estado de un jugador no es válido.
+	 * Used when the status of a player is not valid.
 	 */
 	INVALID_PLAYER_STATUS_ERROR = 'INVALID_PLAYER_STATUS_ERROR',
 	/**
-	 * Se utiliza cuando el token de refresco de un usuario no es válido.
+	 * Used when the refresh token of a user is not valid.
 	 */
 	INVALID_REFRESH_TOKEN_ERROR = 'INVALID_REFRESH_TOKEN_ERROR',
 	/**
-	 * Se utiliza cuando el icono de un usuario no cumple con las
-	 * características requeridas por el sistema.
+	 * Used when the icon of a user does not meet the
+	 * requirements of the system.
 	 */
 	INVALID_USER_ICON_ERROR = 'INVALID_USER_ICON_ERROR',
 	/**
-	 * Se utiliza cuando un ID de un usuario no cumple con las
-	 * características requeridas por el sistema.
+	 * Used when a user ID does not meet the
+	 * requirements of the system.
 	 */
 	INVALID_USER_ID_ERROR = 'INVALID_USER_ID_ERROR',
 	/**
-	 * Se utiliza cuando el estado de un usuario no se encuentra en
-	 * el archivo de constantes.
+	 * Used when the status of a user is not in
+	 * the constants file.
 	 */
 	INVALID_USER_STATUS_ERROR = 'INVALID_USER_STATUS_ERROR',
 	/**
-	 * Se utiliza para indicar que la sobrante de un jugador es requerido.
+	 * Signals that a player's leftover is required.
 	 */
 	KICKER_IS_REQUIRED_ERROR = 'KICKER_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se solicita el parámetro "isPublic" y no se envía.
+	 * Used when the "isPublic" parameter is required and not sent.
 	 */
 	IS_PUBLIC_IS_REQUIRED_ERROR = 'IS_PUBLIC_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "isPublic" y no es un boolean.
+	 * Used when the "isPublic" parameter is validated and is not a boolean.
 	 */
 	IS_PUBLIC_MUST_BE_A_BOOLEAN_ERROR = 'IS_PUBLIC_MUST_BE_A_BOOLEAN_ERROR',
 	/**
-	 * Se utiliza cuando una partida no puede ser iniciada.
+	 * Used when a match cannot be started.
 	 */
 	MATCH_CANNOT_BE_STARTED_ERROR = 'MATCH_CANNOT_BE_STARTED_ERROR',
 	/**
-	 * Se utiliza para indicar que no se encontró una partida solicitada.
+	 * Signals that a requested match was not found.
 	 */
 	MATCH_NOT_FOUND_ERROR = 'MATCH_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza para indicar que no hay cartas desechadas.
+	 * Signals that there are no discarded cards.
 	 */
 	NO_DISCARDED_CARDS_ERROR = 'NO_DISCARDED_CARDS_ERROR',
 	/**
-	 * Se utiliza cuando un usuario intenta realizar una operación con tokens
-	 * y no hay suficientes.
+	 * Used when a user tries to perform a token operation
+	 * and does not have enough.
 	 */
 	NOT_ENOUGH_TOKENS_ERROR = 'NOT_ENOUGH_TOKENS_ERROR',
 	/**
-	 * Se utiliza para informar que la terna 1 solo puede tener 3 cartas.
+	 * Reports that three 1 can only have 3 cards.
 	 */
 	ONLY_3_CARDS_ARE_REQUIRED_IN_TRIPS_1_ERROR = 'ONLY_3_CARDS_ARE_REQUIRED_IN_TRIPS_1_ERROR',
 	/**
-	 * Se utiliza para informar que la terna 2 solo puede tener 3 cartas.
+	 * Reports that three 2 can only have 3 cards.
 	 */
 	ONLY_3_CARDS_ARE_REQUIRED_IN_TRIPS_2_ERROR = 'ONLY_3_CARDS_ARE_REQUIRED_IN_TRIPS_2_ERROR',
 	/**
-	 * Se utiliza para informar que la cuarta solo puede tener 4 cartas.
+	 * Reports that the four can only have 4 cards.
 	 */
 	ONLY_4_CARDS_ARE_REQUIRED_IN_QUADS_ERROR = 'ONLY_4_CARDS_ARE_REQUIRED_IN_QUADS_ERROR',
 	/**
-	 * Se utiliza cuando un usuario intenta iniciar un juego del cual no es el creador.
+	 * Used when a user tries to start a game they did not create.
 	 */
 	ONLY_GAME_HOST_CAN_START_THE_MATCH_ERROR = 'ONLY_GAME_HOST_CAN_START_THE_MATCH_ERROR',
 	/**
-	 * Se utiliza cuando se solicita una contraseña y no se envía.
+	 * Used when a password is required and not sent.
 	 */
 	PASSWORD_IS_REQUIRED_ERROR = 'PASSWORD_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida una contraseña y no es de tipo string.
+	 * Used when a password is validated and is not a string.
 	 */
 	PASSWORD_MUST_BE_A_STRING_ERROR = 'PASSWORD_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando un jugador intenta jalar carta y ya lo ha hecho.
+	 * Used when a player tries to draw a card and has already done it.
 	 */
 	PLAYER_ALREADY_PULL_CARD_ERROR = 'PLAYER_ALREADY_PULL_CARD_ERROR',
 	/**
-	 * Se utiliza cuando un jugador no tiene una carta especificada.
+	 * Used when a player does not have a given card.
 	 */
 	PLAYER_DOES_NOT_HAVE_THIS_CARD_ERROR = 'PLAYER_DOES_NOT_HAVE_THIS_CARD_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un jugador que no existe.
+	 * Used when a player that does not exist is requested.
 	 */
 	PLAYER_NOT_FOUND_ERROR = 'PLAYER_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un token de refresco y no se envía.
+	 * Used when a refresh token is required and not sent.
 	 */
 	REFRESH_TOKEN_IS_REQUIRED_ERROR = 'REFRESH_TOKEN_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida un token de refresco y no es de tipo string.
+	 * Used when a refresh token is validated and is not a string.
 	 */
 	REFRESH_TOKEN_MUST_BE_A_STRING_ERROR = 'REFRESH_TOKEN_MUST_BE_A_STRING_ERROR',
 	/**
-	 * Se utiliza cuando se solicita el parámetro "requiredPlayers" y no se envía.
+	 * Used when the "requiredPlayers" parameter is required and not sent.
 	 */
 	REQUIRED_PLAYERS_IS_REQUIRED_ERROR = 'REQUIRED_PLAYERS_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cando se valida el parámetro "requiredPlayers" y no es un número válido
+	 * Used when the "requiredPlayers" parameter is validated and is not a valid number
 	 */
 	REQUIRED_PLAYERS_MUST_BE_A_INTEGER_ERROR = 'REQUIRED_PLAYERS_MUST_BE_A_INTEGER_ERROR',
 	/**
-	 * Se utiliza cuando se valida el parámetro "requiredPlayers" y no está
-	 * en el rango definido por el sistema.
+	 * Used when the "requiredPlayers" parameter is validated and is not
+	 * within the range defined by the system.
 	 */
 	REQUIRED_PLAYERS_MUST_BE_IN_RANGE_ERROR = 'REQUIRED_PLAYERS_MUST_BE_IN_RANGE_ERROR',
 	/**
-	 * Mensaje que indica que un request no tiene autorización.
+	 * Message that signals that a request is not authorized.
 	 */
 	UNAUTHORIZED = 'UNAUTHORIZED',
 	/**
-	 * Se utiliza cuando se intenta crear un usuario que ya existe.
+	 * Used when trying to create a user that already exists.
 	 */
 	USER_ALREADY_EXISTS_ERROR = 'USER_ALREADY_EXISTS_ERROR',
 	/**
-	 * Se utiliza para indicar que el icono de un usuario debe ser una cadena de texto.
+	 * Signals that the icon of a user must be a string.
 	 */
 	USER_ICON_MUST_BE_A_STRING = 'USER_ICON_MUST_BE_A_STRING',
 	/**
-	 * Se utiliza para indicar que el icono de un usuario es requerido.
+	 * Signals that the icon of a user is required.
 	 */
 	USER_ICON_IS_REQUIRED = 'USER_ICON_IS_REQUIRED',
 	/**
-	 * Se utiliza cuando se intenta cambiar el estado de un usuario a jugando,
-	 * cuando ya está jugando.
+	 * Used when trying to change the status of a user to playing
+	 * while they are already playing.
 	 */
 	USER_IS_ALREADY_PLAYING_ERROR = 'USER_IS_ALREADY_PLAYING_ERROR',
 	/**
-	 * Se utiliza cuando un usuario intenta acceder a recursos de un
-	 * juego en el cual no está jugando.
+	 * Used when a user tries to access the resources of a
+	 * game they are not playing.
 	 */
 	USER_IS_NOT_PART_OF_A_GAME_ERROR = 'USER_IS_NOT_PART_OF_A_GAME_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un usuario que no existe.
+	 * Used when a user that does not exist is requested.
 	 */
 	USER_NOT_FOUND_ERROR = 'USER_NOT_FOUND_ERROR',
 	/**
-	 * Se utiliza cuando se solicita la actualización de un usuario, pero algo falla.
+	 * Used when the update of a user is requested but something fails.
 	 */
 	USER_NOT_UPDATED_ERROR = 'USER_NOT_UPDATED_ERROR',
 	/**
-	 * Se utiliza para indicar que un jugador no puede intentar ganar más veces.
+	 * Signals that a player cannot try to win any more.
 	 */
 	PLAYER_CAN_NO_LONGER_TRY_TO_WIN_ERROR = 'PLAYER_CAN_NO_LONGER_TRY_TO_WIN_ERROR',
 	/**
-	 * Se utiliza cuando las cartas de un jugador no le permiten ganar.
+	 * Used when the cards of a player do not let them win.
 	 */
 	PLAYER_CARDS_DONT_ALLOW_WINNING_ERROR = 'PLAYER_CARDS_DONT_ALLOW_WINNING_ERROR',
 	/**
-	 * Se utiliza cuando un jugador aún no ha jalado carta.
+	 * Used when a player has not drawn a card yet.
 	 */
 	PLAYER_HAS_NOT_PULLED_CARD_ERROR = 'PLAYER_HAS_NOT_PULLED_CARD_ERROR',
 	/**
-	 * Se utiliza cuando se solicita un nombre de usuario y no se envía.
+	 * Used when a username is required and not sent.
 	 */
 	USERNAME_IS_REQUIRED_ERROR = 'USERNAME_IS_REQUIRED_ERROR',
 	/**
-	 * Se utiliza cuando se valida un nombre de usuario y no es de tipo string.
+	 * Used when a username is validated and is not a string.
 	 */
 	USERNAME_MUST_BE_A_STRING_ERROR = 'USERNAME_MUST_BE_A_STRING_ERROR',
 }

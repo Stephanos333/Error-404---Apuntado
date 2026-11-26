@@ -8,19 +8,19 @@ import { Socket } from 'socket.io';
 import { SocketSharedConstants } from '../socket/socket-shared.constants';
 
 /**
- * Clase que se encarga de manejar los errores de la aplicación.
+ * Handles the errors of the application.
  * @class
  * @implements {ExceptionFilter}
  */
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
 	/**
-	 * Función que se encarga de resolver el mensaje de error de una excepción desconocida.
+	 * Resolves the error message of an unknown exception.
 	 *
 	 * @static
-	 * @param exception La excepción desconocida.
-	 * @returns {string | undefined} El mensaje de error resuelto, en caso de no
-	 * poder resolver el mensaje retorna undefined.
+	 * @param exception The unknown exception.
+	 * @returns {string | undefined} The resolved error message; undefined when it
+	 * cannot be resolved.
 	 */
 	public static resolveMessage(exception): string | undefined {
 		if (typeof exception === 'object') {
@@ -41,19 +41,19 @@ export class AppExceptionFilter implements ExceptionFilter {
 	}
 
 	/**
-	 * Función que se encarga de resolver el código de error de una excepción desconocida.
-	 * @param {Error} exception La excepción desconocida.
-	 * @returns {number | undefined} El código de error resuelto, en caso de no
-	 * poder resolver el código retorna undefined.
+	 * Resolves the error code of an unknown exception.
+	 * @param {Error} exception The unknown exception.
+	 * @returns {number | undefined} The resolved error code; undefined when it
+	 * cannot be resolved.
 	 */
 	public static resolveStatus(exception: Error): number | undefined {
 		return exception instanceof HttpException ? exception.getStatus() : undefined;
 	}
 
 	/**
-	 * Función que se encarga de enviar al usuario final la respuesta de error dependiendo del contexto de ejecución.
-	 * @param {ArgumentsHost} host El contexto de ejecución.
-	 * @param {ExceptionResponseDTO} responseDto La respuesta para enviar.
+	 * Sends the error response to the end user depending on the execution context.
+	 * @param {ArgumentsHost} host The execution context.
+	 * @param {ExceptionResponseDTO} responseDto The response to send.
 	 * @private
 	 * @static
 	 */
@@ -78,9 +78,9 @@ export class AppExceptionFilter implements ExceptionFilter {
 	}
 
 	/**
-	 * Función que recibe las excepciónes del sistema y las mapea para enviar al usuario final.
-	 * @param {Error} exception La excepción que se quiere mapear
-	 * @param {ArgumentsHost} host El contexto de ejecución.
+	 * Receives the exceptions of the system and maps them to be sent to the end user.
+	 * @param {Error} exception The exception to map
+	 * @param {ArgumentsHost} host The execution context.
 	 */
 	catch(exception: Error, host: ArgumentsHost): void {
 		let response: ExceptionResponse;

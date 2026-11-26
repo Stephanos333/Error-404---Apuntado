@@ -20,7 +20,7 @@ import './open-games.component.css';
 const REFRESH_MS: number = 10000;
 
 /** Short label of a mode. */
-const MODE_FIGURE: Record<string, string> = {apuntado: '101', clasica: '4-3-3'};
+const MODE_FIGURE: Record<string, string> = {apuntado: '101', classic: '4-3-3'};
 
 /**
  * Seats of a table as dots: taken seats filled.
@@ -119,7 +119,7 @@ export function OpenGamesComponent(): JSX.Element {
                                         <li key={game.gameId} className='open-games-item'>
                                             {
                                                 game.ruleId
-                                                    ? <span className='open-games-mode num' title={game.ruleId === 'clasica' ? 'Clásica 4-3-3' : 'Apuntado a 101'}>{MODE_FIGURE[game.ruleId] ?? game.ruleId}</span>
+                                                    ? <span className='open-games-mode num' title={game.ruleId === 'classic' ? 'Clásica 4-3-3' : 'Apuntado a 101'}>{MODE_FIGURE[game.ruleId] ?? game.ruleId}</span>
                                                     : <></>
                                             }
                                             <div className='open-games-info'>

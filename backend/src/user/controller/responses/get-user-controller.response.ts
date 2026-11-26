@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserDTO } from '../../../dominio/user/user';
+import { UserDTO } from '../../../domain/user/user';
 import { Exclude } from 'class-transformer';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**
- * Clase en dónde se define la data en la respuesta del controlador.
+ * Data of the controller response.
  *
  * @extends {OmitType(UserDTO, ['password'])}
  * @class
@@ -21,8 +21,8 @@ export class GetUserResponseData extends UserDTO {
 }
 
 /**
- * Clase que define la respuesta de cuando se intenta acceder a los
- * datos de un usuario.
+ * Response when the data of a user
+ * is requested.
  *
  * @class
  */

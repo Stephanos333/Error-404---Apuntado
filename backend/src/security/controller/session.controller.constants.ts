@@ -1,23 +1,23 @@
 /**
- * @enum {string} Constantes que representan la configuración de
- * los controladores de las sesiones.
+ * @enum {string} Constants with the configuration of
+ * the session controllers.
  * @readonly
  */
 export enum SessionControllerConstants {
 	/**
-	 * Prefijo utilizado para todos los controladores de la sesión de la aplicación.
+	 * Prefix used by every session controller of the application.
 	 */
 	CONTROLLER_PREFIX = 'session',
 	/**
-	 * Tag que agrupa todos los controladores de las sesiones de la aplicación.
+	 * Tag that groups every session controller of the application.
 	 */
 	CONTROLLER_TAG = 'Session',
 	/**
-	 * Url utilizada para el controlador del login.
+	 * Url of the login controller.
 	 */
 	LOGIN_URL = 'login',
 	/**
-	 * Url utilizada para el controlador que refresca el token del usuario.
+	 * Url of the controller that refreshes the user's token.
 	 */
 	REFRESH_TOKEN_URL = 'refresh-token',
 }

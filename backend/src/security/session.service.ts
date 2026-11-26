@@ -1,15 +1,15 @@
-import { UserService } from '../aplicacion/user/user.service';
-import { User } from '../dominio/user/user';
+import { UserService } from '../application/user/user.service';
+import { User } from '../domain/user/user';
 import { Injectable, Logger } from '@nestjs/common';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { UserId } from '../dominio/user/user-id';
+import { UserId } from '../domain/user/user-id';
 import { JwtService } from '@nestjs/jwt';
 import { UserDecoratorType } from './user.decorator';
 import { ExceptionMessagesConstants } from '../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que contiene los servicios para interactuar con las
- * sesiones del sistema
+ * Class with the services to interact with the
+ * sessions of the system
  * @class
  */
 @Injectable()
@@ -18,8 +18,8 @@ export class SessionService {
 	private readonly logger: Logger = new Logger(SessionService.name);
 
 	/**
-	 * @param {JwtService} jwtService Servicio para generar jwt tokens.
-	 * @param {UserService} userService Servicio de los usuarios.
+	 * @param {JwtService} jwtService Service to generate jwt tokens.
+	 * @param {UserService} userService Service of the users.
 	 */
 	constructor(private readonly jwtService: JwtService,
 		private readonly userService: UserService,
@@ -27,9 +27,9 @@ export class SessionService {
 	}
 
 	/**
-	 * Función que permite generar el token de acceso para un usuario.
-	 * @param {UserId} userId El id que se guardará en el token.
-	 * @returns {string} El token de acceso generado.
+	 * Generates the access token of a user.
+	 * @param {UserId} userId The id stored in the token.
+	 * @returns {string} The generated access token.
 	 */
 	generateAccessToken(userId: UserId): string {
 		const toSign: UserDecoratorType = { userId: userId.toString() };
@@ -40,9 +40,9 @@ export class SessionService {
 	}
 
 	/**
-	 * Función que permite generar el token para refrescar el token de acceso de un usuario.
-	 * @param {UserId} userId El id que se guardará en el token.
-	 * @returns {string} El token de refresco generado.
+	 * Generates the token used to refresh the access token of a user.
+	 * @param {UserId} userId The id stored in the token.
+	 * @returns {string} The generated refresh token.
 	 */
 	generateRefreshToken(userId: UserId): string {
 		const toSign: UserDecoratorType = { userId: userId.toString() };
@@ -53,9 +53,9 @@ export class SessionService {
 	}
 
 	/**
-	 * Función que permite refrescar el token de acceso de un usuario.
-	 * @param {string} refreshToken El token que permite al usuario refrescar su token de acceso.
-	 * @return {string} El nuevo token de acceso.
+	 * Refreshes the access token of a user.
+	 * @param {string} refreshToken The token that lets the user refresh their access token.
+	 * @return {string} The new access token.
 	 */
 	refreshAccessToken(refreshToken: string): string {
 		try {
@@ -69,12 +69,12 @@ export class SessionService {
 	}
 
 	/**
-	 * Función que contiene la lógica del inicio de sesión para los usuarios.
-	 * @param {string} username El usuario que solicita el inicio de sesión.
-	 * @param {string} password Las credenciales del usuario.
-	 * @returns {Promise<User>} Se Retorna el usuario que solicita sesión.
-	 * @throws {InvalidCredentialsException} Si las credenciales de sesión de un usuario
-	 * son inválidas.
+	 * Login logic for the users.
+	 * @param {string} username The user requesting to log in.
+	 * @param {string} password The credentials of the user.
+	 * @returns {Promise<User>} The user requesting the session.
+	 * @throws {InvalidCredentialsException} When the session credentials of a user
+	 * are invalid.
 	 */
 	async login(username: string, password: string): Promise<User> {
 		this.logger.log(`[${this.login.name}] INIT :: username: ${username}`);

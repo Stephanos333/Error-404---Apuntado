@@ -1,0 +1,64 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "userId": {
+        "bsonType": "objectId"
+      },
+      "type": {
+        "bsonType": "string",
+        "enum": [
+          "INITIAL_BALANCE",
+          "BET",
+          "REFUND",
+          "POT_PRIZE",
+          "REBUY",
+          "DESIGN_PURCHASE",
+          "TOP_UP"
+        ]
+      },
+      "amount": {
+        "bsonType": "int",
+        "description": "positive = credit, negative = debit"
+      },
+      "reference": {
+        "bsonType": "string",
+        "description": "unique idempotency key, e.g. BET:<matchId>:<userId>"
+      },
+      "matchId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "requestId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "designId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
+      "createdAt": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "userId",
+      "type",
+      "amount",
+      "reference",
+      "createdAt"
+    ],
+    "description": "Token ledger: immutable entries (append-only)"
+  }
+}

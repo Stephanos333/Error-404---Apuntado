@@ -60,13 +60,13 @@ export enum SocketConstants {
      */
     GAME_FINISHED_LISTENER = 'GAME_FINISHED_LISTENER',
     /**
-     * Private room `usuario:{id}`: the player's hand.
+     * Private room `user:{id}`: the player's hand.
      */
     PRIVATE_HAND_LISTENER = 'PRIVATE_HAND_LISTENER',
 }
 
 /**
- * Public room `partida:{id}` messages that carry the public match view.
+ * Public room `match:{id}` messages that carry the public match view.
  */
 export const PUBLIC_MATCH_MESSAGES: SocketConstants[] = [
     SocketConstants.MATCH_STARTED_LISTENER,

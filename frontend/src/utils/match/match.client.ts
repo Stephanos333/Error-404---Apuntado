@@ -1,5 +1,5 @@
 /**
- * Client of the match commands (`/api/partidas/actual`).
+ * Client of the match commands (`/api/matches/current`).
  *
  * - Generates a UUID v4 `idComando` per intent (the same id on a retry is idempotent).
  * - Sends the `version` of the last known state (optimistic concurrency).
@@ -30,31 +30,31 @@ export class MatchClient {
     constructor(private readonly currentState: () => LocalState | undefined) {
     }
 
-    /** GET /api/partidas/actual: public view + the user's hand (also used to reconnect). */
+    /** GET /api/matches/current: public view + the user's hand (also used to reconnect). */
     async fetchState(): Promise<CommandResult> {
         return this.execute((backend) => backend.get<MatchResponse, never>(BackendConstants.MATCH_STATE_URL));
     }
 
     /** Draw command. */
     async draw(intent: DrawIntent): Promise<CommandResult> {
-        return this.command((state, idComando) => {
-            const body: DrawRequest = drawBody(intent, state.version, idComando);
+        return this.command((state, commandId) => {
+            const body: DrawRequest = drawBody(intent, state.version, commandId);
             return (backend) => backend.post<MatchResponse, DrawRequest>(BackendConstants.MATCH_DRAW_URL, body);
         });
     }
 
     /** Discard command. */
     async discard(intent: DiscardIntent): Promise<CommandResult> {
-        return this.command((state, idComando) => {
-            const body: DiscardRequest = discardBody(state.hand, intent, state.version, idComando);
+        return this.command((state, commandId) => {
+            const body: DiscardRequest = discardBody(state.hand, intent, state.version, commandId);
             return (backend) => backend.post<MatchResponse, DiscardRequest>(BackendConstants.MATCH_DISCARD_URL, body);
         });
     }
 
     /** Close command (4-3-3 or knock). */
     async close(intent: CloseIntent): Promise<CommandResult> {
-        return this.command((state, idComando) => {
-            const body: CloseRequest = closeBody(state.hand, intent, state.version, idComando);
+        return this.command((state, commandId) => {
+            const body: CloseRequest = closeBody(state.hand, intent, state.version, commandId);
             return (backend) => backend.post<MatchResponse, CloseRequest>(BackendConstants.MATCH_CLOSE_URL, body);
         });
     }
@@ -64,10 +64,10 @@ export class MatchClient {
      * nothing is sent. If the backend rejects it for concurrency, the state is fetched again.
      */
     private async command(
-        build: (state: LocalState, idComando: string) => (backend: BackendUtils) => Promise<MatchResponse | undefined>,
+        build: (state: LocalState, commandId: string) => (backend: BackendUtils) => Promise<MatchResponse | undefined>,
     ): Promise<CommandResult> {
         const state = this.currentState();
-        if (!state) return {ok: false, code: 'PARTIDA_NO_ENCONTRADA'};
+        if (!state) return {ok: false, code: 'MATCH_NOT_FOUND'};
         let send: (backend: BackendUtils) => Promise<MatchResponse | undefined>;
         try {
             send = build(state, generateCommandId());

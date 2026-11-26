@@ -5,15 +5,15 @@ import { UserDecoratorType } from '../user.decorator';
 import * as process from 'process';
 
 /**
- * Clase que define la estrategia de jwt para los websockets.
+ * Jwt strategy for the websockets.
  * @class
  */
 export class JwtSocketStrategy {
 
 	/**
-	 * Función en dónde se define la lógica de la estrategia.
-	 * @param {ExecutionContext} context El contexto de ejecución.
-	 * @param {JwtService} service El servicio de jwt.
+	 * Logic of the strategy.
+	 * @param {ExecutionContext} context The execution context.
+	 * @param {JwtService} service The jwt service.
 	 */
 	static canActivate(context: ExecutionContext, service: JwtService): boolean {
 		const socket: Socket = context.switchToWs().getClient<Socket>();

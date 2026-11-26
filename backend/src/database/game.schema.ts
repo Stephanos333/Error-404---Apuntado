@@ -5,12 +5,12 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { DatabaseConstants } from './database.constants';
 
 /**
- * Representa el modelo para interactuar con los juegos de mongodb.
+ * Model to interact with the games in mongodb.
  */
 export type GameDocument = HydratedDocument<GameRecord>;
 
 /**
- * Representa la definición completa de un juego en mongodb.
+ * Full definition of a game in mongodb.
  */
 const definition: Required<SchemaDefinition<GameRecord>> = {
 	name: {
@@ -49,7 +49,7 @@ const definition: Required<SchemaDefinition<GameRecord>> = {
 		type: String,
 		required: true,
 	},
-	partidaId: {
+	matchId: {
 		type: String,
 		required: false,
 	},
@@ -68,14 +68,14 @@ const definition: Required<SchemaDefinition<GameRecord>> = {
 };
 
 /**
- * Constante que representa el esquema de los juegos.
+ * Schema of the games.
  * @const {Schema<GameRecord>}
  */
 export const GameSchema: Schema<GameRecord> = new Schema<GameRecord>(definition, { timestamps: true });
 
 /**
- * Constante que representa la conexión del esquema de
- * juegos en la base de datos.
+ * Connection of the games schema
+ * in the database.
  * @type {FactoryProvider}
  */
 export const GameSchemaProvider: FactoryProvider = {

@@ -6,8 +6,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '../../shared/exceptions/unauthorized.exception';
 
 /**
- * Clase que define la lógica de la guardia de jwt para los diferentes contextos
- * de ejecución del sistema
+ * Logic of the jwt guard for the different execution contexts
+ * of the system
  *
  * @class
  * @extends {AuthGuard('jwt')}
@@ -16,16 +16,16 @@ import { UnauthorizedException } from '../../shared/exceptions/unauthorized.exce
 export class JwtGuard extends AuthGuard('jwt') {
 
 	/**
-	 * @param {JwtService} service Servicio para interactuar con jwt.
+	 * @param {JwtService} service Service to interact with jwt.
 	 */
 	constructor(private readonly service: JwtService) {
 		super();
 	}
 
 	/**
-	 * Función principal de la lógica de la guardia.
-	 * @param {ExecutionContext} context El contexto de ejecución.
-	 * @throws {UnauthorizedException} Cuando el usuario no tiene acceso al recurso.
+	 * Main function of the guard logic.
+	 * @param {ExecutionContext} context The execution context.
+	 * @throws {UnauthorizedException} When the user has no access to the resource.
 	 */
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		let result: boolean;

@@ -5,12 +5,12 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { DatabaseConstants } from './database.constants';
 
 /**
- * Representa el modelo para interactuar con los usuarios en mongodb.
+ * Model to interact with the users in mongodb.
  */
 export type UserDocument = HydratedDocument<UserRecord>;
 
 /**
- * Representa la definición completa de un usuario en mongodb.
+ * Full definition of a user in mongodb.
  */
 const definition: Required<SchemaDefinition<UserRecord>> = {
 	cardDesigns: {
@@ -55,14 +55,14 @@ const definition: Required<SchemaDefinition<UserRecord>> = {
 };
 
 /**
- * Constante que representa el esquema de los usuarios.
+ * Schema of the users.
  * @const {Schema<UserRecord>}
  */
 export const UserSchema: Schema<UserRecord> = new Schema<UserRecord>(definition, { timestamps: true });
 
 /**
- * Constante que representa la conexión del esquema
- * de usuarios en la base de datos.
+ * Connection of the users schema
+ * in the database.
  * @type {FactoryProvider}
  */
 export const UserSchemaProvider: FactoryProvider = {

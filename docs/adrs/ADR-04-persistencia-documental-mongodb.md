@@ -70,7 +70,7 @@ Se adopta **MongoDB Atlas (replica set) con una base lógica** y colecciones con
 
 | Verificación | Tipo |
 |---|---|
-| FF-06: los validadores compilan, aceptan los ejemplos de ambas modalidades y **rechazan** estados inválidos (Clásica con reenganche, mano con más de 11 cartas, contraseña sin argon2id) | Fitness function automatizada (`tests/architecture/ff06-esquemas-datos.spec.ts`) |
+| FF-06: los validadores compilan, aceptan los ejemplos de ambas modalidades y **rechazan** estados inválidos (Clásica con reenganche, mano con más de 11 cartas, contraseña sin argon2id) | Fitness function automatizada (`tests/architecture/ff06-data-schemas.spec.ts`) |
 | FF-01: la presentación no accede a `database/` ni a `mongoose` | Fitness function automatizada |
 | Prueba de integración de concurrencia: dos cierres simultáneos → exactamente uno confirmado, el otro recibe `RONDA_YA_CERRADA` | Prueba automatizada (backend, con *replica set* de prueba) |
 | Prueba de caos: matar el proceso a mitad del cierre → la partida queda en el estado anterior o en el siguiente, nunca en uno intermedio | Prueba automatizada |
@@ -79,4 +79,4 @@ Se adopta **MongoDB Atlas (replica set) con una base lógica** y colecciones con
 
 ## Notas
 
-Los esquemas, el script `crear-colecciones.mongodb.js` y los ejemplos están en `docs/schemas/`.
+Los esquemas, el script `create-collections.mongodb.js` y los ejemplos están en `docs/schemas/`.

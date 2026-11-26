@@ -3,9 +3,9 @@ import { CardType } from './card-type';
 import { CardSuit } from './card-suit';
 
 /**
- * Clase que representa el objeto de transferencia de las cartas.
- * Es código TypeScript puro (FF-05): la documentación OpenAPI vive en
- * `dominio/card/card-api.dto.ts`.
+ * Transfer object of the cards.
+ * It is plain TypeScript code (FF-05): the OpenAPI documentation lives in
+ * `domain/card/card-api.dto.ts`.
  * @class
  */
 export class CardDTO {
@@ -14,7 +14,7 @@ export class CardDTO {
 }
 
 /**
- * Clase que representa una carta y sus acciones disponibles.
+ * A card and its available actions.
  * @class
  * @extends {DomainBase<CardDTO>}
  */
@@ -23,8 +23,8 @@ export class Card extends DomainBase<CardDTO> {
 	private readonly _suit: CardSuit;
 
 	/**
-	 * @param {CardType} type El tipo de la carta.
-	 * @param {CardSuit} suit La pinta de la carta.
+	 * @param {CardType} type The type of the card.
+	 * @param {CardSuit} suit The suit of the card.
 	 */
 	constructor(type: CardType, suit: CardSuit) {
 		super();
@@ -41,9 +41,9 @@ export class Card extends DomainBase<CardDTO> {
 	}
 
 	/**
-	 * Convierte el objeto de transferencia de la carta al modelo de dominio
-	 * @param {CardDTO} dto El objeto de transferencia.
-	 * @returns {Card} La carta.
+	 * Converts the transfer object of the card into the domain model
+	 * @param {CardDTO} dto The transfer object.
+	 * @returns {Card} The card.
 	 * @static
 	 */
 	static fromDTO(dto: CardDTO): Card {
@@ -51,8 +51,8 @@ export class Card extends DomainBase<CardDTO> {
 	}
 
 	/**
-	 * Convierte la carta a su objeto de transferencia.
-	 * @returns {CardDTO} EL objeto de transferencia.
+	 * Converts the card into its transfer object.
+	 * @returns {CardDTO} The transfer object.
 	 */
 	toDTO(): CardDTO {
 		return {
@@ -62,9 +62,9 @@ export class Card extends DomainBase<CardDTO> {
 	}
 
 	/**
-	 * Determina cuál es la siguiente carta a partir de un valor.
-	 * @param {number} current El valor actual de una carta.
-	 * @returns {number} La carta siguiente.
+	 * Determines the next card from a value.
+	 * @param {number} current The current value of a card.
+	 * @returns {number} The next card.
 	 */
 	static getNextValue(current: number): number {
 		let next: number = current + 1;

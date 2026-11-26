@@ -2,7 +2,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
 /**
- * Clase que representa la guardia para el login de los usuarios.
+ * Guard for the user login.
  * @class
  * @extends {AuthGuard('local')}
  */

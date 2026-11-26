@@ -1,10 +1,10 @@
 import { DefaultResponse } from '../../../shared/default.response';
 import { ApiProperty } from '@nestjs/swagger';
-import { GameDTO } from '../../../dominio/game/game';
+import { GameDTO } from '../../../domain/game/game';
 
 /**
- * Clase que representa la respuesta del controlador para buscar
- * los juegos públicos.
+ * Response of the controller that fetches
+ * the public games.
  * @class
  * @extends {DefaultResponse}
  */

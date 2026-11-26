@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
- * Clase que representa la respuesta por defecto de
- * todos los controladores.
+ * Default response of
+ * every controller.
  * @class
  */
 export class DefaultResponse {

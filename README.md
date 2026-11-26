@@ -16,10 +16,10 @@ construido como un monolito modular con núcleo **microkernel** de reglas (Richa
 | Estilo arquitectónico | Monolito modular por capas (ADR-01, enmendado por ADR-06) con núcleo microkernel y plug-ins de reglas (ADR-02, ADR-03) |
 | Backend | Node.js 20, NestJS 10, TypeScript 5.4, Socket.IO 4 (namespace `/game`), Swagger en `/docs` |
 | Frontend | React 18, Vite 5, Material UI 5, socket.io-client 4; servido por Nginx 1.27 |
-| Persistencia | MongoDB 7 como replica set (Atlas en la nube). Agregado `partidas`, libro `asientos_tokens` y validadores `$jsonSchema` (ADR-04) |
-| Plug-ins de reglas | `backend/plugins/clasica` (una ronda, 4-3-3) y `backend/plugins/apuntado` (multironda, 4-3-3 y tocar, eliminación en 101 o más y victoria en -51 o menos) |
+| Persistencia | MongoDB 7 como replica set (Atlas en la nube). Agregado `matches`, libro `token_ledger` y validadores `$jsonSchema` (ADR-04) |
+| Plug-ins de reglas | `backend/plugins/classic` (una ronda, 4-3-3) y `backend/plugins/apuntado` (multironda, 4-3-3 y tocar, eliminación en 101 o más y victoria en -51 o menos) |
 | Consistencia | Cierre y liquidación en memoria y una sola escritura atómica; transacciones `snapshot`/`majority` para apuestas y pozo; concurrencia optimista con `version` e idempotencia con `idComando` |
-| Tiempo real | Sala pública `partida:{id}` (vista pública) y sala privada `usuario:{id}` (solo la mano del usuario); eventos publicados después del commit (ADR-05) |
+| Tiempo real | Sala pública `match:{id}` (vista pública) y sala privada `user:{id}` (solo la mano del usuario); eventos publicados después del commit (ADR-05) |
 | Seguridad | JWT de acceso y refresco, guardias por juego, barajado con `crypto.randomInt`, contenedores sin privilegios de root |
 | Pruebas | 106 unitarias y de contrato (Jest), 8 de integración de concurrencia con replica set en memoria, 28 fitness functions (FF-01 a FF-06) y 16 del tablero del frontend (Vitest) |
 | Ejecución | `docker compose up --build` (o `start.sh` / `start.bat`): MongoDB, inicialización de la base, backend y frontend |
@@ -31,7 +31,7 @@ construido como un monolito modular con núcleo **microkernel** de reglas (Richa
 | `frontend` | `frontend/Dockerfile` (Vite build y Nginx) | `5173` | SPA y proxy inverso de `/api`, `/socket.io` y `/docs` |
 | `backend` | `backend/Dockerfile` (multi-stage) | `3000` | API REST `/api`, WebSockets `/socket.io` y Swagger `/docs` |
 | `mongodb` | `mongo:7.0 --replSet rs0` | `27017` | Replica set de un nodo (requerido por las transacciones) |
-| `mongo-init` | `mongo:7.0` (tarea única) | — | Validadores, índices (`docs/schemas`) y catálogo de diseños de carta |
+| `mongo-init` | `mongo:7.0` (tarea única) | — | Migración de datos, validadores, índices (`docs/schemas`) y catálogo de diseños de carta |
 
 ## Guía de inicio rápido
 
@@ -60,8 +60,9 @@ docker compose up --build
 Orden de arranque, garantizado con `healthcheck` y `depends_on`:
 
 1. `mongodb` inicia el replica set `rs0` y queda *healthy* cuando el nodo es PRIMARY.
-2. `mongo-init` aplica `docs/schemas/crear-colecciones.mongodb.js` (validadores estrictos e
-   índices) y carga los diseños de carta. Es idempotente.
+2. `mongo-init` ejecuta la migración única a los contratos en inglés
+   (`docker/mongo/migrate-english-contracts.js`), aplica `docs/schemas/create-collections.mongodb.js`
+   (validadores estrictos e índices) y carga los diseños de carta. Es idempotente.
 3. `backend` arranca cuando la base está lista y queda *healthy* cuando responde `/docs`.
 4. `frontend` arranca cuando el backend está sano.
 
@@ -112,7 +113,7 @@ yarn dev
 ```bash
 cd backend && npx jest                      # unitarias, de contrato y casos borde
 cd backend && npm run test:e2e              # concurrencia de cierres con replica set en memoria
-cd tests/architecture && npm ci && npm test && npm run test:estricto   # fitness functions
+cd tests/architecture && npm ci && npm test && npm run test:strict   # fitness functions
 cd frontend && yarn test                    # lógica del tablero (traducción de comandos, versiones)
 ```
 
@@ -125,8 +126,8 @@ El backend necesita un host con **WebSockets persistentes**; los entornos *serve
    - Cree la base `apuntado` y un usuario de aplicación con permisos `readWrite`.
    - Aplique los validadores y la semilla una vez:
      ```bash
-     mongosh "<URI_ATLAS>/apuntado" --file docs/schemas/crear-colecciones.mongodb.js
-     mongosh "<URI_ATLAS>/apuntado" --file docker/mongo/seed-disenos-carta.js
+     mongosh "<URI_ATLAS>/apuntado" --file docs/schemas/create-collections.mongodb.js
+     mongosh "<URI_ATLAS>/apuntado" --file docker/mongo/seed-card-designs.js
      ```
 2. **Backend: Render, Railway o Fly.io, como servicio Docker.**
    - Contexto `backend/`, puerto 3000 y *health check* en `/docs`.
@@ -143,10 +144,10 @@ El backend necesita un host con **WebSockets persistentes**; los entornos *serve
 
 ## Estado del MVP y limitaciones conocidas
 
-- **Flujo de juego.** El tablero (`frontend/src/pages/game`) usa `GET /api/partidas/actual` y
-  `POST /api/partidas/actual/comandos/{robar|descartar|cerrar}` con `version` e `idComando`, y
-  escucha la sala pública `partida:{id}` y la privada `usuario:{id}`. Clásica cierra con 4-3-3;
+- **Flujo de juego.** El tablero (`frontend/src/pages/game`) usa `GET /api/matches/current` y
+  `POST /api/matches/current/commands/{draw|discard|close}` con `version` y `commandId`, y
+  escucha la sala pública `match:{id}` y la privada `user:{id}`. Clásica cierra con 4-3-3;
   Apuntado cierra con 4-3-3 o toca (3 ternas + 1 sobrante de menos de 5 puntos), lo que abre una
   ronda extra en la que cada rival juega un último turno antes de liquidar.
-- Reenganche y la bitácora `jugadas` están diseñados (ADR-03, ADR-04), pero no están disponibles en
+- Reenganche y la bitácora `plays` están diseñados (ADR-03, ADR-04), pero no están disponibles en
   el MVP.

@@ -3,16 +3,16 @@ import { CardSuitConstants } from './card-suit.constants';
 import { InvalidCardSuitException } from './exceptions/invalid-card-suit-exception';
 
 /**
- * Clase que representa la pinta de una carta.
+ * Suit of a card.
  * @class
  * @extends DiscreteValueObject
  */
 export class CardSuit extends DiscreteValueObject {
 
 	/**
-	 * Función que determina si la pinta de una carta no es válida.
-	 * @param {string} value La pinta de la carta.
-	 * @throws {InvalidCardSuitException} Se lanza si la pinta de una carta no es válida.
+	 * Determines whether the suit of a card is not valid.
+	 * @param {string} value The suit of the card.
+	 * @throws {InvalidCardSuitException} When the suit of the card is not valid.
 	 * @protected
 	 */
 	protected validate(value: string): void {

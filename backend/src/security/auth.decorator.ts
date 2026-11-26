@@ -3,7 +3,7 @@ import { JwtGuard } from './guards/jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 /**
- * Decorador que define los decoradores para el acceso a la aplicación.
+ * Decorator that groups the decorators required to access the application.
  *
  * @const
  */

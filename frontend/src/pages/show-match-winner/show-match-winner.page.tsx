@@ -10,8 +10,8 @@ import './show-match-winner.page.css';
 
 /** Readable close type, for the winner (second person) and for others (third person). */
 const CLOSE_NAME: Record<string, { you: string; them: string }> = {
-    GANAR_4_3_3: {you: 'cerraste con 4-3-3', them: 'cerró con 4-3-3'},
-    TOCAR: {you: 'tocaste', them: 'tocó'},
+    WIN_4_3_3: {you: 'cerraste con 4-3-3', them: 'cerró con 4-3-3'},
+    KNOCK: {you: 'tocaste', them: 'tocó'},
 };
 
 /** Cards that rain down when the current user wins (decorative). */
@@ -29,18 +29,18 @@ export function ShowMatchWinnerPage(): JSX.Element {
     const match: PublicMatchView | undefined = state?.match;
 
     const standings = useMemo(() => match
-        ? [...match.jugadores].sort((a, b) =>
-            (a.jugadorId === match.ganadorId ? -1 : 0) - (b.jugadorId === match.ganadorId ? -1 : 0)
-            || (a.estado === 'ELIMINADO' ? 1 : 0) - (b.estado === 'ELIMINADO' ? 1 : 0)
-            || a.puntaje - b.puntaje)
+        ? [...match.players].sort((a, b) =>
+            (a.playerId === match.winnerId ? -1 : 0) - (b.playerId === match.winnerId ? -1 : 0)
+            || (a.status === 'ELIMINATED' ? 1 : 0) - (b.status === 'ELIMINATED' ? 1 : 0)
+            || a.score - b.score)
         : [], [match]);
 
     if (!match) return <Navigate to={RoutesConstants.HOME_ROUTE}/>;
 
-    const winner = match.jugadores.find((j) => j.jugadorId === match.ganadorId);
-    const iWon: boolean = !!state?.myId && state.myId === match.ganadorId;
-    const lastRound = match.marcador[match.marcador.length - 1];
-    const isApuntado: boolean = match.modalidad === 'apuntado';
+    const winner = match.players.find((j) => j.playerId === match.winnerId);
+    const iWon: boolean = !!state?.myId && state.myId === match.winnerId;
+    const lastRound = match.scoreboard[match.scoreboard.length - 1];
+    const isApuntado: boolean = match.mode === 'apuntado';
 
     return (
         <div className='winner-page page-container'>
@@ -56,33 +56,33 @@ export function ShowMatchWinnerPage(): JSX.Element {
                     : <></>
             }
             <main className='winner-main'>
-                <p className='winner-kicker'>{MODE_NAME[match.modalidad] ?? match.modalidad}</p>
-                <h1>{iWon ? '¡Ganaste!' : winner ? `Ganó ${winner.nombreUsuario}` : 'Partida terminada'}</h1>
+                <p className='winner-kicker'>{MODE_NAME[match.mode] ?? match.mode}</p>
+                <h1>{iWon ? '¡Ganaste!' : winner ? `Ganó ${winner.username}` : 'Partida terminada'}</h1>
                 <p className='winner-lead muted'>
-                    {winner && lastRound && lastRound.ganadorId === winner.jugadorId
-                        ? `${iWon ? 'Ganaste' : winner.nombreUsuario + ' ganó'} la última ronda: ${CLOSE_NAME[lastRound.tipoCierre]?.[iWon ? 'you' : 'them'] ?? 'cerró'}.`
-                        : `Se jugaron ${match.marcador.length} ${match.marcador.length === 1 ? 'ronda' : 'rondas'}.`}
+                    {winner && lastRound && lastRound.winnerId === winner.playerId
+                        ? `${iWon ? 'Ganaste' : winner.username + ' ganó'} la última ronda: ${CLOSE_NAME[lastRound.closeType]?.[iWon ? 'you' : 'them'] ?? 'cerró'}.`
+                        : `Se jugaron ${match.scoreboard.length} ${match.scoreboard.length === 1 ? 'ronda' : 'rondas'}.`}
                 </p>
 
                 <div className='winner-pot'>
                     <span>{iWon ? 'Te llevas' : 'Se lleva'}</span>
-                    <TokenAmountComponent amount={match.pozo.total} size='lg'/>
+                    <TokenAmountComponent amount={match.pot.total} size='lg'/>
                 </div>
 
                 <ol className='winner-standings'>
                     {standings.map((player, i) => {
-                        const isWinner = player.jugadorId === match.ganadorId;
+                        const isWinner = player.playerId === match.winnerId;
                         return (
-                            <li key={player.jugadorId} className={`${isWinner ? 'is-winner' : ''} ${player.estado === 'ELIMINADO' ? 'is-eliminated' : ''}`}>
+                            <li key={player.playerId} className={`${isWinner ? 'is-winner' : ''} ${player.status === 'ELIMINATED' ? 'is-eliminated' : ''}`}>
                                 <span className='winner-place num'>{i + 1}</span>
                                 <span className='winner-name'>
-                                    {player.nombreUsuario}
-                                    {player.jugadorId === state?.myId ? <small> (tú)</small> : <></>}
+                                    {player.username}
+                                    {player.playerId === state?.myId ? <small> (tú)</small> : <></>}
                                 </span>
                                 <span className='winner-state'>
-                                    {isWinner ? 'Ganador' : player.estado === 'ELIMINADO' ? 'Eliminado' : ''}
+                                    {isWinner ? 'Ganador' : player.status === 'ELIMINATED' ? 'Eliminado' : ''}
                                 </span>
-                                {isApuntado ? <span className='winner-points num'>{player.puntaje} <small>pts</small></span> : <span/>}
+                                {isApuntado ? <span className='winner-points num'>{player.score} <small>pts</small></span> : <span/>}
                             </li>
                         );
                     })}

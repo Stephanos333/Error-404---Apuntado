@@ -1,0 +1,117 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 1
+      },
+      "values": {
+        "bsonType": "object",
+        "properties": {
+          "eliminationLimit": {
+            "bsonType": "int",
+            "minimum": 1,
+            "description": "PS-01, score >= eliminates"
+          },
+          "knockThreshold": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "PS-02, leftover strictly lower"
+          },
+          "invalidClosePenalty": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-03"
+          },
+          "closeBonus": {
+            "bsonType": "int",
+            "maximum": 0,
+            "description": "PS-04 (negative)"
+          },
+          "negativeVictoryThreshold": {
+            "bsonType": "int",
+            "maximum": 0,
+            "description": "PS-05, score <= wins"
+          },
+          "jokerValue": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-06"
+          },
+          "jokersPerDeck": {
+            "bsonType": "int",
+            "minimum": 0,
+            "maximum": 4,
+            "description": "PS-07"
+          },
+          "twoDeckPlayers": {
+            "bsonType": "int",
+            "minimum": 2,
+            "maximum": 7,
+            "description": "PS-08"
+          },
+          "disconnectGraceSec": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-09"
+          },
+          "resultsWindowSec": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-10"
+          },
+          "initialTokenBalance": {
+            "bsonType": "int",
+            "minimum": 0,
+            "description": "PS-11"
+          },
+          "tokenPriceCOP": {
+            "bsonType": "int",
+            "minimum": 1,
+            "description": "PS-12"
+          },
+          "collectionQrId": {
+            "bsonType": "objectId",
+            "description": "PS-13: QR image in GridFS"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "eliminationLimit",
+          "knockThreshold",
+          "invalidClosePenalty",
+          "closeBonus",
+          "negativeVictoryThreshold",
+          "jokerValue",
+          "jokersPerDeck",
+          "twoDeckPlayers",
+          "disconnectGraceSec",
+          "resultsWindowSec",
+          "initialTokenBalance",
+          "tokenPriceCOP",
+          "collectionQrId"
+        ]
+      },
+      "effectiveFrom": {
+        "bsonType": "date"
+      },
+      "modifiedBy": {
+        "bsonType": "objectId"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "version",
+      "values",
+      "effectiveFrom",
+      "modifiedBy"
+    ],
+    "description": "System parameter versions (the effective one has the highest 'version')"
+  }
+}

@@ -6,12 +6,12 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { DatabaseConstants } from './database.constants';
 
 /**
- * Representa el modelo para interactuar con los jugadores en mongodb.
+ * Model to interact with the players in mongodb.
  */
 export type PlayerDocument = HydratedDocument<PlayerRecord>;
 
 /**
- * Representa la definición completa de un jugador en mongodb.
+ * Full definition of a player in mongodb.
  */
 const definition: Required<SchemaDefinition<PlayerRecord>> = {
 	cardsMap: {
@@ -77,7 +77,7 @@ const definition: Required<SchemaDefinition<PlayerRecord>> = {
 };
 
 /**
- * Constante que representa el esquema de los jugadores.
+ * Schema of the players.
  * @const {Schema<PlayerRecord>}
  */
 export const PlayerSchema: Schema<PlayerRecord> = new Schema<PlayerRecord>(definition, {
@@ -85,8 +85,8 @@ export const PlayerSchema: Schema<PlayerRecord> = new Schema<PlayerRecord>(defin
 });
 
 /**
- * Constante que representa la conexión del esquema de los
- * jugadores en la base de datos.
+ * Connection of the players schema
+ * in the database.
  */
 export const PlayerSchemaProvider: FactoryProvider = {
 	inject: [getConnectionToken(DatabaseConstants.DATABASE_CONNECTION_NAME)],

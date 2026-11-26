@@ -18,7 +18,7 @@ import './create-game.component.css';
 /** Game modes offered when creating a table. */
 const MODES = [
     {ruleId: 'apuntado', figure: '101', title: 'Apuntado a 101', text: 'Varias rondas, eliminación a los 101 puntos.'},
-    {ruleId: 'clasica', figure: '4-3-3', title: 'Clásica', text: 'Una ronda: gana el primero en cerrar.'},
+    {ruleId: 'classic', figure: '4-3-3', title: 'Clásica', text: 'Una ronda: gana el primero en cerrar.'},
 ];
 
 /**

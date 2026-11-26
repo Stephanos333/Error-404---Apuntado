@@ -1,9 +1,9 @@
 import { DefaultResponse } from '../../../shared/default.response';
 import { ApiProperty } from '@nestjs/swagger';
-import { CardDesignDTO } from '../../../dominio/card-design/card-design';
+import { CardDesignDTO } from '../../../domain/card-design/card-design';
 
 /**
- * Clase que define la respuesta para retornar el diseño de cartas actual.
+ * Response that returns the current card design.
  * @class
  * @extends DefaultResponse
  */

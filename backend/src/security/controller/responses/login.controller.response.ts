@@ -2,8 +2,8 @@ import { DefaultResponse } from '../../../shared/default.response';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
- * Clase que representa la respuesta del controlador para que un
- * usuario inicie sesión.
+ * Response of the controller that logs
+ * a user in.
  *
  * @class
  * @extends DefaultResponse

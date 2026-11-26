@@ -1,103 +1,103 @@
 /**
  * Types of the Match aggregate as the backend exposes them (ADR-04/ADR-05).
- * The public view goes to the `partida:{id}` room; the private one (the hand) only to
- * `usuario:{id}`.
+ * The public view goes to the `match:{id}` room; the private one (the hand) only to
+ * `user:{id}`.
  *
  * Property names and literal values are the backend API contract and stay in Spanish
  * (`valor`, `palo`, `jugadores`, `'EN_JUEGO'`…); only the TypeScript names are English.
  */
 
 /** Card ranks of the document model. */
-export type CardRank = 'AS' | 'DOS' | 'TRES' | 'CUATRO' | 'CINCO' | 'SEIS' | 'SIETE' | 'OCHO' | 'NUEVE' | 'DIEZ' | 'J' | 'Q' | 'K';
+export type CardRank = 'ACE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE' | 'SIX' | 'SEVEN' | 'EIGHT' | 'NINE' | 'TEN' | 'J' | 'Q' | 'K';
 
 /** Card suits of the document model. */
-export type CardSuit = 'TREBOLES' | 'DIAMANTES' | 'CORAZONES' | 'PICAS';
+export type CardSuit = 'CLUBS' | 'DIAMONDS' | 'HEARTS' | 'SPADES';
 
 /** A card in the match. `baraja` (deck 1 or 2) tells apart two equal cards when two decks are used. */
 export type MatchCard = {
-    valor: CardRank;
-    palo: CardSuit;
-    baraja: number;
+    rank: CardRank;
+    suit: CardSuit;
+    deckNumber: number;
 };
 
-export type MatchStatus = 'EN_ESPERA' | 'EN_JUEGO' | 'MOSTRANDO_RESULTADOS' | 'FINALIZADA' | 'CANCELADA';
-export type MatchPlayerStatus = 'EN_SALA' | 'ACTIVO' | 'ELIMINADO' | 'GANADOR' | 'PERDEDOR';
-export type RoundStatus = 'REPARTIENDO' | 'EN_TURNOS' | 'RONDA_EXTRA' | 'LIQUIDANDO' | 'CERRADA';
-export type TurnPhase = 'ESPERANDO_ROBO' | 'CON_11_CARTAS';
-export type CloseType = 'GANAR_4_3_3' | 'TOCAR';
+export type MatchStatus = 'WAITING' | 'IN_PROGRESS' | 'SHOWING_RESULTS' | 'FINISHED' | 'CANCELLED';
+export type MatchPlayerStatus = 'IN_LOBBY' | 'ACTIVE' | 'ELIMINATED' | 'WINNER' | 'LOSER';
+export type RoundStatus = 'DEALING' | 'IN_TURNS' | 'EXTRA_ROUND' | 'SETTLING' | 'CLOSED';
+export type TurnPhase = 'AWAITING_DRAW' | 'HOLDING_11_CARDS';
+export type CloseType = 'WIN_4_3_3' | 'KNOCK';
 
 export type PublicPlayerView = {
-    jugadorId: string;
-    nombreUsuario: string;
-    posicion: number;
-    estado: MatchPlayerStatus;
-    puntaje: number;
-    conectado: boolean;
+    playerId: string;
+    username: string;
+    position: number;
+    status: MatchPlayerStatus;
+    score: number;
+    connected: boolean;
     /** Only the hand size: opponents' cards never reach the client. */
-    cartasEnMano: number;
+    cardsInHand: number;
 };
 
 export type PublicRoundView = {
-    numero: number;
-    estado: RoundStatus;
-    turno: { jugadorId: string; fase: TurnPhase; intentoCierre: boolean; numero: number };
-    cartasEnMazo: number;
-    cartasEnDescarte: number;
-    topeDescarte: MatchCard | null;
-    rondaExtra: { tocadorId: string; pendientes: string[] } | null;
+    number: number;
+    status: RoundStatus;
+    turn: { playerId: string; phase: TurnPhase; closeAttempted: boolean; number: number };
+    cardsInDeck: number;
+    cardsInDiscardPile: number;
+    topDiscard: MatchCard | null;
+    extraRound: { knockerId: string; pending: string[] } | null;
 };
 
 export type ScoreboardEntryView = {
-    numeroRonda: number;
-    ganadorId: string;
-    tipoCierre: CloseType;
-    puntos: Array<{ jugadorId: string; puntosRonda: number; acumulado: number; eliminado: boolean }>;
+    roundNumber: number;
+    winnerId: string;
+    closeType: CloseType;
+    points: Array<{ playerId: string; roundPoints: number; cumulative: number; eliminated: boolean }>;
 };
 
 /** Public view of the match. */
 export type PublicMatchView = {
-    partidaId: string;
+    matchId: string;
     version: number;
-    estado: MatchStatus;
-    modalidad: string;
-    ganadorId: string | null;
-    pozo: { total: number };
-    jugadores: PublicPlayerView[];
-    ronda: PublicRoundView | null;
-    marcador: ScoreboardEntryView[];
+    status: MatchStatus;
+    mode: string;
+    winnerId: string | null;
+    pot: { total: number };
+    players: PublicPlayerView[];
+    round: PublicRoundView | null;
+    scoreboard: ScoreboardEntryView[];
 };
 
 /** Private view: the authenticated user's hand. `grupos` are indexes into `cartas`. */
 export type PrivateHandView = {
-    partidaId: string;
+    matchId: string;
     version: number;
-    jugadorId: string;
-    cartas: MatchCard[];
-    grupos: number[][];
+    playerId: string;
+    cards: MatchCard[];
+    groups: number[][];
 };
 
 /** Domain events that come with the public messages. */
 export type MatchEventType =
-    | 'PARTIDA_INICIADA'
-    | 'CARTA_ROBADA'
-    | 'TURNO_CAMBIADO'
-    | 'CIERRE_FALLIDO'
-    | 'JUGADOR_TOCO'
-    | 'RONDA_CERRADA'
-    | 'RONDA_INICIADA'
-    | 'PARTIDA_FINALIZADA';
+    | 'MATCH_STARTED'
+    | 'CARD_DRAWN'
+    | 'TURN_CHANGED'
+    | 'CLOSE_FAILED'
+    | 'PLAYER_KNOCKED'
+    | 'ROUND_CLOSED'
+    | 'ROUND_STARTED'
+    | 'MATCH_FINISHED';
 
-/** Message of the public room `partida:{id}`. */
+/** Message of the public room `match:{id}`. */
 export type PublicMatchMessage = {
-    evento: MatchEventType;
-    salaId: string;
-    jugadorId: string | null;
-    detalle: Record<string, unknown>;
-    partida: PublicMatchView;
+    event: MatchEventType;
+    roomId: string;
+    playerId: string | null;
+    detail: Record<string, unknown>;
+    match: PublicMatchView;
 };
 
-/** Message of the private room `usuario:{id}`. */
+/** Message of the private room `user:{id}`. */
 export type PrivateHandMessage = {
-    salaId: string;
-    mano: PrivateHandView;
+    roomId: string;
+    hand: PrivateHandView;
 };

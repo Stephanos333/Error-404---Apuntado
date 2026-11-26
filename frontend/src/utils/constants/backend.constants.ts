@@ -61,21 +61,21 @@ export enum BackendConstants {
      */
     START_MATCH_URL = '/api/match',
     /**
-     * Current match state: public view and the user's hand (`partidas` aggregate).
+     * Current match state: public view and the user's hand (`matches` aggregate).
      */
-    MATCH_STATE_URL = '/api/partidas/actual',
+    MATCH_STATE_URL = '/api/matches/current',
     /**
      * Draw command (deck or discard pile).
      */
-    MATCH_DRAW_URL = '/api/partidas/actual/comandos/robar',
+    MATCH_DRAW_URL = '/api/matches/current/commands/draw',
     /**
      * Discard command (ends the turn).
      */
-    MATCH_DISCARD_URL = '/api/partidas/actual/comandos/descartar',
+    MATCH_DISCARD_URL = '/api/matches/current/commands/discard',
     /**
      * Close command (4-3-3 or knock).
      */
-    MATCH_CLOSE_URL = '/api/partidas/actual/comandos/cerrar',
+    MATCH_CLOSE_URL = '/api/matches/current/commands/close',
 }
 
 /**

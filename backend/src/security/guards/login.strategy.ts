@@ -1,12 +1,12 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { SessionService } from '../session.service';
-import { UserDTO } from '../../dominio/user/user';
+import { UserDTO } from '../../domain/user/user';
 import { Injectable } from '@nestjs/common';
 
 /**
- * Clase en dónde se define la lógica para realizar el
- * inicio de sesión de la aplicación.
+ * Logic to perform the
+ * login of the application.
  * @class
  * @extends {PassportStrategy(Strategy)}
  */
@@ -14,20 +14,20 @@ import { Injectable } from '@nestjs/common';
 export class LoginStrategy extends PassportStrategy(Strategy) {
 
 	/**
-	 * Define:
-	 * - El parámetro de inicio de sesión para la estrategía.
-	 * @param {SessionService} service Servicio para manejar sesiones.
+	 * Defines:
+	 * - The login parameter of the strategy.
+	 * @param {SessionService} service Service to handle sessions.
 	 */
 	constructor(private readonly service: SessionService) {
 		super({ usernameField: 'username' });
 	}
 
 	/**
-	 * Función que define la lógica para el inicio de sesión de la aplicación.
+	 * Logic of the application login.
 	 *
-	 * @param {string} username El nombre de usuario de quién inicia sesión.
-	 * @param {string} password La contraseña de quién inicia sesión.
-	 * @returns {Promise<UserDTO | undefined>} Retorna el usuario si las credenciales son válidas.
+	 * @param {string} username The username of who logs in.
+	 * @param {string} password The password of who logs in.
+	 * @returns {Promise<UserDTO | undefined>} The user when the credentials are valid.
 	 */
 	async validate(username: string, password: string): Promise<UserDTO> {
 		return (await this.service.login(username, password)).toDTO();

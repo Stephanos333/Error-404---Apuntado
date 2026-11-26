@@ -6,12 +6,12 @@ import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import * as process from 'process';
 
 /**
- * Función que levanta el backend de Apuntado.\
- * Define:
- * - El prefijo global de la aplicación.
- * - La tubería de validación de requests.
- * - Los cors de la aplicación.
- * - El filtro global de excepciones.
+ * Starts the Apuntado backend.\
+ * It defines:
+ * - The global prefix of the application.
+ * - The request validation pipe.
+ * - The CORS settings of the application.
+ * - The global exception filter.
  *
  * @function
  * @async
@@ -24,11 +24,11 @@ async function bootstrap(): Promise<void> {
 	app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 	app.enableCors();
 
-	// Responder a los probes del balanceador de Render y visitas a la raíz con 200 OK
+	// Answer the Render load balancer probes and visits to the root with 200 OK
 	const httpAdapter = app.getHttpAdapter();
 	httpAdapter.get('/', (_req, res) => {
 		res.json({
-			name: 'Sistema Digital Apuntado - Backend API',
+			name: 'Apuntado Digital System - Backend API',
 			status: 'UP',
 			docs: `/${process.env.APP_DOCS_URI || 'docs'}`,
 			api: `/${process.env.APP_GLOBAL_PREFIX || 'api'}`,
@@ -39,8 +39,8 @@ async function bootstrap(): Promise<void> {
 	});
 
 	const config = new DocumentBuilder()
-		.setTitle('Apuntado Requisitos')
-		.setDescription('Servicios de la aplicación de apuntado')
+		.setTitle('Apuntado API')
+		.setDescription('Apuntado application services')
 		.setVersion('v1')
 		.addBearerAuth()
 		.build();

@@ -17,8 +17,8 @@ export const ELIMINATION_LIMIT: number = 101;
  * @param {string | null} myId The current user.
  */
 export function seatOrder(players: PublicPlayerView[], myId: string | null): PublicPlayerView[] {
-    const sorted = [...players].sort((a, b) => a.posicion - b.posicion);
-    const mine = sorted.findIndex((p) => p.jugadorId === myId);
+    const sorted = [...players].sort((a, b) => a.position - b.position);
+    const mine = sorted.findIndex((p) => p.playerId === myId);
     return mine < 0 ? sorted : [...sorted.slice(mine + 1), ...sorted.slice(0, mine)];
 }
 
@@ -38,23 +38,23 @@ export function OpponentsComponent(props: {
     const {match} = props;
     if (!match) return <div className='opponents'/>;
 
-    const turnId: string | undefined = match.ronda?.turno.jugadorId;
-    const knockerId: string | undefined = match.ronda?.rondaExtra?.tocadorId;
-    const pending: string[] = match.ronda?.rondaExtra?.pendientes ?? [];
-    const isApuntado: boolean = match.modalidad === 'apuntado';
+    const turnId: string | undefined = match.round?.turn.playerId;
+    const knockerId: string | undefined = match.round?.extraRound?.knockerId;
+    const pending: string[] = match.round?.extraRound?.pending ?? [];
+    const isApuntado: boolean = match.mode === 'apuntado';
 
     return (
         <ul className='opponents' aria-label='Rivales'>
-            {seatOrder(match.jugadores, props.myId).map((player) => {
-                const icon: string | undefined = props.players?.find((p) => p.userId === player.jugadorId)?.icon;
-                const isTurn: boolean = player.jugadorId === turnId && match.estado === 'EN_JUEGO';
-                const eliminated: boolean = player.estado === 'ELIMINADO';
-                const backs: number = Math.min(player.cartasEnMano, 11);
-                const progress: number = Math.max(0, Math.min(1, player.puntaje / ELIMINATION_LIMIT));
+            {seatOrder(match.players, props.myId).map((player) => {
+                const icon: string | undefined = props.players?.find((p) => p.userId === player.playerId)?.icon;
+                const isTurn: boolean = player.playerId === turnId && match.status === 'IN_PROGRESS';
+                const eliminated: boolean = player.status === 'ELIMINATED';
+                const backs: number = Math.min(player.cardsInHand, 11);
+                const progress: number = Math.max(0, Math.min(1, player.score / ELIMINATION_LIMIT));
                 return (
                     <li
-                        key={player.jugadorId}
-                        className={`opponent ${isTurn ? 'is-turn' : ''} ${eliminated ? 'is-eliminated' : ''} ${player.conectado ? '' : 'is-offline'}`}
+                        key={player.playerId}
+                        className={`opponent ${isTurn ? 'is-turn' : ''} ${eliminated ? 'is-eliminated' : ''} ${player.connected ? '' : 'is-offline'}`}
                         aria-current={isTurn ? 'true' : undefined}
                     >
                         <div className='opponent-hand' aria-hidden='true'>
@@ -68,25 +68,25 @@ export function OpponentsComponent(props: {
                         </div>
                         <div className='opponent-info'>
                             <span className='opponent-name'>
-                                {props.game?.hostId === player.jugadorId ? <CrownIconComponent size={14}/> : <></>}
-                                <span>{player.nombreUsuario}</span>
+                                {props.game?.hostId === player.playerId ? <CrownIconComponent size={14}/> : <></>}
+                                <span>{player.username}</span>
                             </span>
                             <span className='opponent-meta'>
                                 {eliminated
                                     ? 'Eliminado'
-                                    : <><span className='num'>{player.cartasEnMano}</span> cartas</>}
-                                {player.conectado ? '' : ' · sin conexión'}
+                                    : <><span className='num'>{player.cardsInHand}</span> cartas</>}
+                                {player.connected ? '' : ' · sin conexión'}
                             </span>
                             {
                                 isApuntado
-                                    ? <span className='opponent-score' title={`${player.puntaje} de ${ELIMINATION_LIMIT} puntos`}>
+                                    ? <span className='opponent-score' title={`${player.score} de ${ELIMINATION_LIMIT} puntos`}>
                                         <span className='opponent-score-bar'><span style={{width: `${progress * 100}%`}} className={progress > 0.75 ? 'is-danger' : ''}/></span>
-                                        <span className='num'>{player.puntaje}</span>
+                                        <span className='num'>{player.score}</span>
                                     </span>
                                     : <></>
                             }
-                            {knockerId === player.jugadorId ? <span className='opponent-tag'>Tocó</span> : <></>}
-                            {pending.includes(player.jugadorId) && !isTurn ? <span className='opponent-tag opponent-tag-soft'>Último turno</span> : <></>}
+                            {knockerId === player.playerId ? <span className='opponent-tag'>Tocó</span> : <></>}
+                            {pending.includes(player.playerId) && !isTurn ? <span className='opponent-tag opponent-tag-soft'>Último turno</span> : <></>}
                         </div>
                     </li>
                 );

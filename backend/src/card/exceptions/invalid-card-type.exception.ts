@@ -1,9 +1,9 @@
 import { DomainException } from '../../shared/exceptions/domain.exception';
 import { ExceptionMessagesConstants } from '../../shared/exceptions/exception-messages.constants';
 /**
- * Se lanza cuando el tipo de una carta no se encuentra en
- * el archivo de constantes.
- * Es una excepción de dominio pura: el filtro global la traduce a HTTP 400.
+ * Thrown when the type of a card is not in
+ * the constants file.
+ * It is a pure domain exception: the global filter translates it into HTTP 400.
  * @class
  * @extends DomainException
  */

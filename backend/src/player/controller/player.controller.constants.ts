@@ -1,18 +1,18 @@
 /**
- * @enum {string} Constantes de configuración de los controladores del jugador.
+ * @enum {string} Configuration constants of the player controllers.
  * @readonly
  */
 export enum PlayerControllerConstants {
 	/**
-	 * Prefijo utilizado para los controladores de los jugadores.
+	 * Prefix used by the player controllers.
 	 */
 	CONTROLLER_PREFIX = 'player',
 	/**
-	 * Tag que agrupa todos los controladores de los juegos.
+	 * Tag that groups every game controller.
 	 */
 	CONTROLLER_TAG = 'Players',
 	/**
-	 * Url para obtener el jugador actual de un usuario.
+	 * Url to fetch the current player of a user.
 	 */
 	GET_CURRENT_PLAYER_URL = 'current',
 }

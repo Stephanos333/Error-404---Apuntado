@@ -1,0 +1,108 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000b1"
+  },
+  "invitationCode": "Q4M8ZT",
+  "name": "Classic duel",
+  "status": "FINISHED",
+  "hostId": {
+    "$oid": "000000000000000000000201"
+  },
+  "settings": {
+    "mode": "classic",
+    "plugin": {
+      "id": "classic",
+      "version": "1.0.0"
+    },
+    "capacity": 2,
+    "betPerPlayer": 15,
+    "visibility": "PUBLIC",
+    "runType": "WITHOUT_WRAP",
+    "jokersEnabled": true,
+    "rebuyEnabled": false,
+    "negativeVictoryEnabled": false,
+    "parameters": {
+      "eliminationLimit": 101,
+      "knockThreshold": 5,
+      "invalidClosePenalty": 2,
+      "closeBonus": -10,
+      "negativeVictoryThreshold": -51,
+      "jokerValue": 20,
+      "jokersPerDeck": 2,
+      "twoDeckPlayers": 4,
+      "disconnectGraceSec": 120,
+      "resultsWindowSec": 20
+    }
+  },
+  "players": [
+    {
+      "playerId": "j1",
+      "userId": {
+        "$oid": "000000000000000000000201"
+      },
+      "username": "omar",
+      "position": 1,
+      "status": "WINNER",
+      "score": 0,
+      "usedRebuy": false,
+      "connected": true,
+      "disconnectedSince": null
+    },
+    {
+      "playerId": "j2",
+      "userId": {
+        "$oid": "000000000000000000000202"
+      },
+      "username": "ines",
+      "position": 2,
+      "status": "LOSER",
+      "score": 0,
+      "usedRebuy": false,
+      "connected": true,
+      "disconnectedSince": null
+    }
+  ],
+  "pot": {
+    "total": 30,
+    "contributions": [
+      {
+        "userId": {
+          "$oid": "000000000000000000000201"
+        },
+        "type": "BET",
+        "amount": 15,
+        "ledgerEntryId": {
+          "$oid": "0000000000000000000000f1"
+        }
+      },
+      {
+        "userId": {
+          "$oid": "000000000000000000000202"
+        },
+        "type": "BET",
+        "amount": 15,
+        "ledgerEntryId": {
+          "$oid": "0000000000000000000000f2"
+        }
+      }
+    ]
+  },
+  "currentRound": null,
+  "scoreboard": [],
+  "winnerId": "j1",
+  "resultsWindowUntil": null,
+  "recentCommands": [
+    "c-0040",
+    "c-0041"
+  ],
+  "version": 42,
+  "createdAt": {
+    "$date": "2026-10-26T20:00:00Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-26T20:14:09Z"
+  },
+  "finishedAt": {
+    "$date": "2026-10-26T20:14:09Z"
+  }
+}

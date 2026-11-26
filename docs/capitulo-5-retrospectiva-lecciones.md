@@ -53,7 +53,7 @@ composición, aunque el orquestador siga sin cambios.
 | Notificar a los clientes | Evento local **después** del *commit*, sin *outbox* | Si el evento se pierde, el cliente lo recupera por salto de versión (ADR-05) |
 
 **Qué se ganó.** Ninguna liquidación parcial (R02) y ningún doble pago (R03). Lo comprueban las 8
-pruebas e2e de `backend/test/concurrencia-cierre.e2e-spec.ts` sobre un *replica set* real: dos
+pruebas e2e de `backend/test/close-concurrency.e2e-spec.ts` sobre un *replica set* real: dos
 cierres simultáneos producen exactamente un ganador y un solo pago, y dos inicios simultáneos
 cobran las apuestas una sola vez.
 
@@ -87,7 +87,7 @@ directo en la capacidad del bus de mensajes.
 #### d) Otros *trade-offs* que aparecieron durante la construcción
 
 - **Comandos por REST y notificaciones por WebSocket.** Los comandos pasan por
-  `POST /api/partidas/actual/comandos/*` y no por el socket. Esto da semántica HTTP clara (409 con
+  `POST /api/matches/current/commands/*` y no por el socket. Esto da semántica HTTP clara (409 con
   `RONDA_YA_CERRADA`), idempotencia por `idComando` y pruebas e2e sencillas. El costo son dos
   canales y una petición HTTP por acción.
 - **Sondeo cada 2 s en la sala de espera (fase 5).** Garantiza que la lista de jugadores converja
@@ -105,7 +105,7 @@ la implementación, y fue posible hacerlo sin perder la intención porque el *po
 
 | ADR | Por qué (fuerza que la motivó) | Cómo se propuso | Cómo quedó en el MVP | ¿Se cumplió el por qué? |
 |---|---|---|---|---|
-| **ADR-01** Particionar por dominio | El prototipo caía en *Entity Trap*: `PlayerService` concentraba reparto, turnos, validación y puntaje, y había un ciclo entre 8 módulos | Módulos de dominio (`juego`, `reglas`, `puntaje`, ...) con `api/`, `aplicacion/`, `dominio/`, `infraestructura/` | Capas transversales `dominio/`, `aplicacion/`, `reglas/` y `database/` con registros propios (DIP), conservando los controladores del prototipo | **Sí:** FF-03 sin ciclos en modo estricto, `linea-base.json` vacío y el motor probado sin framework. El cambio de forma quedó registrado en [ADR-06](adrs/ADR-06-organizacion-por-capas-de-src.md). |
+| **ADR-01** Particionar por dominio | El prototipo caía en *Entity Trap*: `PlayerService` concentraba reparto, turnos, validación y puntaje, y había un ciclo entre 8 módulos | Módulos de dominio (`juego`, `reglas`, `puntaje`, ...) con `api/`, `aplicacion/`, `dominio/`, `infraestructura/` | Capas transversales `dominio/`, `aplicacion/`, `reglas/` y `database/` con registros propios (DIP), conservando los controladores del prototipo | **Sí:** FF-03 sin ciclos en modo estricto, `baseline.json` vacío y el motor probado sin framework. El cambio de forma quedó registrado en [ADR-06](adrs/ADR-06-organizacion-por-capas-de-src.md). |
 | **ADR-02 / ADR-03** Reglas como plug-ins | Agregar una variante sin tocar el núcleo ni la persistencia | Manifiesto `reglas.plugins.json` + `import()` dinámico | Registro estático en la raíz de composición, validado al arrancar (semver, forma, prueba de humo) | **Sí, en el núcleo:** el orquestador no conoce ningún plug-in (Ca de los plug-ins = 1). **No, en la recompilación:** agregar una variante exige recompilar la raíz. |
 | **ADR-04** Partida como agregado documental | Cerrar y liquidar de forma atómica, sin penalizaciones parciales (R02) ni dobles pagos (R03) | Documento `partidas` + bitácora `jugadas` (*bucket*) + libro `asientos_tokens` + validadores `$jsonSchema` | `partidas` y `asientos_tokens` con driver nativo, escritura condicional y transacciones en inicio y fin. La bitácora `jugadas` y la migración de `User`/`Game`/`Player` quedaron pendientes. | **Sí** para la atomicidad (8/8 e2e). La trazabilidad jugada a jugada todavía no existe. |
 | **ADR-05** Comando síncrono + eventos después del *commit* | Nunca notificar algo que no ocurrió, y no filtrar cartas | `GameApiGateway` → interfaces → `IGameStateStore`; eventos `CartaRobada`, `TurnoCambiado`, ... | `PartidaController` → `TurnOrchestrator` → funciones puras → `PartidaRepository`; un solo `PartidaActualizadaEvent` con la lista de eventos de dominio | **Sí:** `turn-orchestrator.service.spec.ts` comprueba que no se publica nada si la escritura falla, y las vistas filtradas se prueban. `PresenceMonitor` (temporizadores) no se implementó. |
@@ -132,7 +132,7 @@ en ese espectro.
 | **ADR-02** Reglas como Strategy | Evaluador algorítmico en lugar de tablas | Corrección de las reglas (R01) | Los plug-ins solo dependen del contrato y del evaluador | `IHandEvaluator`, `PoliticaEscalera` | Oráculo de regresión: el evaluador acepta exactamente las 260 ternas y 299 cuartas de las tablas eliminadas | `evaluador-manos.spec.ts`, FF-04 (CC máxima 7 en el núcleo) |
 | **ADR-03** Microkernel con registro | Núcleo + contrato + `plugins/clasica` y `plugins/apuntado` | Extensibilidad (Top 1) | Plug-ins con Ca = 1; contrato con I = 0 | `ReglaJuegoPlugin` v1.0.0 (6 operaciones puras) | Suite de contrato común (`plugins/contrato.spec.ts`), registro *fail fast* | FF-02 (con mutación verificada), `registro-reglas.spec.ts` |
 | **ADR-04** MongoDB documental | Agregado `partidas`; libro `asientos_tokens` *append-only* | Integridad del puntaje y del dinero (R02, R03) | Replica set obligatorio | Escritura condicional `actualizarSiCoincide`; `UnidadDeTrabajo` | Validadores `$jsonSchema` estrictos aplicados por `mongo-init` | FF-06 (15 pruebas), e2e 8/8 |
-| **ADR-05** Síncrono + eventos locales | `EventBus` en proceso; gateway que solo notifica | *Responsiveness*, seguridad (R04), recuperación (R07) | El orquestador no conoce Socket.IO | Salas `partida:{gameId}` y `usuario:{userId}`; versión en cada mensaje; `GET /api/partidas/actual` | Persistir antes de notificar; cliente que nunca retrocede de versión | `notificaciones-partida.spec.ts`, `turn-orchestrator.service.spec.ts`, Vitest 16/16 |
+| **ADR-05** Síncrono + eventos locales | `EventBus` en proceso; gateway que solo notifica | *Responsiveness*, seguridad (R04), recuperación (R07) | El orquestador no conoce Socket.IO | Salas `partida:{gameId}` y `usuario:{userId}`; versión en cada mensaje; `GET /api/matches/current` | Persistir antes de notificar; cliente que nunca retrocede de versión | `notificaciones-partida.spec.ts`, `turn-orchestrator.service.spec.ts`, Vitest 16/16 |
 
 **Lectura de conjunto.** Las cinco decisiones se refuerzan entre sí:
 
@@ -165,9 +165,9 @@ Siguiendo a Richards & Ford (2025, cap. 6), se distinguen dos tipos de verificac
 | **R02** Inconsistencia del marcador | 6 | Liquidación y desenlace calculados en memoria en el mismo comando; una sola escritura; se eliminó `updateLoserPlayers().then()` | e2e "Apuntado: una sola liquidación atómica"; `casos-borde.spec.ts` (101 exacto, -51 exacto) | ✅ Mitigado |
 | **R01** Falla combinatoria del evaluador | 6 | Evaluador algorítmico con política de escalera | Oráculo 260/299 en `evaluador-manos.spec.ts`; casos borde A y B; **FF-04** (CC ≤ 10) | ✅ Mitigado |
 | **R05** Contrato inestable entre núcleo y plug-ins | 6 | Contrato versionado; el registro valida semver, la forma y una prueba de humo, y no arranca si falla | **FF-02**, `plugins/contrato.spec.ts`, `registro-reglas.spec.ts` | ✅ Mitigado |
-| **R11** Degradación estructural (ciclo de 8 módulos) | 6 | Refactor a capas con registros propios en `database/` | **FF-03** en modo estricto, `linea-base.json` vacío; **FF-01**, **FF-05** | ✅ Mitigado |
+| **R11** Degradación estructural (ciclo de 8 módulos) | 6 | Refactor a capas con registros propios en `database/` | **FF-03** en modo estricto, `baseline.json` vacío; **FF-01**, **FF-05** | ✅ Mitigado |
 | **R06** Plataforma sin WebSockets persistentes | 6 | Despliegue en Render Web Services (contenedor) y Nginx con `Upgrade` y `proxy_read_timeout 3600s` | Job `contenedores` de `ci.yml` (prueba de humo); validación en producción del capítulo 3 | ✅ Mitigado |
-| **R07** Desincronización al refrescar | 4 | `GET /api/partidas/actual`; el cliente nunca retrocede de versión y relee ante un salto o una reconexión | `partida.utils.test.ts` (Vitest: `compararVersion`, `debeRefrescar`) | ✅ Mitigado |
+| **R07** Desincronización al refrescar | 4 | `GET /api/matches/current`; el cliente nunca retrocede de versión y relee ante un salto o una reconexión | `partida.utils.test.ts` (Vitest: `compararVersion`, `debeRefrescar`) | ✅ Mitigado |
 | **R09** Latencia por escritura por comando | 4 | Una lectura y una escritura por comando; transacción solo al iniciar y al terminar | Ninguna: no hay prueba de carga (el ADR-05 pedía k6 con 50 partidas) | ⚠️ Parcial |
 | **R13** Crecimiento del documento (16 MB) | 2 | Mazo ≤ 104 cartas, `comandosRecientes` ≤ 20; el marcador crece una entrada por ronda | **FF-06** (el esquema rechaza manos de más de 11 cartas) | ✅ Bajo control |
 | **R08** Abandono / temporizadores perdidos | 4 | Solo en la sala de espera (`DELETE /api/game/current`, fase 5). Los campos `conectado`, `desconectadoDesde` y `graciaDesconexionSeg` existen, pero **no hay temporizadores**: un jugador que abandona una partida en curso la bloquea | `game.service.leave-cancel.spec.ts` (solo la sala de espera) | ❌ Pendiente |
@@ -339,7 +339,7 @@ escritura condicional por versión ya resuelve la concurrencia.
 - **Fitness function holística nueva.** "p95 de comandos ≤ 300 ms a 14.000 comandos/s", ejecutada
   en un entorno de *staging* antes de cada versión mayor.
 - **Prueba de caos.** Matar un pod de `apuntado-ws` en medio de una partida y comprobar que ningún
-  cliente pierde el estado: se reconecta, relee `GET /api/partidas/actual` y continúa.
+  cliente pierde el estado: se reconecta, relee `GET /api/matches/current` y continúa.
 
 **Lo que no cambia.** El dominio (`comandos-partida.ts`), el contrato, los dos plug-ins, la escritura
 condicional y las vistas filtradas se mantienen intactos en todo el plan. Esa es la prueba final de

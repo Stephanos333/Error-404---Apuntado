@@ -1,7 +1,0 @@
-{
-  "descripcion": "Deuda arquitectónica conocida (E3, 2026-11-20): saldada. Los ciclos FF-03, los imports de framework FF-05 y las violaciones FF-04 se eliminaron en el refactor del MVP. Solo debe reducirse; cualquier entrada nueva requiere un ADR aprobado.",
-  "ciclosEntreArchivos": [],
-  "ciclosEntreModulos": [],
-  "motorConFramework": [],
-  "complejidad": []
-}

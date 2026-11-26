@@ -1,65 +1,65 @@
 /**
- * Constantes para definir las configuraciones relacionadas con los sockets.
+ * Constants with the socket-related configuration.
  */
 export enum GameSocketConstants {
 	/**
-	 * El namespace del socket de los juegos.
+	 * The namespace of the games socket.
 	 */
 	GAME_SOCKET_NAMESPACE = 'game',
 	/**
-	 * El mensaje que válida la conexión de un usuario.
+	 * The message that validates the connection of a user.
 	 */
 	GAME_CONNECTION_EVENT = 'GAME_CONNECTION_EVENT',
 	/**
-	 * El mensaje que indica que un usuario ingresó a un juego.
+	 * The message that signals that a user joined a game.
 	 */
 	JOIN_PLAYER_LISTENER = 'JOIN_PLAYER_LISTENER',
 	/**
-	 * El mensaje que indica que un juego está listo para iniciarse.
+	 * The message that signals that a game is ready to start.
 	 */
 	GAME_READY_TO_START_LISTENER = 'GAME_READY_TO_START_LISTENER',
 	/**
-	 * El mensaje que indica que una partida fue iniciada.
+	 * The message that signals that a match was started.
 	 */
 	MATCH_STARTED_LISTENER = 'MATCH_STARTED_LISTENER',
 	/**
-	 * El mensaje que indica que un turno ha cambiado.
+	 * The message that signals that a turn changed.
 	 */
 	SHIFT_CHANGED_LISTENER = 'SHIFT_CHANGED_LISTENER',
 	/**
-	 * El mensaje que indica que un mazo de cartas fue rellenado.
+	 * The message that signals that a deck of cards was refilled.
 	 */
 	CARD_DECK_FILLED_LISTENER = 'CARD_DECK_FILLED_LISTENER',
 	/**
-	 * El mensaje que indica que una carta fue jalada desde las cartas desechadas.
+	 * The message that signals that a card was taken from the discarded cards.
 	 */
 	CARD_PULLED_FROM_DISCARDED_LISTENER = 'CARD_PULLED_FROM_DISCARDED_LISTENER',
 	/**
-	 * El mensaje que indica que un jugador no pudo ganar.
+	 * The message that signals that a player could not win.
 	 */
 	PLAYER_CANT_WIN_LISTENER = 'PLAYER_CANT_WIN_LISTENER',
 	/**
-	 * El mensaje que indica que una ronda fue cerrada y liquidada.
+	 * The message that signals that a round was closed and settled.
 	 */
 	MATCH_WON_LISTENER = 'MATCH_WON_LISTENER',
 	/**
-	 * El mensaje que indica que un jugador robó una carta del mazo (sin revelar cuál).
+	 * The message that signals that a player drew a card from the deck (without revealing which).
 	 */
 	CARD_PULLED_FROM_DECK_LISTENER = 'CARD_PULLED_FROM_DECK_LISTENER',
 	/**
-	 * El mensaje que indica que un jugador tocó: empieza la ronda extra (modalidad Apuntado).
+	 * The message that signals that a player knocked: the extra round starts (Apuntado mode).
 	 */
 	PLAYER_KNOCKED_LISTENER = 'PLAYER_KNOCKED_LISTENER',
 	/**
-	 * El mensaje que indica que empezó una nueva ronda (modalidad multironda).
+	 * The message that signals that a new round started (multi-round mode).
 	 */
 	ROUND_STARTED_LISTENER = 'ROUND_STARTED_LISTENER',
 	/**
-	 * El mensaje que indica que la partida terminó y se pagó el pozo.
+	 * The message that signals that the match ended and the pot was paid.
 	 */
 	GAME_FINISHED_LISTENER = 'GAME_FINISHED_LISTENER',
 	/**
-	 * El mensaje privado (sala `usuario:{id}`) con la mano del jugador.
+	 * The private message (`user:{id}` room) with the player's hand.
 	 */
 	PRIVATE_HAND_LISTENER = 'PRIVATE_HAND_LISTENER',
 }

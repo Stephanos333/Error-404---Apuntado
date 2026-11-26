@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
-# Backend NestJS (REST + WebSockets) del Sistema Apuntado. Build multi-stage:
-#  1. deps:    instala todas las dependencias (incluye las de compilación).
-#  2. build:   compila TypeScript (src/ y plugins/) y poda las dependencias de desarrollo.
-#  3. runtime: imagen mínima con dist/ y node_modules de producción, como usuario sin privilegios.
+# NestJS backend (REST + WebSockets) of the Apuntado system. Multi-stage build:
+#  1. deps:    installs every dependency (including the build ones).
+#  2. build:   compiles TypeScript (src/ and plugins/) and prunes the development dependencies.
+#  3. runtime: minimal image with dist/ and the production node_modules, as an unprivileged user.
 
 ARG NODE_VERSION=20.18-alpine
 
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
-# mongodb-memory-server (solo pruebas) no debe descargar el binario de MongoDB al instalar.
+# mongodb-memory-server (tests only) must not download the MongoDB binary on install.
 ENV MONGOMS_DISABLE_POSTINSTALL=1
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -28,7 +28,7 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 USER node
 EXPOSE 3000
-# Salud: la documentación OpenAPI solo responde cuando la aplicación terminó de arrancar.
+# Health: the OpenAPI documentation only answers once the application has finished starting.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=40s --retries=6 \
   CMD node -e "fetch('http://127.0.0.1:' + (process.env.APP_PORT || 3000) + '/' + (process.env.APP_DOCS_URI || 'docs')).then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 CMD ["node", "dist/src/main"]

@@ -2,12 +2,12 @@
   "name": "apuntado-architecture-tests",
   "version": "1.0.0",
   "private": true,
-  "description": "Fitness functions arquitectónicas del Sistema Apuntado (Entregable 2)",
+  "description": "Architectural fitness functions of the Apuntado system (Deliverable 2)",
   "scripts": {
     "test": "jest",
-    "test:estricto": "cross-env ARQ_ESTRICTO=1 jest",
-    "linea-base": "ts-node --transpile-only generar-linea-base.ts",
-    "metricas": "ts-node --transpile-only metricas.ts"
+    "test:strict": "cross-env ARCH_STRICT=1 jest",
+    "baseline": "ts-node --transpile-only generate-baseline.ts",
+    "metrics": "ts-node --transpile-only metrics.ts"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.12",

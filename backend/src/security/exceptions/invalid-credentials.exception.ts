@@ -3,8 +3,8 @@ import { ExceptionMessagesConstants } from '../../shared/exceptions/exception-me
 import { HttpStatus } from '@nestjs/common';
 
 /**
- * Excepción que se lanza cuando las credenciales de inicio de sesión de un usuario no
- * son válidas.
+ * Thrown when the login credentials of a user are not
+ * valid.
  * @class
  * @extends {Exception}
  */
@@ -12,7 +12,7 @@ export class InvalidCredentialsException extends Exception {
 
 	/**
 	 * @param {ExceptionMessagesConstants} [message=ExceptionMessagesConstants.INVALID_CREDENTIALS_ERROR]
-	 * Mensaje de error en la excepción.
+	 * Error message of the exception.
 	 */
 	constructor(message: ExceptionMessagesConstants = ExceptionMessagesConstants.INVALID_CREDENTIALS_ERROR) {
 		super(message, HttpStatus.UNAUTHORIZED);

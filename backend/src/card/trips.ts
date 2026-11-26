@@ -1,13 +1,13 @@
 import { Card, CardDTO } from './card';
 
 /**
- * Tipo que representa el objeto de transferencia de una terna.
+ * Transfer object of a three.
  * @type {[CardDTO, CardDTO, CardDTO]}
  */
 export type TripsDTO = [CardDTO, CardDTO, CardDTO];
 
 /**
- * Tipo que representa una terna.
+ * A three.
  * @type {[Card, Card, Card]}
  */
 export type Trips = [Card, Card, Card];
