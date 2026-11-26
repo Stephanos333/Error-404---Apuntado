@@ -61,7 +61,10 @@ export function ShowMatchWinnerPage(): JSX.Element {
                 <p className='winner-lead muted'>
                     {winner && lastRound && lastRound.winnerId === winner.playerId
                         ? `${iWon ? 'Ganaste' : winner.username + ' ganó'} la última ronda: ${CLOSE_NAME[lastRound.closeType]?.[iWon ? 'you' : 'them'] ?? 'cerró'}.`
-                        : `Se jugaron ${match.scoreboard.length} ${match.scoreboard.length === 1 ? 'ronda' : 'rondas'}.`}
+                        : winner && !isApuntado
+                            // Clásica has a single round and no scoreboard: the winner is whoever closed with 4-3-3.
+                            ? `${iWon ? 'Cerraste' : winner.username + ' cerró'} con 4-3-3.`
+                            : `Se jugaron ${match.scoreboard.length} ${match.scoreboard.length === 1 ? 'ronda' : 'rondas'}.`}
                 </p>
 
                 <div className='winner-pot'>
