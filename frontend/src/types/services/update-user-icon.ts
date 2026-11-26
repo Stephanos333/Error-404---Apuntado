@@ -1,12 +1,12 @@
 /**
- * Definición de los datos requeridos para actualizar el icono de un usuario.
+ * Request to change the user's avatar.
  */
 export type UpdateUserIconRequest = {
     icon: string;
 }
 
 /**
- * Definición de la respuesta del servicio que actualiza el icono de un usuario.
+ * Response of the update avatar service.
  */
 export type UpdateUserIconResponse = {
     success: boolean;

@@ -1,5 +1,7 @@
 import {createHashRouter, Navigate} from 'react-router-dom';
-import {DefaultPage} from '../pages/default/default.page.tsx';
+import {LandingPage} from '../pages/landing/landing.page.tsx';
+import {AuthPage} from '../pages/auth/auth.page.tsx';
+import {RulesPage} from '../pages/rules/rules.page.tsx';
 import {LoginGuard} from './login.guard.tsx';
 import {HomePage} from '../pages/home/home.page.tsx';
 import {CardDesignPage} from '../pages/card-design/card-design.page.tsx';
@@ -8,56 +10,20 @@ import {GameGuard} from './game.guard.tsx';
 import {JoinGamePage} from '../pages/join-game/join-game.page.tsx';
 import {GamePage} from '../pages/game/game.page.tsx';
 import {ShowMatchWinnerPage} from '../pages/show-match-winner/show-match-winner.page.tsx';
+import {AppShellComponent} from '../components/app-shell/app-shell.component.tsx';
+import {RoutesConstants} from './routes.constants.ts';
+
+// Re-exported so existing imports keep working.
+export {RoutesConstants};
 
 /**
- * Constantes que definen las rutas de la aplicación.
- * @enum {string}
- * @readonly
- */
-export enum RoutesConstants {
-    /**
-     * Define todas las rutas desconocidas de la aplicación.
-     */
-    ALL_ROUTES = '*',
-    /**
-     * Define la ruta para acceder a los diseños de carta.
-     */
-    CARD_DESIGNS_ROUTE = '/card-designs',
-    /**
-     * Define la ruta por defecto de la aplicación.
-     */
-    DEFAULT_ROUTE = '/',
-    /**
-     * Define la ruta del juego.
-     */
-    GAME = '/game/playing',
-    /**
-     * Define la ruta del juego de la aplicación.
-     */
-    WAITING_GAME_ROUTE = '/game/waiting',
-    /**
-     * Define la ruta del home de la aplicación.
-     */
-    HOME_ROUTE = '/home',
-    /**
-     * Define la ruta que redirecciona e ingresa a un juego.
-     */
-    JOIN_GAME = '/game/join',
-    /**
-     * Define la ruta de la página que muestra el ganador de la partida.
-     */
-    SHOW_MATCH_WINNER = '/game/match-winner',
-}
-
-/**
- * Constante que define las rutas de la aplicación y los
- * componentes que renderiza.
+ * Router definition: each route and the page it renders.
  * @const
  */
 export const AppRouter = createHashRouter([
     {
         path: RoutesConstants.SHOW_MATCH_WINNER,
-        // Al finalizar la partida el usuario deja de estar "jugando": basta con la sesión.
+        // When the match ends the user is no longer "playing": a session is enough.
         element: <LoginGuard element={<ShowMatchWinnerPage/>}/>
     },
     {
@@ -70,19 +36,31 @@ export const AppRouter = createHashRouter([
     },
     {
         path: RoutesConstants.CARD_DESIGNS_ROUTE,
-        element: <LoginGuard element={<CardDesignPage/>}/>
+        element: <LoginGuard element={<AppShellComponent><CardDesignPage/></AppShellComponent>}/>
     },
     {
         path: RoutesConstants.HOME_ROUTE,
-        element: <LoginGuard element={<HomePage/>}/>
+        element: <LoginGuard element={<AppShellComponent><HomePage/></AppShellComponent>}/>
     },
     {
         path: RoutesConstants.JOIN_GAME,
         element: <JoinGamePage/>
     },
     {
+        path: RoutesConstants.LOGIN_ROUTE,
+        element: <AuthPage mode='login'/>
+    },
+    {
+        path: RoutesConstants.REGISTER_ROUTE,
+        element: <AuthPage mode='register'/>
+    },
+    {
+        path: RoutesConstants.RULES_ROUTE,
+        element: <AppShellComponent><RulesPage/></AppShellComponent>
+    },
+    {
         path: RoutesConstants.DEFAULT_ROUTE,
-        element: <DefaultPage/>
+        element: <LandingPage/>
     },
     {
         path: RoutesConstants.ALL_ROUTES,

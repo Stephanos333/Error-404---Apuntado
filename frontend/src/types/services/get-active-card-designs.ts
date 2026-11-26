@@ -1,8 +1,7 @@
 import {CardDesignShopType} from '../card-design.shop.type.ts';
 
 /**
- * Definición de la respuesta del servicio para traer
- * los diseños de cartas activos.
+ * Response of the active card designs service.
  */
 export type GetActiveCardDesigns = {
     success: boolean,

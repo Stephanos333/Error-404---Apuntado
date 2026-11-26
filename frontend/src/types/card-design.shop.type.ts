@@ -1,7 +1,7 @@
 import {CardDesignType} from './card-design.type.ts';
 
 /**
- * Definición de los diseños de carta de la tienda.
+ * Card design as listed in the shop.
  */
 export type CardDesignShopType = CardDesignType & {
     canSelect: boolean;

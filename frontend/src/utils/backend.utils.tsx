@@ -4,19 +4,16 @@ import {LocaleStorageUtils} from '../store/locale-storage.utils.ts';
 import {LocaleStorageConstants} from '../store/locale-storage.constants.ts';
 import {ErrorResponseType} from '../types/error.response.type.ts';
 import {RefreshTokenRequest, RefreshTokenResponse} from '../types/services/refresh-token.ts';
-import {RoutesConstants} from '../config/app.router.tsx';
+import {RoutesConstants} from '../config/routes.constants.ts';
 
 /**
- * Clase con un conjunto de operaciones que permiten utilizar
- * axios para acceder a los recursos de la aplicación.
- * @class
+ * Axios wrapper for the backend API: adds the access token, refreshes it once on a 401
+ * and maps errors to the alert codes.
  */
 export class BackendUtils {
 
     /**
-     * @param {(message: string) => (void)} callBackErrors Callback para mapear los
-     * errores de los servicios.
-     * @constructor
+     * @param {(message: string) => (void)} callBackErrors Receives the error code of a failed call.
      */
     constructor(
         private readonly callBackErrors?: (message: string) => (void),
@@ -24,13 +21,13 @@ export class BackendUtils {
     }
 
     /**
-     * Método patch que permite acceder al backend.
-     * @template Res El tipo de la respuesta del servicio.
-     * @template Req El tipo del request del servicio.
+     * PATCH request.
+     * @template Res Response type.
+     * @template Req Request type.
      * @param {BackendConfigConstants} url
-     * @param {Req} body Los parámetros que requiere el servicio.
-     * @param {number} [attempts=0] Define la cantidad de intentos del servicio.
-     * @returns {Promise<Res | undefined>} La respuesta del servicio.
+     * @param {Req} body Request body.
+     * @param {number} [attempts=0] Attempts so far.
+     * @returns {Promise<Res | undefined>} The response, or `undefined` on error.
      */
     public async patch<Res, Req>(
         url: BackendConstants,
@@ -53,13 +50,13 @@ export class BackendUtils {
     }
 
     /**
-     * Método post que permite acceder al backend.
-     * @template Res El tipo de la respuesta del servicio.
-     * @template Req El tipo del request del servicio.
+     * POST request.
+     * @template Res Response type.
+     * @template Req Request type.
      * @param {BackendConfigConstants} url
-     * @param {Req} body Los parámetros que requiere el servicio.
-     * @param {number} [attempts=0] Define la cantidad de intentos del servicio.
-     * @returns {Promise<Res | undefined>} La respuesta del servicio.
+     * @param {Req} body Request body.
+     * @param {number} [attempts=0] Attempts so far.
+     * @returns {Promise<Res | undefined>} The response, or `undefined` on error.
      */
     public async post<Res, Req>(
         url: BackendConstants,
@@ -82,13 +79,13 @@ export class BackendUtils {
     }
 
     /**
-     * Método get que permite acceder al backend.
-     * @template Res El tipo de la respuesta del servicio.
-     * @template Req El tipo del request del servicio.
+     * GET request.
+     * @template Res Response type.
+     * @template Req Request type.
      * @param {BackendConfigConstants} url
-     * @param {Req} query Los parámetros que requiere el servicio.
-     * @param {number} [attempts=0] Define la cantidad de intentos del servicio.
-     * @returns {Promise<Res | undefined>} La respuesta del servicio.
+     * @param {Req} query Query parameters.
+     * @param {number} [attempts=0] Attempts so far.
+     * @returns {Promise<Res | undefined>} The response, or `undefined` on error.
      */
     public async get<Res, Req>(
         url: BackendConstants,
@@ -113,11 +110,11 @@ export class BackendUtils {
     }
 
     /**
-     * Método delete que permite acceder al backend.
-     * @template Res El tipo de la respuesta del servicio.
+     * DELETE request.
+     * @template Res Response type.
      * @param {BackendConstants} url
-     * @param {number} [attempts=0] Define la cantidad de intentos del servicio.
-     * @returns {Promise<Res | undefined>} La respuesta del servicio.
+     * @param {number} [attempts=0] Attempts so far.
+     * @returns {Promise<Res | undefined>} The response, or `undefined` on error.
      */
     public async delete<Res>(
         url: BackendConstants,
@@ -139,19 +136,20 @@ export class BackendUtils {
     }
 
     /**
-     * Método que permite mapear procesar los errores de los servicios.
-     * @param {BackendConfigType} serviceConfig La configuración del servicio.
-     * @param {ErrorResponseType} e El error del servicio.
+     * Handles a failed call: an expired session sends the user to log in; any other error
+     * goes to the callback.
+     * @param {BackendConfigType} serviceConfig The service configuration.
+     * @param {ErrorResponseType} e The error.
      * @private
      */
     private processError(serviceConfig: BackendConfigType, e: ErrorResponseType): void {
         if (serviceConfig.requireAccessToken && BackendUtils.extractCode(e) === 401) {
             LocaleStorageUtils.del(LocaleStorageConstants.KEY_ACCESS_TOKEN);
             LocaleStorageUtils.del(LocaleStorageConstants.KEY_REFRESH_TOKEN);
-            window.location.href = RoutesConstants.DEFAULT_ROUTE;
+            window.location.href = `/#${RoutesConstants.LOGIN_ROUTE}`;
         } else {
             const message: string = BackendUtils.extractMessage(e);
-            // El error se muestra al usuario por el callback; sin callback se registra para no perderlo.
+            // The callback shows the error to the user; without one it is logged so it is not lost.
             if (this.callBackErrors) this.callBackErrors(message);
             else console.error(`[BackendUtils] ${message}`);
         }
@@ -159,7 +157,7 @@ export class BackendUtils {
     }
 
     /**
-     * Método que permite refrescar el token de acceso del usuario.
+     * Refreshes the access token with the stored refresh token.
      * @private
      * @async
      */
@@ -168,7 +166,7 @@ export class BackendUtils {
         if (refreshToken) {
             const body: RefreshTokenRequest = {refreshToken};
             return this.post<RefreshTokenResponse, RefreshTokenRequest>(BackendConstants.REFRESH_ACCESS_TOKEN_URL, body)
-                // `post` ya procesa los errores (processError) y resuelve `undefined` si el refresco falla.
+                // `post` already handles errors (processError) and resolves `undefined` if the refresh fails.
                 .then((res) => {
                     if (res) {
                         LocaleStorageUtils.set<LocaleStorageConstants.KEY_ACCESS_TOKEN>(
@@ -180,11 +178,11 @@ export class BackendUtils {
     }
 
     /**
-     * Método que determina si un servicio debe reintentar el consumo.
-     * @param {BackendConfigType} c La configuración del servicio.
-     * @param {ErrorResponseType} e El error del servicio.
-     * @param {number} attempts Los reintentos totales.
-     * @returns {boolean} "true" si se debe reintentar, "false" si no.
+     * Whether a call must be retried (a 401 on the first attempt of a retryable service).
+     * @param {BackendConfigType} c The service configuration.
+     * @param {ErrorResponseType} e The error.
+     * @param {number} attempts Attempts so far.
+     * @returns {boolean} `true` to retry.
      * @static
      * @private
      */
@@ -193,9 +191,9 @@ export class BackendUtils {
     }
 
     /**
-     * Método que permite extraer el código de error de un servicio.
-     * @param {ErrorResponseType} e El error del servicio.
-     * @return {number} El código de error extraído.
+     * Extracts the HTTP status code of an error.
+     * @param {ErrorResponseType} e The error.
+     * @return {number} The status code (500 when unknown).
      * @private
      */
     private static extractCode(e: ErrorResponseType): number {
@@ -203,9 +201,9 @@ export class BackendUtils {
     }
 
     /**
-     * Método que permite extraer el código de error de un servicio.
-     * @param {ErrorResponseType} e El error del servicio.
-     * @returns {string} El mensaje de error extraído.
+     * Extracts the error code sent by the backend.
+     * @param {ErrorResponseType} e The error.
+     * @returns {string} The error code (`UNKNOWN_ERROR` when missing).
      * @private
      */
     private static extractMessage(e: ErrorResponseType): string {
@@ -213,10 +211,9 @@ export class BackendUtils {
     }
 
     /**
-     * Método que permite mapea la configuración de los servicios del backend
-     * al formato de Axios.
-     * @param {BackendConfigType} backendConfig La configuración que requerida por el servicio.
-     * @returns {AxiosRequestConfig} La configuración de axios.
+     * Builds the Axios config for a service (base URL and token).
+     * @param {BackendConfigType} backendConfig The service configuration.
+     * @returns {AxiosRequestConfig} The Axios config.
      * @private
      * @static
      */

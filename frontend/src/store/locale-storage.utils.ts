@@ -5,25 +5,21 @@ import {
     LocaleStorageDataOf
 } from './locale-storage.constants.ts';
 
-/**
- * Clase en dónde se definen los métodos para interactuar con el locale storage.
- * @class
- * @abstract
- */
+/** Typed helpers over `localStorage`. */
 export abstract class LocaleStorageUtils {
 
     /**
-     * Método que permite eliminar una clave del locale storage.
-     * @param {LocaleStorageConstants} key La clave que se desea borrar.
+     * Removes a key.
+     * @param {LocaleStorageConstants} key The key to remove.
      */
     static del(key: LocaleStorageConstants): void {
         localStorage.removeItem(key);
     }
 
     /**
-     * Método que permite acceder a las claves del locale storage.
-     * @param {LocaleStorageConstants} key La clave a la que se quiere acceder.
-     * @template T La clave del locale storage.
+     * Reads a key.
+     * @param {LocaleStorageConstants} key The key to read.
+     * @template T The storage key.
      * @returns {LocaleStorageDataOf<T> | null}
      */
     static get<T extends LocaleStorageConstants>(key: LocaleStorageConstants): LocaleStorageDataOf<T> | null {
@@ -35,10 +31,10 @@ export abstract class LocaleStorageUtils {
     }
 
     /**
-     * Método que permite guardar una clave en el locale storage.
-     * @template T El tipo de clave que se está guardando.
-     * @param {LocaleStorageConstants} key La clave que se está guardando.
-     * @param {LocaleStorageDataOf<T>} data Los datos asociados a la clave.
+     * Stores a key.
+     * @template T The storage key.
+     * @param {LocaleStorageConstants} key The key to store.
+     * @param {LocaleStorageDataOf<T>} data The value.
      */
     static set<T extends LocaleStorageConstants>(key: LocaleStorageConstants, data: LocaleStorageDataOf<T>): void {
         const toSave: string = typeof data === 'string' ? data : JSON.stringify(data);

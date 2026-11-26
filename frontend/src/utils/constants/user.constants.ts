@@ -1,14 +1,10 @@
 /**
- * @enum {string} Constantes que representan los estados de un usuario.
+ * @enum {string} User statuses.
  * @readonly
  */
 export enum UserStatusConstants {
-    /**
-     * El estado representa cuando un usuario está activo.
-     */
+    /** Free to create or join a table. */
     ACTIVE = 'ACTIVE',
-    /**
-     * El estado representa cuando un usuario está jugando.
-     */
+    /** Seated at a table (waiting or playing). */
     PLAYING = 'PLAYING',
 }

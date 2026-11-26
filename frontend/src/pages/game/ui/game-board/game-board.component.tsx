@@ -1,298 +1,419 @@
 import './game-board.component.css';
-import {JSX, useEffect, useRef, useState} from 'react';
-import {Button} from '@mui/material';
-import {CardComponent} from '../../../../components/card/card.component.tsx';
+import {CSSProperties, JSX, useEffect, useMemo, useRef, useState} from 'react';
+import {Button, Dialog, DialogActions, DialogContent, IconButton, ThemeProvider, Tooltip} from '@mui/material';
+import {CloseRounded} from '@mui/icons-material';
+import {CardBackComponent, CardComponent} from '../../../../components/card/card.component.tsx';
 import {LocalLoadingComponent} from '../../../../components/loading/local/local-loading.component.tsx';
-import {GlobalLoadingComponent} from '../../../../components/loading/global/global-loading.component.tsx';
+import {SegmentedComponent} from '../../../../components/segmented/segmented.component.tsx';
 import {AlertTypeConstants} from '../../../../utils/constants/alert.constants.ts';
-import {CartaPartida, VistaPrivadaPartida, VistaPublicaPartida} from '../../../../types/partida.type.ts';
-import {IntencionRobar} from '../../../../types/services/partida.ts';
-import {PartidaClient, ResultadoComando} from '../../../../utils/partida/partida.client.ts';
-import {claveCarta, formaDelCierre, imagenDe, puntos, reconciliarGrupos, sobrantesDe} from '../../../../utils/partida/partida.utils.ts';
-import CardDeckImage from '../../../../../public/assets/images/game/card-deck.jpg';
-import DiscardedCardsImage from '../../../../../public/assets/images/game/discarded-cards.jpg';
-import EmptyDiscardedCardsImage from '../../../../../public/assets/images/game/empty-discarded-cards.jpg';
+import {PaperTheme} from '../../../../config/app.theme.tsx';
+import {MatchCard, PrivateHandView, PublicMatchView} from '../../../../types/match.type.ts';
+import {DrawIntent} from '../../../../types/services/match.ts';
+import {CommandResult, MatchClient} from '../../../../utils/match/match.client.ts';
+import {cardImage, cardKey, closeShape, HandSort, leftoversOf, meldKind, points, reconcileGroups, sortCards} from '../../../../utils/match/match.utils.ts';
 
-/** Máximo de grupos que acepta el backend en la organización de la mano. */
-const MAXIMO_GRUPOS = 4;
-/** Tamaño máximo de un grupo (una cuarta). */
-const MAXIMO_CARTAS_GRUPO = 4;
+/** Maximum groups the backend accepts in the hand organization. */
+const MAX_GROUPS = 4;
+/** Maximum size of a group (a four of a kind / cuarta). */
+const MAX_GROUP_CARDS = 4;
+/** Points under which the leftover card allows knocking (tocar). */
+const KNOCK_THRESHOLD = 5;
+/** How long a freshly drawn card stays highlighted. */
+const NEW_CARD_MS = 2200;
+
+type SortMode = 'ARRIVAL' | HandSort;
 
 /**
- * Tablero de la partida: mazo, pozo de descarte, la mano organizada en grupos y las
- * acciones del turno (robar, descartar y cerrar según la modalidad).
+ * Label of a group: meld name when it is one, or what is missing.
+ * @param {MatchCard[]} group The group.
+ */
+function groupLabel(group: MatchCard[]): { text: string; valid: boolean } {
+    const kind = meldKind(group);
+    if (kind === 'RUN') return {text: group.length === 4 ? 'Escalera de 4' : 'Escalera', valid: true};
+    if (kind === 'SET') return {text: group.length === 4 ? 'Cuarta' : 'Terna', valid: true};
+    if (group.length < 3) return {text: `${group.length} de 3 cartas`, valid: false};
+    return {text: 'No combina', valid: false};
+}
+
+/**
+ * Game board: draw pile, discard pile, the hand organized in groups and the turn actions
+ * (draw, discard and close according to the mode).
  *
- * La organización de la mano es local hasta que se envía con `descartar` o `cerrar`.
- * Las reglas las decide el servidor: aquí solo se valida la forma para dar mensajes claros.
- * @param props Los parámetros del tablero.
- * @param props.partida La vista pública de la partida.
- * @param props.mano La mano del usuario (`null` si fue eliminado).
- * @param props.miId El id del usuario autenticado.
- * @param props.diseno El diseño de cartas del usuario.
- * @param props.cliente El cliente de comandos de la partida.
- * @param props.aplicarResultado Aplica al estado la respuesta de un comando.
- * @param props.mostrarAlerta Muestra un mensaje al usuario.
- * @constructor
+ * The hand organization is local until it is sent with `discard` or `close`. The rules are
+ * decided by the server: here the shape and melds are only checked to give clear feedback.
+ * @param props.match The public match view.
+ * @param props.hand The user's hand (`null` when eliminated).
+ * @param props.myId The authenticated user's id.
+ * @param props.design The user's card design.
+ * @param props.client The match command client.
+ * @param props.applyResult Applies a command response to the state.
+ * @param props.showAlert Shows a message to the user.
  */
 export function GameBoardComponent(props: {
-    partida: VistaPublicaPartida | undefined,
-    mano: VistaPrivadaPartida | null | undefined,
-    miId: string | null,
-    diseno: string,
-    cliente: PartidaClient,
-    aplicarResultado: (resultado: ResultadoComando) => void,
-    mostrarAlerta: (tipo: AlertTypeConstants, codigo: string) => void,
+    match: PublicMatchView | undefined,
+    hand: PrivateHandView | null | undefined,
+    myId: string | null,
+    design: string,
+    client: MatchClient,
+    applyResult: (result: CommandResult) => void,
+    showAlert: (type: AlertTypeConstants, code: string) => void,
 }): JSX.Element {
-    const {partida, mano, mostrarAlerta} = props;
+    const {match, hand, showAlert} = props;
+
+    /** Local organization of the hand and the selected cards (by key). */
+    const [groups, setGroups] = useState<MatchCard[][] | null>(null);
+    const [selection, setSelection] = useState<string[]>([]);
+    const [sending, setSending] = useState<boolean>(false);
+    const [sortMode, setSortMode] = useState<SortMode>('ARRIVAL');
+    const [newCards, setNewCards] = useState<Set<string>>(new Set());
+    const [confirmClose, setConfirmClose] = useState<boolean>(false);
+    const groupsRound = useRef<number | undefined>();
+    const previousHand = useRef<Set<string> | null>(null);
+    const roundNumber: number | undefined = match?.ronda?.numero;
 
     /**
-     * Organización local de la mano y cartas seleccionadas (por su clave).
-     */
-    const [grupos, setGrupos] = useState<CartaPartida[][] | null>(null);
-    const [seleccion, setSeleccion] = useState<string[]>([]);
-    const [enviando, setEnviando] = useState<boolean>(false);
-    const rondaDeLosGrupos = useRef<number | undefined>();
-    const numeroRonda: number | undefined = partida?.ronda?.numero;
-
-    /**
-     * Al llegar una mano nueva se conserva la organización local (sin las cartas que ya no
-     * están). En una ronda nueva se toma la organización del servidor.
+     * When a new hand arrives the local organization is kept (minus the cards that left).
+     * On a new round the server's organization is used.
      */
     useEffect(() => {
-        if (!mano) {
-            setGrupos(null);
-            setSeleccion([]);
+        if (!hand) {
+            setGroups(null);
+            setSelection([]);
+            previousHand.current = null;
             return;
         }
-        const mismaRonda = rondaDeLosGrupos.current === numeroRonda;
-        rondaDeLosGrupos.current = numeroRonda;
-        setGrupos((previos) => reconciliarGrupos(mismaRonda ? previos : null, mano.cartas, mano.grupos));
-        const enMano = new Set(mano.cartas.map(claveCarta));
-        setSeleccion((previa) => previa.filter((k) => enMano.has(k)));
-    }, [mano, numeroRonda]);
+        const sameRound = groupsRound.current === roundNumber;
+        groupsRound.current = roundNumber;
+        setGroups((previous) => reconcileGroups(sameRound ? previous : null, hand.cartas, hand.grupos));
+        const inHand = new Set(hand.cartas.map(cardKey));
+        setSelection((previous) => previous.filter((k) => inHand.has(k)));
 
-    const ronda = partida?.ronda ?? null;
-    const cartas: CartaPartida[] = mano?.cartas ?? [];
-    const gruposActuales: CartaPartida[][] = grupos ?? [];
-    const sueltas: CartaPartida[] = sobrantesDe(cartas, gruposActuales);
-    const seleccionadas: CartaPartida[] = sueltas.filter((c) => seleccion.includes(claveCarta(c)));
-    const rondaJugable = partida?.estado === 'EN_JUEGO' && (ronda?.estado === 'EN_TURNOS' || ronda?.estado === 'RONDA_EXTRA');
-    const miTurno = !!mano && rondaJugable && ronda?.turno.jugadorId === props.miId;
-    const puedeRobar = miTurno && ronda?.turno.fase === 'ESPERANDO_ROBO';
-    const conOnceCartas = miTurno && ronda?.turno.fase === 'CON_11_CARTAS';
-    const esApuntado = partida?.modalidad === 'apuntado';
-    const nombreDe = (jugadorId: string): string =>
-        partida?.jugadores.find((j) => j.jugadorId === jugadorId)?.nombreUsuario ?? 'otro jugador';
+        // Highlights the card that just arrived (a draw), not a whole new deal.
+        const before = previousHand.current;
+        previousHand.current = inHand;
+        const arrived = before && sameRound ? [...inHand].filter((k) => !before.has(k)) : [];
+        if (arrived.length > 0 && arrived.length <= 2) setNewCards(new Set(arrived));
+    }, [hand, roundNumber]);
+
+    useEffect(() => {
+        if (newCards.size === 0) return undefined;
+        const timer = setTimeout(() => setNewCards(new Set()), NEW_CARD_MS);
+        return () => clearTimeout(timer);
+    }, [newCards]);
+
+    const round = match?.ronda ?? null;
+    const cards: MatchCard[] = hand?.cartas ?? [];
+    const currentGroups: MatchCard[][] = groups ?? [];
+    const loose: MatchCard[] = leftoversOf(cards, currentGroups);
+    const shownLoose: MatchCard[] = sortMode === 'ARRIVAL' ? loose : sortCards(loose, sortMode);
+    const selected: MatchCard[] = loose.filter((c) => selection.includes(cardKey(c)));
+    const playable: boolean = match?.estado === 'EN_JUEGO' && (round?.estado === 'EN_TURNOS' || round?.estado === 'RONDA_EXTRA');
+    const myTurn: boolean = !!hand && playable && round?.turno.jugadorId === props.myId;
+    const canDraw: boolean = myTurn && round?.turno.fase === 'ESPERANDO_ROBO';
+    const withEleven: boolean = myTurn && round?.turno.fase === 'CON_11_CARTAS';
+    const isApuntado: boolean = match?.modalidad === 'apuntado';
+    const nameOf = (playerId: string): string =>
+        match?.jugadores.find((j) => j.jugadorId === playerId)?.nombreUsuario ?? 'otro jugador';
+
+    /** Live preview of a close with the selected card as the discard. */
+    const closePreview = useMemo(() => {
+        const discard: MatchCard | null = selected.length === 1 ? selected[0] : null;
+        if (!discard) return {shape: null, ready: false, discard: null, leftovers: [] as MatchCard[]};
+        const leftovers = leftoversOf(cards, currentGroups, discard);
+        const shape = closeShape(currentGroups, leftovers);
+        const allowed = !!shape && (isApuntado || shape === 'GANAR_4_3_3');
+        const melds = currentGroups.every((g) => meldKind(g) !== null);
+        const knockOk = shape !== 'TOCAR' || points(leftovers) < KNOCK_THRESHOLD;
+        return {shape: allowed ? shape : null, ready: allowed && melds && knockOk, discard, leftovers};
+    }, [selected, cards, currentGroups, isApuntado]);
+
+    /** Sends a command, applies the resulting state and shows the controlled error, if any. */
+    const execute = async (command: () => Promise<CommandResult>): Promise<boolean> => {
+        setSending(true);
+        const result = await command();
+        props.applyResult(result);
+        if (!result.ok) showAlert(AlertTypeConstants.ERROR_ALERT, result.code);
+        setSending(false);
+        return result.ok;
+    };
+
+    const draw = async (source: DrawIntent['source']): Promise<void> => {
+        if (!canDraw || sending) return;
+        if (source === 'DISCARD_PILE' && !round?.topeDescarte) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, 'POZO_DESCARTE_VACIO');
+            return;
+        }
+        await execute(() => props.client.draw({source}));
+    };
+
+    const toggleSelection = (card: MatchCard): void => {
+        const key = cardKey(card);
+        setSelection((previous) => previous.includes(key) ? previous.filter((k) => k !== key) : [...previous, key]);
+    };
+
+    const formGroup = (): void => {
+        if (selected.length < 1 || selected.length > MAX_GROUP_CARDS) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, 'SELECT_GROUP_CARDS_MESSAGE');
+            return;
+        }
+        if (currentGroups.length >= MAX_GROUPS) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, 'MAX_GROUPS_MESSAGE');
+            return;
+        }
+        setGroups([...currentGroups, selected]);
+        setSelection([]);
+    };
+
+    const dissolveGroup = (index: number): void => {
+        setGroups(currentGroups.filter((_, i) => i !== index));
+    };
+
+    /** Moves one card from a group back to the loose cards. */
+    const takeFromGroup = (index: number, card: MatchCard): void => {
+        setGroups(currentGroups.map((g, i) => i === index ? g.filter((c) => cardKey(c) !== cardKey(card)) : g).filter((g) => g.length > 0));
+    };
+
+    const discard = async (): Promise<void> => {
+        if (!withEleven || sending) return;
+        if (selected.length !== 1) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, 'SELECT_ONE_CARD_MESSAGE');
+            return;
+        }
+        const ok = await execute(() => props.client.discard({card: selected[0], groups: currentGroups}));
+        if (ok) setSelection([]);
+    };
 
     /**
-     * Envía un comando, aplica el estado resultante y muestra el error controlado, si lo hay.
+     * Close: the selected card is the discard; the other loose cards are the leftovers.
+     * The shape (4-3-3 or knock) comes from the groups; validity is decided by the server.
+     * @param {boolean} confirmed Whether the player confirmed a close that looks invalid.
      */
-    const ejecutar = async (comando: () => Promise<ResultadoComando>): Promise<boolean> => {
-        setEnviando(true);
-        const resultado = await comando();
-        props.aplicarResultado(resultado);
-        if (!resultado.ok) mostrarAlerta(AlertTypeConstants.ERROR_ALERT, resultado.codigo);
-        setEnviando(false);
-        return resultado.ok;
-    };
-
-    const robar = async (fuente: IntencionRobar['fuente']): Promise<void> => {
-        if (!puedeRobar || enviando) return;
-        if (fuente === 'POZO_DESCARTE' && !ronda?.topeDescarte) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'POZO_DESCARTE_VACIO');
+    const close = async (confirmed: boolean = false): Promise<void> => {
+        if (!withEleven || sending) return;
+        const shapeMessage = isApuntado ? 'SHAPE_APUNTADO_MESSAGE' : 'SHAPE_4_3_3_MESSAGE';
+        const {shape, discard: discardCard, leftovers, ready} = closePreview;
+        if (!discardCard || !shape) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, shapeMessage);
             return;
         }
-        await ejecutar(() => props.cliente.robar({fuente}));
-    };
-
-    const alternarSeleccion = (carta: CartaPartida): void => {
-        const clave = claveCarta(carta);
-        setSeleccion((previa) => previa.includes(clave) ? previa.filter((k) => k !== clave) : [...previa, clave]);
-    };
-
-    const formarGrupo = (): void => {
-        if (seleccionadas.length < 1 || seleccionadas.length > MAXIMO_CARTAS_GRUPO) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'SELECCIONA_CARTAS_GRUPO_MESSAGE');
+        if (!ready && !confirmed) {
+            setConfirmClose(true);
             return;
         }
-        if (gruposActuales.length >= MAXIMO_GRUPOS) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'MAXIMO_GRUPOS_MESSAGE');
-            return;
-        }
-        setGrupos([...gruposActuales, seleccionadas]);
-        setSeleccion([]);
-    };
-
-    const soltarGrupo = (indice: number): void => {
-        setGrupos(gruposActuales.filter((_, i) => i !== indice));
-    };
-
-    const descartar = async (): Promise<void> => {
-        if (!conOnceCartas || enviando) return;
-        if (seleccionadas.length !== 1) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, 'SELECCIONA_UNA_CARTA_MESSAGE');
-            return;
-        }
-        const ok = await ejecutar(() => props.cliente.descartar({carta: seleccionadas[0], grupos: gruposActuales}));
-        if (ok) setSeleccion([]);
-    };
-
-    /**
-     * Cierre: la carta seleccionada es el descarte; las demás sueltas son las sobrantes.
-     * La forma (4-3-3 o tocar) se deduce de los grupos; la validez la decide el servidor.
-     */
-    const cerrar = async (): Promise<void> => {
-        if (!conOnceCartas || enviando) return;
-        const mensajeForma = esApuntado ? 'FORMA_APUNTADO_MESSAGE' : 'FORMA_4_3_3_MESSAGE';
-        if (seleccionadas.length !== 1) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, mensajeForma);
-            return;
-        }
-        const descarte = seleccionadas[0];
-        const cartasSobrantes = sobrantesDe(cartas, gruposActuales, descarte);
-        const tipoCierre = formaDelCierre(gruposActuales, cartasSobrantes);
-        if (!tipoCierre || (!esApuntado && tipoCierre !== 'GANAR_4_3_3')) {
-            mostrarAlerta(AlertTypeConstants.WARNING_ALERT, mensajeForma);
-            return;
-        }
-        const ok = await ejecutar(() => props.cliente.cerrar({
-            tipoCierre,
-            declaracion: {grupos: gruposActuales, descarte, cartasSobrantes},
+        setConfirmClose(false);
+        const ok = await execute(() => props.client.close({
+            closeType: shape,
+            declaration: {groups: currentGroups, discard: discardCard, leftovers},
         }));
-        if (ok) setSeleccion([]);
+        if (ok) setSelection([]);
     };
 
-    /**
-     * Texto de estado del turno.
-     */
-    const estadoTurno = (): string => {
-        if (!partida || !ronda) return 'Esperando el estado de la partida...';
-        if (!mano) return 'Fuiste eliminado: observas la partida.';
-        if (!rondaJugable) return 'Liquidando la ronda...';
-        if (!miTurno) return `Turno de ${nombreDe(ronda.turno.jugadorId)}.`;
-        if (puedeRobar) return 'Tu turno: roba del mazo o del pozo de descarte.';
-        return 'Tu turno: organiza tus grupos y descarta una carta o cierra.';
+    /** Turn status text. */
+    const status = (): { title: string; detail?: string } => {
+        if (!match || !round) return {title: 'Esperando el estado de la partida…'};
+        if (!hand) return {title: 'Quedaste eliminado', detail: 'Puedes seguir mirando la partida.'};
+        if (!playable) return {title: 'Contando los puntos de la ronda…'};
+        if (!myTurn) return {title: `Turno de ${nameOf(round.turno.jugadorId)}`, detail: 'Mientras tanto, organiza tus grupos.'};
+        if (canDraw) return {title: 'Tu turno', detail: 'Roba una carta del mazo o la de arriba del descarte.'};
+        return {title: 'Tu turno', detail: 'Organiza tus grupos y descarta una carta, o cierra si tu mano está lista.'};
     };
 
-    const rondaExtra = ronda?.rondaExtra;
-    const tope = ronda?.topeDescarte ?? null;
+    const extraRound = round?.rondaExtra;
+    const top: MatchCard | null = round?.topeDescarte ?? null;
+    const {title, detail} = status();
+    const closeLabel: string = closePreview.shape === 'TOCAR' ? 'Tocar' : closePreview.shape === 'GANAR_4_3_3' || !isApuntado ? 'Cerrar 4-3-3' : 'Cerrar o tocar';
+    const looseCount: number = loose.length;
 
-    /** Pinta una carta de la mano. */
-    const carta = (c: CartaPartida, seleccionable: boolean): JSX.Element => {
-        const {suit, type} = imagenDe(c);
-        const seleccionada = seleccion.includes(claveCarta(c));
+    /** Draws a card of the hand. */
+    const renderCard = (c: MatchCard, onClick: (() => void) | undefined, extraClass: string = '', title?: string): JSX.Element => {
+        const {suit, type} = cardImage(c);
+        const key = cardKey(c);
         return (
             <CardComponent
-                key={claveCarta(c)}
-                designName={props.diseno}
+                key={key}
+                designName={props.design}
                 suit={suit}
                 type={type}
-                onClick={seleccionable ? () => alternarSeleccion(c) : undefined}
-                positionClassName={`game-board-card ${seleccionada ? 'game-board-card-selected' : ''}`}
+                selected={selection.includes(key)}
+                onClick={onClick}
+                title={title}
+                positionClassName={`${extraClass} ${newCards.has(key) ? 'is-new' : ''}`}
             />
         );
     };
 
     return (
         <>
-            <div id='game-board-component-container' className='component-container'>
-                <div id='game-board-maze-container'>
-                    <div id='game-board-card-deck-container'>
-                        <img
-                            onClick={() => robar('MAZO')}
-                            className={`game-board-maze-container-item ${puedeRobar ? 'game-element-available' : ''}`}
-                            id='game-board-card-deck'
-                            alt='Mazo'
-                            src={CardDeckImage}
-                        />
-                        <p>Mazo: {ronda?.cartasEnMazo ?? 0} cartas</p>
-                    </div>
-                    <div id='game-board-discarded-cards-container'>
-                        <img
-                            onClick={() => robar('POZO_DESCARTE')}
-                            className={`game-board-maze-container-item ${puedeRobar && tope ? 'game-element-available' : ''}`}
-                            id='game-board-discarded-cards-image'
-                            alt='Pozo de descarte'
-                            src={tope ? DiscardedCardsImage : EmptyDiscardedCardsImage}
-                        />
+            <section className='board-center' aria-label='Mesa'>
+                <div className='board-piles'>
+                    <button
+                        type='button'
+                        className={`board-pile board-deck ${canDraw ? 'is-available' : ''}`}
+                        onClick={() => draw('DECK')}
+                        disabled={!canDraw || sending}
+                        aria-label={`Robar del mazo, quedan ${round?.cartasEnMazo ?? 0} cartas`}
+                    >
+                        <span className='board-deck-stack' aria-hidden='true'>
+                            <CardBackComponent/>
+                            <CardBackComponent/>
+                            <CardBackComponent/>
+                        </span>
+                        <span className='board-pile-label'>Mazo <span className='num'>{round?.cartasEnMazo ?? 0}</span></span>
+                    </button>
+
+                    <div className='board-status' role='status' aria-live='polite'>
+                        <span className={`board-status-title ${myTurn ? 'is-mine' : ''}`}>{title}</span>
+                        {detail ? <span className='board-status-detail'>{detail}</span> : <></>}
                         {
-                            tope
-                                ? <CardComponent
-                                    onClick={() => robar('POZO_DESCARTE')}
-                                    designName={props.diseno}
-                                    suit={imagenDe(tope).suit}
-                                    type={imagenDe(tope).type}
-                                    positionClassName='discarded-cards-card'
-                                />
+                            myTurn
+                                ? <ol className='board-steps' aria-label='Pasos del turno'>
+                                    <li className={canDraw ? 'is-current' : 'is-done'}>Roba</li>
+                                    <li className={withEleven ? 'is-current' : ''}>Descarta o cierra</li>
+                                </ol>
+                                : <></>
+                        }
+                        {
+                            extraRound
+                                ? <span className='board-extra'>
+                                    Ronda extra: {nameOf(extraRound.tocadorId)} tocó.
+                                    {extraRound.pendientes.length > 0 ? ` Falta${extraRound.pendientes.length === 1 ? '' : 'n'}: ${extraRound.pendientes.map(nameOf).join(', ')}.` : ''}
+                                </span>
                                 : <></>
                         }
                     </div>
+
+                    <button
+                        type='button'
+                        className={`board-pile board-discard ${canDraw && top ? 'is-available' : ''}`}
+                        onClick={() => draw('DISCARD_PILE')}
+                        disabled={!canDraw || sending || !top}
+                        aria-label={top ? 'Robar la carta de arriba del descarte' : 'El descarte está vacío'}
+                    >
+                        {
+                            top
+                                ? <CardComponent designName={props.design} suit={cardImage(top).suit} type={cardImage(top).type} positionClassName='board-discard-top'/>
+                                : <span className='board-discard-empty' aria-hidden='true'>Vacío</span>
+                        }
+                        <span className='board-pile-label'>Descarte <span className='num'>{round?.cartasEnDescarte ?? 0}</span></span>
+                    </button>
                 </div>
-                <div id='game-board-cards-container'>
-                    <div id='game-board-status'>
-                        <h3>{estadoTurno()}</h3>
-                        {
-                            partida && ronda
-                                ? <p>
-                                    {esApuntado ? 'Apuntado' : 'Clásica'} · Ronda {ronda.numero} · Pozo: {partida.pozo.total} tokens
-                                </p>
-                                : <></>
-                        }
-                        {
-                            rondaExtra
-                                ? <p className='game-board-status-extra'>
-                                    Ronda extra: {nombreDe(rondaExtra.tocadorId)} tocó.
-                                    {rondaExtra.pendientes.length > 0 ? ` Falta: ${rondaExtra.pendientes.map(nombreDe).join(', ')}.` : ''}
-                                </p>
-                                : <></>
-                        }
-                    </div>
-                    {
-                        mano === undefined
-                            ? <LocalLoadingComponent loading={true} showBackground={false}/>
+            </section>
+
+            <section className={`board-hand ${myTurn ? 'is-my-turn' : ''}`} aria-label='Tu mano'>
+                {
+                    hand === undefined
+                        ? <LocalLoadingComponent loading={true} showBackground={false} label='Repartiendo…'/>
+                        : hand === null
+                            ? <p className='board-hand-empty'>Ya no tienes cartas en esta partida.</p>
                             : <>
-                                <div id='game-board-groups'>
-                                    {gruposActuales.map((g, i) => (
-                                        <div className='game-board-group' key={g.map(claveCarta).join('|')}>
-                                            <div className='game-board-group-cards'>{g.map((c) => carta(c, false))}</div>
-                                            <Button size='small' onClick={() => soltarGrupo(i)}>Soltar grupo</Button>
-                                        </div>
-                                    ))}
+                                <div className='board-groups'>
+                                    {currentGroups.map((g, i) => {
+                                        const label = groupLabel(g);
+                                        return (
+                                            <div className={`board-group ${label.valid ? 'is-valid' : 'is-invalid'}`} key={g.map(cardKey).join('|')}>
+                                                <div className='board-group-head'>
+                                                    <span className='board-group-label'>{label.valid ? '✓ ' : ''}{label.text}</span>
+                                                    <Tooltip title='Deshacer grupo' arrow>
+                                                        <IconButton size='small' aria-label={`Deshacer grupo ${i + 1}`} onClick={() => dissolveGroup(i)}><CloseRounded fontSize='small'/></IconButton>
+                                                    </Tooltip>
+                                                </div>
+                                                <div className='board-group-cards'>
+                                                    {g.map((c) => renderCard(c, () => takeFromGroup(i, c), 'board-group-card', 'Devolver a la mano'))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {
+                                        currentGroups.length < MAX_GROUPS
+                                            ? <button
+                                                type='button'
+                                                className={`board-group board-group-new ${selected.length > 0 && selected.length <= MAX_GROUP_CARDS ? 'is-ready' : ''}`}
+                                                onClick={formGroup}
+                                                disabled={selected.length === 0}
+                                            >
+                                                {selected.length === 0
+                                                    ? <span>Selecciona cartas y agrúpalas aquí</span>
+                                                    : selected.length > MAX_GROUP_CARDS
+                                                        ? <span>Máximo 4 cartas por grupo</span>
+                                                        : <span><strong>+ Agrupar {selected.length}</strong> {selected.length === 1 ? 'carta' : 'cartas'}</span>}
+                                            </button>
+                                            : <></>
+                                    }
                                 </div>
-                                <div id='game-board-loose'>
-                                    {sueltas.map((c) => carta(c, true))}
+
+                                <div className='board-loose-head'>
+                                    <span className='board-loose-info'>
+                                        Sueltas: <span className='num'>{looseCount}</span> {looseCount === 1 ? 'carta' : 'cartas'}, <span className='num'>{points(loose)}</span> pts
+                                    </span>
+                                    <SegmentedComponent
+                                        label='Ordenar sueltas'
+                                        hideLabel
+                                        tone='felt'
+                                        value={sortMode}
+                                        onChange={setSortMode}
+                                        options={[
+                                            {value: 'ARRIVAL', label: 'Llegada'},
+                                            {value: 'RANK', label: 'Número'},
+                                            {value: 'SUIT', label: 'Palo'},
+                                        ]}
+                                    />
                                 </div>
-                                {
-                                    mano
-                                        ? <p>Sueltas: {sueltas.length} cartas, {puntos(sueltas)} pts</p>
-                                        : <></>
-                                }
+                                <div className='board-loose' style={{'--count': Math.max(shownLoose.length, 1), '--gaps': Math.max(shownLoose.length - 1, 1)} as CSSProperties}>
+                                    {shownLoose.map((c) => renderCard(c, () => toggleSelection(c), 'board-loose-card'))}
+                                </div>
                             </>
+                }
+            </section>
+
+            <div className='board-actions'>
+                <span className='board-actions-hint'>
+                    {
+                        !withEleven
+                            ? (canDraw ? 'Primero roba una carta.' : '')
+                            : round?.turno.intentoCierre
+                                ? 'Ya intentaste cerrar en este turno: ahora descarta una carta.'
+                                : closePreview.ready
+                                    ? <strong className='board-ready'>¡Tu mano está lista para {closePreview.shape === 'TOCAR' ? 'tocar' : 'cerrar'}!</strong>
+                                    : selected.length === 1
+                                        ? 'Esa carta será la que descartas.'
+                                        : 'Selecciona la carta que vas a descartar.'
                     }
-                </div>
-                <div id='game-board-actions'>
+                </span>
+                <div className='board-actions-buttons'>
                     <Button
-                        className='game-board-actions-button'
                         variant='outlined'
-                        onClick={formarGrupo}
-                        disabled={!mano || seleccionadas.length === 0}
-                    >Formar grupo</Button>
-                    <Button
-                        className='game-board-actions-button'
-                        variant='contained'
-                        onClick={descartar}
-                        disabled={!conOnceCartas || enviando}
+                        color='inherit'
+                        size='large'
+                        onClick={discard}
+                        disabled={!withEleven || sending || selected.length !== 1}
                     >Descartar</Button>
                     <Button
-                        className='game-board-actions-button'
                         variant='contained'
-                        color='secondary'
-                        onClick={cerrar}
-                        disabled={!conOnceCartas || enviando || !!ronda?.turno.intentoCierre}
-                    >{esApuntado ? 'Cerrar / Tocar (< 5 pts)' : 'Cerrar con 4-3-3'}</Button>
+                        size='large'
+                        className={closePreview.ready ? 'board-close-ready' : ''}
+                        onClick={() => close()}
+                        disabled={!withEleven || sending || !!round?.turno.intentoCierre}
+                    >{closeLabel}</Button>
                 </div>
             </div>
-            <GlobalLoadingComponent loading={enviando}/>
+
+            <ThemeProvider theme={PaperTheme}>
+                <Dialog open={confirmClose} onClose={() => setConfirmClose(false)} maxWidth='xs' fullWidth>
+                    <DialogContent>
+                        <h2 className='board-dialog-title'>¿Cerrar de todos modos?</h2>
+                        <p>
+                            {closePreview.shape === 'TOCAR' && points(closePreview.leftovers) >= KNOCK_THRESHOLD
+                                ? 'La carta que te sobra vale 5 puntos o más, así que no puedes tocar.'
+                                : 'Alguno de tus grupos no parece una terna, cuarta o escalera válida.'}
+                            {isApuntado ? ' Si el cierre no es válido sumas 3 puntos y el turno sigue.' : ' Si el cierre no es válido, el turno sigue.'}
+                        </p>
+                    </DialogContent>
+                    <DialogActions sx={{padding: '0 24px 20px'}}>
+                        <Button onClick={() => setConfirmClose(false)}>Revisar mis grupos</Button>
+                        <Button variant='contained' onClick={() => close(true)}>Cerrar igual</Button>
+                    </DialogActions>
+                </Dialog>
+            </ThemeProvider>
         </>
     );
 }

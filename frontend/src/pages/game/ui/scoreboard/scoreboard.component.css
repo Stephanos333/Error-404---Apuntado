@@ -1,0 +1,141 @@
+.scoreboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5);
+
+    & h3 {
+        font-size: var(--fs-md);
+        margin-bottom: var(--space-3);
+    }
+}
+
+.scoreboard-pot {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: var(--space-4);
+    border-radius: 18px;
+    background: var(--paper);
+    color: var(--ink);
+
+    & > span:first-child {
+        font-weight: 700;
+        font-size: var(--fs-sm);
+        color: var(--ink-2);
+    }
+
+    & p {
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+    }
+}
+
+.scoreboard-standings {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    & li {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+    }
+
+    & li.is-me {
+        background: rgba(234, 242, 239, 0.07);
+    }
+
+    & li.is-eliminated {
+        opacity: 0.5;
+    }
+
+    & img, & .scoreboard-avatar-blank {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--felt-600);
+    }
+}
+
+.scoreboard-name {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    & small {
+        font-weight: 500;
+        color: var(--chalk-2);
+    }
+
+    & .scoreboard-turn {
+        color: var(--brass-300);
+    }
+}
+
+.scoreboard-points {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.05;
+
+    & .num {
+        font-size: var(--fs-lg);
+    }
+
+    & small {
+        font-size: 0.6875rem;
+        color: var(--chalk-3);
+    }
+}
+
+.scoreboard-table-wrap {
+    overflow-x: auto;
+}
+
+.scoreboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+
+    & th, & td {
+        padding: 6px 4px;
+        text-align: center;
+        border-bottom: 1px solid var(--felt-line);
+    }
+
+    & thead th img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        vertical-align: middle;
+    }
+
+    & tbody th {
+        color: var(--chalk-3);
+        font-weight: 600;
+        cursor: help;
+    }
+
+    & td.is-winner {
+        background: rgba(245, 194, 90, 0.18);
+        color: var(--brass-300);
+        border-radius: 6px;
+    }
+
+    & td.is-out .num {
+        color: var(--heart);
+    }
+}
+
+.scoreboard-legend {
+    margin-top: 8px;
+    font-size: var(--fs-xs);
+}

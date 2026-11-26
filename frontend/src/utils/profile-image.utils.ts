@@ -1,7 +1,7 @@
 /**
- * Permite construir la ruta en dónde se encuentran los iconos de la app.
- * @param {string} icon El icono que se busca.
- * @return {string} La url construida.
+ * Builds the URL of an avatar image.
+ * @param {string} icon The avatar id (e.g. ICON1).
+ * @return {string} The image URL.
  */
 export const buildProfileImageRoute = (icon: string): string => {
     return `${import.meta.env.VITE_PROFILE_IMAGES_URL}${icon}.png`;

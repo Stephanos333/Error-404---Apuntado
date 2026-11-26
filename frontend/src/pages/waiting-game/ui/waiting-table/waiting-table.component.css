@@ -1,0 +1,181 @@
+.waiting-table {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    max-height: 64vh;
+    margin-inline: auto;
+}
+
+/* The table itself: an oval of lighter felt with a wooden rail. */
+.waiting-table-felt {
+    position: absolute;
+    inset: 14% 12%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 40%, var(--felt-500), var(--felt-700) 70%);
+    box-shadow: 0 0 0 10px #5b3a22, 0 0 0 13px #3e2717, inset 0 8px 30px rgba(0, 0, 0, 0.35), 0 30px 60px rgba(3, 20, 20, 0.5);
+    display: grid;
+    place-items: center;
+}
+
+.waiting-table-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.waiting-table-pot-label {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--chalk-2);
+}
+
+.waiting-table-status {
+    margin-top: 4px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--brass-300);
+}
+
+.waiting-table-seats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.waiting-seat {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 128px;
+    text-align: center;
+}
+
+.waiting-seat-avatar {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+
+    & img {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px var(--felt-800), 0 0 0 5px var(--chalk-3), 0 10px 20px rgba(3, 20, 20, 0.45);
+    }
+}
+
+/* Each player holds a card in their own design, peeking from behind the avatar. */
+.waiting-seat-card {
+    --card-w: 40px;
+    position: absolute !important;
+    right: -20px;
+    top: -12px;
+    transform: rotate(16deg);
+}
+
+.waiting-seat.is-taken {
+    animation: waiting-seat-in 420ms var(--ease-spring) both;
+}
+
+@keyframes waiting-seat-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.6);
+    }
+}
+
+.waiting-seat-free {
+    border: 2px dashed var(--felt-line-strong);
+    background: rgba(8, 38, 39, 0.35);
+    animation: waiting-seat-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes waiting-seat-pulse {
+    50% {
+        border-color: var(--chalk-3);
+    }
+}
+
+.waiting-seat-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    background: rgba(8, 38, 39, 0.75);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+
+    & span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.waiting-seat-tag {
+    position: absolute;
+    top: -6px;
+    left: 18px;
+    z-index: 2;
+    padding: 1px 7px;
+    border-radius: var(--r-pill);
+    background: var(--brass-400);
+    color: var(--ink);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+}
+
+/* Phones: the oval becomes a compact grid of seats under the pot. */
+@media (max-width: 640px) {
+    .waiting-table {
+        aspect-ratio: auto;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+    }
+
+    .waiting-table-felt {
+        position: relative;
+        inset: auto;
+        padding: var(--space-5) var(--space-4);
+        border-radius: 999px;
+        box-shadow: 0 0 0 6px #5b3a22, 0 0 0 8px #3e2717, inset 0 6px 20px rgba(0, 0, 0, 0.35);
+        margin: 8px;
+        width: auto;
+    }
+
+    .waiting-table-seats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-4) var(--space-2);
+    }
+
+    .waiting-seat {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        width: auto;
+    }
+
+    .waiting-seat.is-taken {
+        animation: none;
+    }
+
+    .waiting-seat-avatar {
+        width: 60px;
+        height: 60px;
+    }
+}

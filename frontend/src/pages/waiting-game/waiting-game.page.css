@@ -1,13 +1,33 @@
-#waiting-game-page-container {
+.waiting-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.waiting-page-main {
+    flex: 1;
+    padding-block: var(--space-5) var(--space-7);
+}
+
+.waiting-page-header {
+    margin-bottom: var(--space-4);
+
+    & h1 {
+        font-size: clamp(var(--fs-xl), 4vw, var(--fs-2xl));
+        font-stretch: 88%;
+        overflow-wrap: anywhere;
+    }
+}
+
+.waiting-page-grid {
     display: grid;
-    grid-template-rows: max-content 8vh 1fr 8vh;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-6);
+    align-items: center;
+}
 
-    & #waiting-game-page-container-title {
-        width: 100%;
-        text-align: center;
-
-        & h1 {
-            margin: 5px;
-        }
+@media (max-width: 1000px) {
+    .waiting-page-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-5);
     }
 }

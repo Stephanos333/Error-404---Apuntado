@@ -1,87 +1,85 @@
 /**
- * Constantes que define las urls para acceder a los recursos del
- * backend.
+ * Backend endpoints.
  * @enum {string}
  * @readonly
  */
 export enum BackendConstants {
     /**
-     * Ruta para crear un juego en la aplicación.
+     * Create a game.
      */
     CREATE_GAME_URL = '/api/game',
     /**
-     * Ruta para acceder a los diseños de cartas disponibles.
+     * Available card designs.
      */
     GET_ACTIVE_CARD_DESIGNS_URL = '/api/card-design/active',
     /**
-     * Ruta para acceder al diseño de carta actual del usuario.
+     * The user's current card design.
      */
     GET_CURRENT_CARD_DESIGN_URL = '/api/card-design/current',
     /**
-     * Ruta para acceder al usuario que ejecuta la aplicación.
+     * The authenticated user.
      */
     GET_ME_URL = '/api/user/me',
     /**
-     * Ruta para acceder a los juegos públicos.
+     * Public games.
      */
     GET_PUBLIC_GAMES_URL = '/api/game/public',
     /**
-     * Ruta para ingresar a un juego.
+     * Join a game.
      */
     JOIN_GAME_URL = '/api/game/join',
     /**
-     * Ruta para acceder al login de la aplicación.
+     * Log in.
      */
     LOGIN_URL = '/api/session/login',
     /**
-     * Ruta para acceder al registro de la aplicación.
+     * Sign up.
      */
     REGISTER_URL = '/api/user',
     /**
-     * Ruta para acceder al servicio que refresca el token del usuario.
+     * Refresh the access token.
      */
     REFRESH_ACCESS_TOKEN_URL = '/api/session/refresh-token',
     /**
-     * Ruta para acceder al servicio que actualiza el diseño de
-     * carta de un usuario.
+     * Update the user's card design.
      */
     UPDATE_USER_CARD_DESIGN_URL = '/api/user/card-design',
     /**
-     * Ruta para acceder al servicio que actualiza el icono del usuario.
+     * Update the user's avatar.
      */
     UPDATE_USER_ICON_URL = '/api/user/icon',
     /**
-     * Ruta para acceder al servicio que permite obtener el juego actual de un usuario.
+     * The user's current game (also DELETE to leave or cancel it).
      */
     GET_CURRENT_GAME_URL = '/api/game/current',
     /**
-     * Ruta para acceder al servicio que permite obtener el jugador actual de un usuario.
+     * The user's current player.
      */
     GET_CURRENT_PLAYER_URL = '/api/player/current',
     /**
-     * Ruta para acceder al servicio que permite iniciar una partida.
+     * Start the match (host).
      */
     START_MATCH_URL = '/api/match',
     /**
-     * Estado de la partida actual: vista pública y mano del usuario (agregado `partidas`).
+     * Current match state: public view and the user's hand (`partidas` aggregate).
      */
-    PARTIDA_ESTADO_URL = '/api/partidas/actual',
+    MATCH_STATE_URL = '/api/partidas/actual',
     /**
-     * Comando robar (del mazo o del pozo de descarte).
+     * Draw command (deck or discard pile).
      */
-    PARTIDA_ROBAR_URL = '/api/partidas/actual/comandos/robar',
+    MATCH_DRAW_URL = '/api/partidas/actual/comandos/robar',
     /**
-     * Comando descartar (pasa el turno).
+     * Discard command (ends the turn).
      */
-    PARTIDA_DESCARTAR_URL = '/api/partidas/actual/comandos/descartar',
+    MATCH_DISCARD_URL = '/api/partidas/actual/comandos/descartar',
     /**
-     * Comando cerrar la ronda (4-3-3 o tocar).
+     * Close command (4-3-3 or knock).
      */
-    PARTIDA_CERRAR_URL = '/api/partidas/actual/comandos/cerrar',
+    MATCH_CLOSE_URL = '/api/partidas/actual/comandos/cerrar',
 }
 
 /**
- * Definición de la configuración para cada servicio del backend
+ * Configuration of each backend service
  * @const {Record<BackendConstants, BackendConfigType>}
  */
 export const BackendConfigConstants: Record<BackendConstants, BackendConfigType> = {
@@ -141,26 +139,26 @@ export const BackendConfigConstants: Record<BackendConstants, BackendConfigType>
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PARTIDA_ESTADO_URL]: {
+    [BackendConstants.MATCH_STATE_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PARTIDA_ROBAR_URL]: {
+    [BackendConstants.MATCH_DRAW_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PARTIDA_DESCARTAR_URL]: {
+    [BackendConstants.MATCH_DISCARD_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
-    [BackendConstants.PARTIDA_CERRAR_URL]: {
+    [BackendConstants.MATCH_CLOSE_URL]: {
         requireAccessToken: true,
         retryRequest: true,
     },
 };
 
 /**
- * Definición de la configuración que debe tener cada servicio del backend.
+ * Configuration a backend service must define.
  */
 export type BackendConfigType = {
     requireAccessToken: boolean;

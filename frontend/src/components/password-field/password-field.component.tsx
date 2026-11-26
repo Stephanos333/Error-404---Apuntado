@@ -1,58 +1,56 @@
 import {Visibility, VisibilityOff} from '@mui/icons-material';
-import {FilledInput, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel} from '@mui/material';
-import {JSX, useState} from 'react';
+import {IconButton, InputAdornment, TextField} from '@mui/material';
+import {JSX, useId, useState} from 'react';
 
 /**
- * Componente en dónde se define un input de una contraseña.
- * @param props Los parámetros requeridos para el funcionamiento del input.
- * @param {string} props.classname El classname del from control.
- * @param {string} [props.labelname] El label que se mostrará en el componente.
- * @param {(value: string) => void} props.setPassword El hook que guarda la contraseña.
- * @constructor
+ * Password input with a show/hide toggle.
+ * @param {string} [props.classname] Extra class for the field.
+ * @param {string} [props.labelName] Field label.
+ * @param {string} props.passwordError Validation error.
+ * @param {(value: string) => void} props.setPassword Stores the password.
+ * @param {string} [props.autoComplete] Browser autocomplete hint.
+ * @param {string} [props.hint] Help text shown while there is no error.
  */
 export function PasswordFieldComponent(
     props: {
-        classname: string;
+        classname?: string;
         labelName?: string;
         passwordError: string;
         setPassword: (value: string) => void;
+        autoComplete?: string;
+        hint?: string;
     }
 ): JSX.Element {
 
-    /**
-     * Hook que determina si se debe mostrar o no la contraseña.
-     */
+    /** Whether the password is visible. */
     const [show, setShow] = useState<boolean>(false);
+    const id = useId();
 
     return (
-        <FormControl className={props.classname} variant='filled'>
-            <InputLabel
-                required
-                variant='filled'
-                htmlFor='filled-adornment-password'
-                error={!!props.passwordError}
-            >
-                {props.labelName || 'Contraseña'}
-            </InputLabel>
-            <FilledInput
-                type={show ? 'text' : 'password'}
-                error={!!props.passwordError}
-                onChange={(e) => props.setPassword(e.target.value)}
-                endAdornment={
+        <TextField
+            id={id}
+            className={props.classname}
+            required
+            label={props.labelName || 'Contraseña'}
+            type={show ? 'text' : 'password'}
+            autoComplete={props.autoComplete ?? 'current-password'}
+            error={!!props.passwordError}
+            helperText={props.passwordError || props.hint || ' '}
+            onChange={(e) => props.setPassword(e.target.value)}
+            InputProps={{
+                endAdornment: (
                     <InputAdornment position='end'>
                         <IconButton
                             edge='end'
-                            aria-label='toggle password visibility'
+                            aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             onClick={() => setShow(!show)}
                             onMouseDown={(e) => e.preventDefault()}
                         >
                             {show ? <VisibilityOff/> : <Visibility/>}
                         </IconButton>
                     </InputAdornment>
-                }
-            />
-            {!!props.passwordError &&
-                <FormHelperText sx={{color: 'var(--error)'}}>{props.passwordError}</FormHelperText>}
-        </FormControl>
+                ),
+            }}
+        />
     );
 }

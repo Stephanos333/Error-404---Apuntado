@@ -1,5 +1,5 @@
 /**
- * Definición de los datos requeridos para registrar un usuario.
+ * Sign up request.
  */
 export type RegisterRequest = {
     username: string;
@@ -7,7 +7,7 @@ export type RegisterRequest = {
 }
 
 /**
- * Definición de los datos de respuesta para registrar un usuario.
+ * Sign up response.
  */
 export type RegisterResponse = {
     userId: string;

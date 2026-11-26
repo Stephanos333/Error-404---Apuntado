@@ -1,14 +1,14 @@
 import {GameType} from '../game.type.ts';
 
 /**
- * Definición de los datos requeridos para ingresar a un juego.
+ * Request to join a game.
  */
 export type JoinGameRequest = {
     'gameId': string;
 }
 
 /**
- * Definición de la respuesta del servicio para ingresar a un juego.
+ * Response of the join-game service.
  */
 export type JoinGameResponse = {
     'success': boolean;

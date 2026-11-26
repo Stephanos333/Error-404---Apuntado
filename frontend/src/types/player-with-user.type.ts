@@ -1,5 +1,5 @@
 /**
- * Definición de los datos de los jugadores.
+ * A seated player with their user data.
  */
 export type PlayerWithUserType = {
     playerId: string;

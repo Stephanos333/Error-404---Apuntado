@@ -1,5 +1,5 @@
 /**
- * Definición de los usuarios del sistema.
+ * A user of the system.
  */
 export type UserType = {
     userId: string;

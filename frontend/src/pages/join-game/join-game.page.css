@@ -1,0 +1,43 @@
+.join-game-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    font-weight: 700;
+}
+
+.join-game-deck {
+    position: relative;
+    width: 90px;
+    height: 120px;
+
+    & .playing-card {
+        --card-w: 80px;
+        position: absolute;
+        inset: 0;
+        animation: join-game-shuffle 1.4s var(--ease-out) infinite;
+    }
+
+    & .playing-card:nth-child(2) {
+        animation-delay: 0.18s;
+    }
+
+    & .playing-card:nth-child(3) {
+        animation-delay: 0.36s;
+    }
+}
+
+@keyframes join-game-shuffle {
+    0%, 100% {
+        transform: translateX(0) rotate(0);
+    }
+    40% {
+        transform: translateX(34px) rotate(10deg);
+    }
+    70% {
+        transform: translateX(-10px) rotate(-4deg);
+    }
+}

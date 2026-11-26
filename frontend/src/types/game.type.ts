@@ -1,5 +1,5 @@
 /**
- * Definición de los datos de los juegos.
+ * A game table.
  */
 export type GameType = {
     gameId: string;
@@ -12,8 +12,8 @@ export type GameType = {
     betByPlayer: number;
     isPublic: boolean;
     wasInitiated: boolean;
-    /** Modalidad (plug-in de reglas): `clasica` o `apuntado`. */
+    /** Mode (rule plug-in): `clasica` or `apuntado`. */
     ruleId?: string;
-    /** `_id` del agregado `partidas` una vez iniciado el juego. */
+    /** `_id` of the `partidas` aggregate once the game has started. */
     partidaId?: string;
 }

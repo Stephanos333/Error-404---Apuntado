@@ -1,5 +1,5 @@
 /**
- * Constantes que representa los títulos de los diseños de cartas.
+ * Display name (Spanish, shown in the UI) of each card design.
  * @const {Record<string, string>}
  * @readonly
  */

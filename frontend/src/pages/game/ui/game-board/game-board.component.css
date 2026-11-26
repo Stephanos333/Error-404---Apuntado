@@ -1,194 +1,469 @@
-#game-board-component-container {
-    grid-column: 2/3;
+/* ---------- Center of the table: piles and turn status ---------- */
+.board-center {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px clamp(12px, 3vw, 32px);
+}
+
+.board-piles {
     display: grid;
-    grid-template-columns: 20% 80%;
-    grid-template-rows: 90vh 10vh;
+    grid-template-columns: auto minmax(0, 340px) auto;
+    align-items: center;
+    gap: clamp(16px, 4vw, 56px);
+}
 
-    & #game-board-actions {
-        grid-column: 1/3;
-        grid-row: 2/3;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
+.board-pile {
+    --card-w: clamp(70px, 7vw, 96px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 0;
+    border-radius: 18px;
+    background: transparent;
+    color: var(--chalk);
+    font: inherit;
+    cursor: default;
 
-        & .game-board-actions-button{
-            width: 300px;
-            height: 45px;
-            margin: 0 20px 0 20px;
-        }
+    &.is-available {
+        cursor: pointer;
     }
 
-    & #game-board-cards-container {
-        display: flex;
-        justify-content: center;
+    &.is-available .playing-card {
+        box-shadow: 0 0 0 3px var(--brass-400), 0 0 24px 4px rgba(245, 194, 90, 0.45), var(--shadow-card);
+        animation: board-pile-glow 1.6s ease-in-out infinite;
+    }
+
+    &.is-available:hover .playing-card {
+        transform: translateY(-6px);
+    }
+
+    &:focus-visible {
+        outline: 3px solid var(--brass-400);
+    }
+}
+
+@keyframes board-pile-glow {
+    50% {
+        box-shadow: 0 0 0 3px var(--brass-300), 0 0 34px 8px rgba(245, 194, 90, 0.6), var(--shadow-card);
+    }
+}
+
+.board-pile-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--chalk-2);
+
+    & .num {
+        font-size: var(--fs-md);
+        color: var(--chalk);
+    }
+}
+
+/* The draw pile: a small stack of backs. */
+.board-deck-stack {
+    position: relative;
+    display: block;
+    width: var(--card-w);
+    aspect-ratio: 941 / 1280;
+
+    & .playing-card {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+    }
+
+    & .playing-card:nth-child(1) {
+        transform: translate(-4px, 4px) rotate(-3deg);
+    }
+
+    & .playing-card:nth-child(2) {
+        transform: translate(-2px, 2px) rotate(-1deg);
+    }
+
+    & .playing-card:nth-child(3) {
+        transition: transform 200ms var(--ease-out);
+    }
+}
+
+.board-pile.is-available .board-deck-stack .playing-card:nth-child(1),
+.board-pile.is-available .board-deck-stack .playing-card:nth-child(2) {
+    animation: none;
+    box-shadow: var(--shadow-card);
+}
+
+.board-discard-top {
+    transform: rotate(4deg);
+}
+
+.board-discard-empty {
+    display: grid;
+    place-items: center;
+    width: var(--card-w);
+    aspect-ratio: 941 / 1280;
+    border-radius: calc(var(--card-w) * 0.085);
+    border: 2px dashed var(--felt-line-strong);
+    color: var(--chalk-3);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+}
+
+.board-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.board-status-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(var(--fs-lg), 2.4vw, var(--fs-2xl));
+    line-height: 1.05;
+
+    &.is-mine {
+        color: var(--brass-400);
+        animation: board-your-turn 600ms var(--ease-spring);
+    }
+}
+
+@keyframes board-your-turn {
+    from {
+        transform: scale(0.85);
+    }
+}
+
+.board-status-detail {
+    color: var(--chalk-2);
+    font-size: var(--fs-sm);
+    max-width: 32ch;
+}
+
+.board-steps {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: flex;
+    gap: 6px;
+    counter-reset: step;
+
+    & li {
+        counter-increment: step;
+        display: inline-flex;
         align-items: center;
-        flex-flow: column;
-        row-gap: 10px;
-        overflow-y: auto;
+        gap: 6px;
+        padding: 4px 12px 4px 4px;
+        border-radius: var(--r-pill);
+        background: rgba(234, 242, 239, 0.06);
+        color: var(--chalk-3);
+        font-size: var(--fs-xs);
+        font-weight: 700;
 
-        & #game-board-status {
-            text-align: center;
+        &::before {
+            content: counter(step);
+            display: grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(234, 242, 239, 0.12);
+            font-family: var(--font-display);
+        }
 
-            & h3, & p {
-                margin: 4px 0;
+        &.is-current {
+            background: var(--brass-400);
+            color: var(--ink);
+
+            &::before {
+                background: var(--ink);
+                color: var(--brass-400);
             }
+        }
 
-            & .game-board-status-extra {
-                font-weight: bold;
-                color: var(--fourth);
+        &.is-done {
+            color: var(--chalk-2);
+
+            &::before {
+                content: '✓';
+                background: var(--mint);
+                color: var(--ink);
             }
         }
-
-        & #game-board-groups {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            width: 90%;
-        }
-
-        & .game-board-group {
-            display: flex;
-            flex-flow: column;
-            align-items: center;
-            padding: 5px;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.05);
-            box-shadow: 1px 1px 5px gray;
-        }
-
-        & .game-board-group-cards {
-            display: flex;
-        }
-
-        & #game-board-loose {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 90%;
-            min-height: calc(90px * (1280 / 941) + 30px);
-            padding-top: 20px;
-        }
-    }
-
-    & #game-board-maze-container {
-        display: flex;
-        flex-flow: column;
-        align-items: center;
-        justify-content: space-around;
-
-        & .game-board-maze-container-item {
-            transition: box-shadow 0.5s;
-            box-shadow: 1px 1px 5px gray;
-        }
-
-        & .game-board-maze-container-item:hover {
-            box-shadow: 5px 5px 5px gray;
-        }
-
-        & #game-board-discarded-cards-container, & #game-board-card-deck-container {
-            width: 60%;
-            height: max-content;
-            position: relative;
-            text-align: center;
-        }
-
-        & #game-board-discarded-cards-image, & #game-board-card-deck {
-            width: 100%;
-        }
-
-        & .discarded-cards-card {
-            position: absolute;
-            cursor: pointer;
-            top: 50%;
-            left: 48%;
-            transform: translate(-50%, -48%);
-        }
     }
 }
 
-.game-board-card {
-    cursor: pointer;
-    transition: transform 0.2s;
+.board-extra {
+    margin-top: 4px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: var(--heart-soft);
+    border: 1px solid rgba(228, 82, 75, 0.45);
+    color: #ffd2cf;
+    font-size: var(--fs-sm);
+    font-weight: 600;
 }
 
-.game-board-card-selected {
-    transform: translateY(-15px);
-    border-radius: 10px;
-    box-shadow: 0 0 0 3px var(--fourth);
+/* ---------- The hand ---------- */
+.board-hand {
+    container-type: inline-size;
+    padding: 0 clamp(12px, 3vw, 32px) 8px;
 }
 
-.game-board-card:hover {
-    border-radius: 15px;
-    box-shadow: 5px 5px 5px gray;
-    transition: box-shadow 0.5s;
+.board-hand-empty {
+    padding: var(--space-5);
+    text-align: center;
+    color: var(--chalk-2);
 }
 
-.game-element-available {
-    --d: 3000ms;
-    --angle: 90deg;
-    --gradX: 100%;
-    --gradY: 50%;
-    --c1: yellow;
-    --c2: var(--secondary);
-    cursor: pointer;
-    border: 0.20rem solid;
-    border-image: conic-gradient(from var(--angle), var(--c2), var(--c1) 0.1turn, var(--c1) 0.15turn, var(--c2) 0.25turn) 30;
-    animation: borderRotate var(--d) linear infinite forwards;
+.board-groups {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
 }
 
-@keyframes borderRotate {
-    100% {
-        --angle: 420deg;
+.board-group {
+    --card-w: clamp(46px, 4.4vw, 64px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px 10px;
+    border-radius: 16px;
+    background: rgba(8, 38, 39, 0.5);
+    border: 1.5px solid var(--felt-line);
+
+    &.is-valid {
+        border-color: rgba(126, 215, 176, 0.55);
+        background: rgba(126, 215, 176, 0.08);
+    }
+
+    &.is-invalid {
+        border-style: dashed;
     }
 }
 
-@keyframes borderRadial {
-    20% {
-        --gradX: 100%;
-        --gradY: 50%;
-    }
-    40% {
-        --gradX: 100%;
-        --gradY: 100%;
-    }
-    60% {
-        --gradX: 50%;
-        --gradY: 100%;
-    }
-    80% {
-        --gradX: 0%;
-        --gradY: 50%;
-    }
-    100% {
-        --gradX: 50%;
-        --gradY: 0%;
+.board-group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 24px;
+
+    & .MuiIconButton-root {
+        padding: 2px;
+        color: var(--chalk-3);
     }
 }
 
-@property --angle {
-    syntax: '<angle>';
-    initial-value: 90deg;
-    inherits: true;
+.board-group-label {
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    color: var(--chalk-2);
 }
 
-@property --gradX {
-    syntax: '<percentage>';
-    initial-value: 50%;
-    inherits: true;
+.board-group.is-valid .board-group-label {
+    color: var(--mint);
 }
 
-@property --gradY {
-    syntax: '<percentage>';
-    initial-value: 0%;
-    inherits: true;
-}
+.board-group-cards {
+    display: flex;
 
-@keyframes rotate {
-    0% {
-        transform: rotate(0deg);
+    & .playing-card + .playing-card {
+        margin-left: calc(var(--card-w) * -0.42);
     }
-    100% {
-        transform: rotate(360deg);
+
+    & .playing-card.is-interactive:not(:disabled):hover {
+        transform: translateY(-6px) rotate(-3deg);
+    }
+}
+
+.board-group-new {
+    justify-content: center;
+    align-items: center;
+    min-width: 150px;
+    min-height: calc(var(--card-w) * 1.36 + 40px);
+    padding: 10px 16px;
+    border: 1.5px dashed var(--felt-line-strong);
+    background: transparent;
+    color: var(--chalk-3);
+    font: inherit;
+    font-size: var(--fs-sm);
+    text-align: center;
+    max-width: 180px;
+
+    &.is-ready {
+        border-color: var(--brass-400);
+        color: var(--brass-300);
+        background: rgba(245, 194, 90, 0.08);
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(245, 194, 90, 0.16);
+        }
+    }
+
+    & strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: var(--fs-md);
+    }
+}
+
+.board-loose-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 1040px;
+    margin: 0 auto 4px;
+
+    & .segmented-option span {
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: var(--fs-xs);
+    }
+}
+
+.board-loose-info {
+    font-size: var(--fs-sm);
+    color: var(--chalk-2);
+
+    & .num {
+        color: var(--chalk);
+        font-size: var(--fs-md);
+    }
+}
+
+.board-loose {
+    --card-w: clamp(56px, 7.2vw, 96px);
+    display: flex;
+    justify-content: center;
+    padding-top: 22px;
+    min-height: calc(var(--card-w) * 1.36 + 26px);
+
+    & .playing-card + .playing-card {
+        margin-left: clamp(calc(var(--card-w) * -0.62), calc((100cqi - 4px - var(--card-w) * var(--count)) / var(--gaps)), 8px);
+    }
+}
+
+/* A freshly drawn card drops in and glows for a moment. */
+.playing-card.is-new {
+    animation: board-new-card 700ms var(--ease-spring);
+    box-shadow: 0 0 0 3px var(--mint), 0 0 22px rgba(126, 215, 176, 0.6), var(--shadow-card);
+}
+
+@keyframes board-new-card {
+    from {
+        transform: translateY(-40px) rotate(-8deg);
+        opacity: 0;
+    }
+}
+
+/* ---------- Actions ---------- */
+.board-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px clamp(12px, 3vw, 32px) calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--felt-line);
+    background: rgba(8, 38, 39, 0.7);
+}
+
+.board-actions-hint {
+    font-size: var(--fs-sm);
+    color: var(--chalk-2);
+}
+
+.board-ready {
+    color: var(--mint);
+}
+
+.board-actions-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.board-close-ready {
+    animation: board-close-ready 1.4s ease-in-out infinite;
+}
+
+@keyframes board-close-ready {
+    50% {
+        box-shadow: 0 0 0 6px rgba(245, 194, 90, 0.3), 0 0 30px rgba(245, 194, 90, 0.55);
+    }
+}
+
+.board-dialog-title {
+    font-size: var(--fs-xl);
+    margin-bottom: 8px;
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 720px) {
+    .board-center {
+        padding: 6px 12px;
+    }
+
+    .board-piles {
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
+    }
+
+    .board-pile {
+        --card-w: 60px;
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .board-status-detail, .board-steps {
+        display: none;
+    }
+
+    .board-group {
+        --card-w: 38px;
+        padding: 6px 8px 8px;
+    }
+
+    .board-group-new {
+        min-width: 110px;
+        min-height: 0;
+    }
+
+    .board-groups {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+    }
+
+    .board-loose {
+        --card-w: 62px;
+        justify-content: flex-start;
+        padding-top: 18px;
+    }
+
+    .board-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .board-actions-hint {
+        text-align: center;
+    }
+
+    .board-actions-buttons .MuiButton-root {
+        flex: 1;
     }
 }

@@ -1,4 +1,105 @@
-#game-page-container {
+.game-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.game-page-facts {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.game-page-fact {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--r-pill);
+    background: rgba(234, 242, 239, 0.07);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    white-space: nowrap;
+
+    & strong {
+        font-size: 1rem;
+    }
+}
+
+.game-page-body {
+    flex: 1;
+    min-height: 0;
     display: grid;
-    grid-template-columns: 20vw 80vw;
+    grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.game-page-table {
+    position: relative;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* The table: lighter felt under a lamp. */
+    background: radial-gradient(70% 60% at 50% 42%, rgba(43, 107, 105, 0.55), transparent 75%);
+}
+
+.game-page-side {
+    min-height: 0;
+    overflow-y: auto;
+    border-left: 1px solid var(--felt-line);
+    background: rgba(8, 38, 39, 0.4);
+}
+
+/* The scoreboard button only exists when the side panel is hidden. */
+.game-page-scoreboard-toggle {
+    display: none !important;
+}
+
+.game-page-drawer {
+    width: min(360px, 92vw);
+    background: var(--felt-900) !important;
+    background-image: none !important;
+}
+
+.game-page-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 0 20px;
+
+    & h2 {
+        font-size: var(--fs-xl);
+    }
+}
+
+@media (max-width: 1180px) {
+    .game-page-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .game-page-side {
+        display: none;
+    }
+
+    .game-page-scoreboard-toggle {
+        display: inline-flex !important;
+    }
+}
+
+@media (max-width: 720px) {
+    .game-page-fact:not(.game-page-pot) {
+        display: none;
+    }
+
+    .game-page-scoreboard-toggle {
+        min-width: 0 !important;
+        padding-inline: 10px !important;
+
+        & .MuiButton-startIcon {
+            margin: 0;
+        }
+
+        font-size: 0 !important;
+    }
 }

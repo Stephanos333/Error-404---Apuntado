@@ -1,8 +1,7 @@
 import {CardDesignType} from '../card-design.type.ts';
 
 /**
- * Definición de la respuesta del servicio para traer
- * el diseño de carta actual.
+ * Response of the current card design service.
  */
 export type GetCurrentCardDesign = {
     success: boolean,

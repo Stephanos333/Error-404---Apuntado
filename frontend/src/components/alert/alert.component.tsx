@@ -3,13 +3,10 @@ import {Dispatch, JSX, SetStateAction} from 'react';
 import {AlertMessagesConstants, AlertTypeConstants} from '../../utils/constants/alert.constants.ts';
 
 /**
- * Componente que define las alertas del sistema.
- * @param props Los parámetros para el funcionamiento del componente.
- * @param {AlertTypeConstants} props.type El tipo de la alerta.
- * @param {string | undefined} props.rawMessage El mensaje que se mostrará en la alerta.
- * @param {Dispatch<SetStateAction<string>>} props.setRawMessage Hook para re establecer
- * el mensaje de la alerta.
- * @constructor
+ * App-wide toast alert.
+ * @param {AlertTypeConstants} props.type The alert severity.
+ * @param {string} props.rawMessage The message code to show (see AlertMessagesConstants).
+ * @param {Dispatch<SetStateAction<string>>} props.setRawMessage Resets the message.
  */
 export function AlertComponent(
     props: {
@@ -18,18 +15,22 @@ export function AlertComponent(
         setRawMessage: Dispatch<SetStateAction<string>>;
     }
 ): JSX.Element {
+    const message: string = AlertMessagesConstants[props.rawMessage] || AlertMessagesConstants.UNKNOWN_ERROR;
+    // Longer messages stay longer so they can be read.
+    const duration: number = Math.min(7000, 2500 + message.length * 40);
     return (
         <Snackbar
             open={!!props.rawMessage}
-            autoHideDuration={1500}
-            onClose={() => props.setRawMessage('')}
+            autoHideDuration={duration}
+            onClose={(_, reason) => reason !== 'clickaway' && props.setRawMessage('')}
         >
             <Alert
+                variant='filled'
                 severity={props.type}
-                sx={{width: '100%'}}
+                sx={{width: '100%', maxWidth: 520}}
                 onClose={() => props.setRawMessage('')}
             >
-                {AlertMessagesConstants[props.rawMessage] || AlertMessagesConstants.UNKNOWN_ERROR}
+                {message}
             </Alert>
         </Snackbar>
     );
