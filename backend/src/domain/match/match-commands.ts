@@ -316,13 +316,13 @@ export function draw(current: Match, playerId: string, source: DrawSource, shuff
  * In the extra round (after a knock), the last pending discard settles the round.
  */
 export function discard(
-	actual: Match,
+	current: Match,
 	playerId: string,
 	index: number,
 	groups: unknown,
 	context: RuleContext,
 ): TransitionResult {
-	const match = clone(actual);
+	const match = clone(current);
 	const round = checkTurn(match, playerId);
 	requirePhase(round, 'HOLDING_11_CARDS');
 	const hand = handOf(round, playerId);
@@ -355,9 +355,9 @@ function requireAllowedClose(rule: GameRulePlugin, round: MatchRound, type: Clos
  * the round and evaluates the outcome in memory, in the same computation (§2.4). A knock
  * opens the extra round: the others play one last turn and the round is settled at the end.
  */
-export function attemptClose(actual: Match, playerId: string, data: CloseData, context: RuleContext): TransitionResult {
+export function attemptClose(current: Match, playerId: string, data: CloseData, context: RuleContext): TransitionResult {
 	const { rule: rule } = context;
-	const match = clone(actual);
+	const match = clone(current);
 	const round = checkTurn(match, playerId);
 	requirePhase(round, 'HOLDING_11_CARDS');
 	if (round.turn.closeAttempted) throw new InvalidMatchException(M.CLOSE_ALREADY_ATTEMPTED);

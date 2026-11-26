@@ -2,6 +2,49 @@
 ' E3 · 5.4 · Despliegue objetivo para 100.000 jugadores concurrentes (ver docs/capitulo-5-retrospectiva-lecciones.md).
 title Sistema Apuntado · Escalamiento horizontal para 100.000 jugadores concurrentes (UML 2.5)\n<size:11>Diseño objetivo: el dominio y los plug-ins no cambian; se replican los pods sin estado</size>
 skinparam shadowing false
+' Estilo neutro (equivalente al tema por defecto de PlantUML moderno)
+skinparam backgroundColor #FFFFFF
+skinparam TitleFontStyle bold
+skinparam TitleFontSize 14
+skinparam ArrowColor #181818
+skinparam ArrowFontColor #000000
+skinparam NoteBackgroundColor #FEFFDD
+skinparam NoteBorderColor #181818
+skinparam LegendBackgroundColor #DDDDDD
+skinparam LegendBorderColor #181818
+skinparam ParticipantBackgroundColor #E2E2F0
+skinparam ParticipantBorderColor #181818
+skinparam ActorBackgroundColor #E2E2F0
+skinparam ActorBorderColor #181818
+skinparam DatabaseBackgroundColor #E2E2F0
+skinparam DatabaseBorderColor #181818
+skinparam SequenceLifeLineBorderColor #181818
+skinparam SequenceGroupBorderColor #181818
+skinparam SequenceGroupHeaderFontStyle bold
+skinparam SequenceDividerBackgroundColor #EEEEEE
+skinparam SequenceDividerBorderColor #181818
+skinparam SequenceReferenceBorderColor #181818
+skinparam ClassBackgroundColor #F1F1F1
+skinparam ClassBorderColor #181818
+skinparam ClassHeaderBackgroundColor #F1F1F1
+skinparam InterfaceBackgroundColor #F1F1F1
+skinparam InterfaceBorderColor #181818
+skinparam PackageBorderColor #181818
+skinparam PackageBackgroundColor #FFFFFF
+skinparam NodeBackgroundColor #FFFFFF
+skinparam NodeBorderColor #181818
+skinparam ArtifactBackgroundColor #F1F1F1
+skinparam ArtifactBorderColor #181818
+skinparam ComponentBackgroundColor #F1F1F1
+skinparam ComponentBorderColor #181818
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #181818
+skinparam QueueBackgroundColor #F1F1F1
+skinparam QueueBorderColor #181818
+skinparam RectangleBorderColor #181818
+skinparam UsecaseBorderColor #181818
+skinparam StorageBorderColor #181818
+skinparam StorageBackgroundColor #F1F1F1
 skinparam defaultFontName Arial
 skinparam defaultFontSize 10
 skinparam nodesep 25
@@ -25,7 +68,7 @@ node "Clúster Kubernetes (3 zonas)" <<executionEnvironment>> as K8S {
     artifact "NestJS · GameSocket\n@socket.io/redis-streams-adapter" as WSA
   }
   node "Deployment apuntado-api\nHPA 6..40 pods\nmétrica: CPU 60 % y p95 de comandos" <<executionEnvironment>> as API {
-    artifact "NestJS · PartidaController\nTurnOrchestrator · RegistroReglas\nplugins clasica / apuntado (sin cambios)" as APIA
+    artifact "NestJS · MatchPlayController\nTurnOrchestrator · RuleRegistry\nplugins classic / apuntado (sin cambios)" as APIA
   }
   node "Deployment apuntado-worker\n2..6 pods" <<executionEnvironment>> as WRK {
     artifact "Outbox del pago del pozo\narchivado de partidas finalizadas" as WRKA
@@ -33,15 +76,15 @@ node "Clúster Kubernetes (3 zonas)" <<executionEnvironment>> as K8S {
 }
 
 node "Redis Cluster gestionado\n(3 shards × réplica, multi-AZ)" <<device>> as REDIS {
-  database "Streams del adaptador Socket.IO\n(salas partida:{gameId} · usuario:{userId})" as RS
+  database "Streams del adaptador Socket.IO\n(salas match:{gameId} · user:{userId})" as RS
   database "Caché: perfiles, catálogo de diseños,\njuego actual por usuario · rate limiting" as RC
 }
 
 node "MongoDB Atlas sharded cluster\n(4 shards × replica set de 3 nodos)" <<device>> as MDB {
-  database "partidas (calientes)\nshard key { _id: hashed }\n(1 partida por gameId)" as P
-  database "asientos_tokens\nshard key { usuarioId: hashed }" as A
-  database "User { userId } · Game { gameId } · Player { gameId }\n(hashed) · Card-design sin fragmentar" as U
-  database "partidas_archivo\n(frías, compactadas)" as H
+  database "matches (calientes)\nshard key { _id: hashed }\n(1 partida por gameId)" as P
+  database "token_ledger\nshard key { userId: hashed }" as A
+  database "users { userId } · games { gameId } · players { gameId }\n(hashed) · card-designs sin fragmentar" as U
+  database "matches_archive\n(frías, compactadas)" as H
 }
 
 SPA --> CDN : HTTPS (estáticos)
@@ -53,14 +96,14 @@ API --> P : 1 lectura + 1 updateOne condicional\n(el filtro lleva _id: va a un s
 API --> RS : XADD (eventos ya confirmados)
 WS --> RS : XREAD (consumidor por pod)
 WS --> SPA : emit a salas\n(vista pública / mano privada)
-WRK --> P : change stream\n(PARTIDA_FINALIZADA)
-WRK --> A : asiento PREMIO_POZO\n(referencia única, idempotente)
+WRK --> P : change stream\n(MATCH_FINISHED)
+WRK --> A : asiento POT_PRIZE\n(referencia única, idempotente)
 WRK --> H : archivado
 API --> U : perfiles (si falla la caché)
 
 note bottom of RS
   El EventBus local publica después del commit (ADR-05).
-  Con el adaptador, `wsServer.to(sala).emit()` llega a los
+  Con el adaptador, `wsServer.to(room).emit()` llega a los
   sockets de cualquier pod: el dominio no cambia.
 end note
 
