@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Levanta el Sistema Apuntado completo (MongoDB replica set + backend + frontend) con un solo comando.
-# Uso: ./start.sh            (equivale a: docker compose up --build)
-#      ./start.sh -d         (en segundo plano; cualquier argumento se pasa a docker compose up)
+# Starts the whole Apuntado system (MongoDB replica set + backend + frontend) with a single command.
+# Usage: ./start.sh          (same as: docker compose up --build)
+#        ./start.sh -d       (in the background; any argument is passed to docker compose up)
 set -euo pipefail
 cd "$(dirname "$0")"
 
 if ! command -v docker >/dev/null 2>&1; then
-  echo "Error: Docker no está instalado. Instale Docker Desktop o Docker Engine: https://docs.docker.com/get-docker/" >&2
+  echo "Error: Docker is not installed. Install Docker Desktop or Docker Engine: https://docs.docker.com/get-docker/" >&2
   exit 1
 fi
 if ! docker compose version >/dev/null 2>&1; then
-  echo "Error: se requiere Docker Compose v2 (comando 'docker compose')." >&2
+  echo "Error: Docker Compose v2 is required ('docker compose' command)." >&2
   exit 1
 fi
 
-secreto() {
+secret() {
   if command -v openssl >/dev/null 2>&1; then
     openssl rand -hex 32
   else
@@ -25,10 +25,10 @@ secreto() {
 if [ ! -f .env ]; then
   cp .env.example .env
   sed -i.bak \
-    -e "s/^JWT_SECRET=.*/JWT_SECRET=$(secreto)/" \
-    -e "s/^JWT_REFRESH_SECRET=.*/JWT_REFRESH_SECRET=$(secreto)/" .env
+    -e "s/^JWT_SECRET=.*/JWT_SECRET=$(secret)/" \
+    -e "s/^JWT_REFRESH_SECRET=.*/JWT_REFRESH_SECRET=$(secret)/" .env
   rm -f .env.bak
-  echo "Se creó .env a partir de .env.example con secretos JWT aleatorios."
+  echo "Created .env from .env.example with random JWT secrets."
 fi
 
 echo "Frontend:  http://localhost:${FRONTEND_PORT:-5173}"

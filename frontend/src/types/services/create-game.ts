@@ -8,7 +8,7 @@ export type CreateGameRequest = {
     isPublic: boolean;
     betByPlayer: number;
     name: string;
-    /** Game mode (rule plug-in): `clasica` or `apuntado`. */
+    /** Game mode (rule plug-in): `classic` or `apuntado`. */
     ruleId?: string;
 }
 

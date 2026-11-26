@@ -1,0 +1,544 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000a1"
+  },
+  "invitationCode": "K7P2QX",
+  "name": "Friday table",
+  "status": "IN_PROGRESS",
+  "hostId": {
+    "$oid": "000000000000000000000101"
+  },
+  "settings": {
+    "mode": "apuntado",
+    "plugin": {
+      "id": "apuntado",
+      "version": "1.0.0"
+    },
+    "capacity": 3,
+    "betPerPlayer": 20,
+    "visibility": "PRIVATE",
+    "runType": "WITH_WRAP",
+    "jokersEnabled": false,
+    "rebuyEnabled": true,
+    "negativeVictoryEnabled": true,
+    "parameters": {
+      "eliminationLimit": 101,
+      "knockThreshold": 5,
+      "invalidClosePenalty": 2,
+      "closeBonus": -10,
+      "negativeVictoryThreshold": -51,
+      "jokerValue": 20,
+      "jokersPerDeck": 2,
+      "twoDeckPlayers": 4,
+      "disconnectGraceSec": 120,
+      "resultsWindowSec": 20
+    }
+  },
+  "players": [
+    {
+      "playerId": "j1",
+      "userId": {
+        "$oid": "000000000000000000000101"
+      },
+      "username": "santi",
+      "position": 1,
+      "status": "ACTIVE",
+      "score": 27,
+      "usedRebuy": false,
+      "connected": true,
+      "disconnectedSince": null
+    },
+    {
+      "playerId": "j2",
+      "userId": {
+        "$oid": "000000000000000000000102"
+      },
+      "username": "sergio",
+      "position": 2,
+      "status": "ACTIVE",
+      "score": -8,
+      "usedRebuy": false,
+      "connected": true,
+      "disconnectedSince": null
+    },
+    {
+      "playerId": "j3",
+      "userId": {
+        "$oid": "000000000000000000000103"
+      },
+      "username": "andres",
+      "position": 3,
+      "status": "ACTIVE",
+      "score": 28,
+      "usedRebuy": false,
+      "connected": false,
+      "disconnectedSince": {
+        "$date": "2026-10-26T23:41:05Z"
+      }
+    }
+  ],
+  "pot": {
+    "total": 60,
+    "contributions": [
+      {
+        "userId": {
+          "$oid": "000000000000000000000101"
+        },
+        "type": "BET",
+        "amount": 20,
+        "ledgerEntryId": {
+          "$oid": "0000000000000000000000e1"
+        }
+      },
+      {
+        "userId": {
+          "$oid": "000000000000000000000102"
+        },
+        "type": "BET",
+        "amount": 20,
+        "ledgerEntryId": {
+          "$oid": "0000000000000000000000e2"
+        }
+      },
+      {
+        "userId": {
+          "$oid": "000000000000000000000103"
+        },
+        "type": "BET",
+        "amount": 20,
+        "ledgerEntryId": {
+          "$oid": "0000000000000000000000e3"
+        }
+      }
+    ]
+  },
+  "currentRound": {
+    "number": 3,
+    "status": "IN_TURNS",
+    "startPosition": 3,
+    "turn": {
+      "playerId": "j1",
+      "phase": "HOLDING_11_CARDS",
+      "closeAttempted": false,
+      "number": 7
+    },
+    "deck": [
+      {
+        "rank": "J",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "FOUR",
+        "suit": "HEARTS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "NINE",
+        "suit": "HEARTS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "Q",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "EIGHT",
+        "suit": "SPADES",
+        "deckNumber": 1
+      },
+      {
+        "rank": "SEVEN",
+        "suit": "DIAMONDS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "TEN",
+        "suit": "HEARTS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "FIVE",
+        "suit": "DIAMONDS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "J",
+        "suit": "SPADES",
+        "deckNumber": 1
+      },
+      {
+        "rank": "SIX",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "Q",
+        "suit": "SPADES",
+        "deckNumber": 1
+      },
+      {
+        "rank": "EIGHT",
+        "suit": "DIAMONDS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "THREE",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "TWO",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "K",
+        "suit": "CLUBS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "TEN",
+        "suit": "DIAMONDS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "SIX",
+        "suit": "HEARTS",
+        "deckNumber": 1
+      },
+      {
+        "rank": "NINE",
+        "suit": "DIAMONDS",
+        "deckNumber": 1
+      }
+    ],
+    "discardPile": [
+      {
+        "rank": "K",
+        "suit": "DIAMONDS",
+        "deckNumber": 1,
+        "designId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      },
+      {
+        "rank": "TEN",
+        "suit": "SPADES",
+        "deckNumber": 1,
+        "designId": {
+          "$oid": "0000000000000000000000d2"
+        }
+      },
+      {
+        "rank": "FOUR",
+        "suit": "CLUBS",
+        "deckNumber": 1,
+        "designId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      }
+    ],
+    "hands": [
+      {
+        "playerId": "j1",
+        "cards": [
+          {
+            "rank": "SEVEN",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "SEVEN",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "SEVEN",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "TWO",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "THREE",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "FOUR",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "J",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "Q",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "K",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "ACE",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "NINE",
+            "suit": "SPADES",
+            "deckNumber": 1
+          }
+        ],
+        "groups": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ],
+          [
+            6,
+            7,
+            8,
+            9
+          ]
+        ]
+      },
+      {
+        "playerId": "j2",
+        "cards": [
+          {
+            "rank": "FIVE",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "FIVE",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "FIVE",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "EIGHT",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "NINE",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "TEN",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "TWO",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "TWO",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "SIX",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "K",
+            "suit": "SPADES",
+            "deckNumber": 1
+          }
+        ],
+        "groups": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ]
+        ]
+      },
+      {
+        "playerId": "j3",
+        "cards": [
+          {
+            "rank": "ACE",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "ACE",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "ACE",
+            "suit": "CLUBS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "THREE",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "FOUR",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "SIX",
+            "suit": "SPADES",
+            "deckNumber": 1
+          },
+          {
+            "rank": "Q",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "J",
+            "suit": "DIAMONDS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "EIGHT",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          },
+          {
+            "rank": "THREE",
+            "suit": "HEARTS",
+            "deckNumber": 1
+          }
+        ],
+        "groups": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ]
+        ]
+      }
+    ],
+    "extraRound": null
+  },
+  "scoreboard": [
+    {
+      "roundNumber": 1,
+      "winnerId": "j2",
+      "closeType": "WIN_4_3_3",
+      "closedAt": {
+        "$date": "2026-10-26T23:12:40Z"
+      },
+      "points": [
+        {
+          "playerId": "j1",
+          "roundPoints": 19,
+          "penalties": 0,
+          "cumulative": 19,
+          "eliminated": false,
+          "rebought": false
+        },
+        {
+          "playerId": "j2",
+          "roundPoints": -10,
+          "penalties": 0,
+          "cumulative": -10,
+          "eliminated": false,
+          "rebought": false
+        },
+        {
+          "playerId": "j3",
+          "roundPoints": 23,
+          "penalties": 2,
+          "cumulative": 25,
+          "eliminated": false,
+          "rebought": false
+        }
+      ]
+    },
+    {
+      "roundNumber": 2,
+      "winnerId": "j3",
+      "closeType": "KNOCK",
+      "closedAt": {
+        "$date": "2026-10-26T23:30:02Z"
+      },
+      "points": [
+        {
+          "playerId": "j1",
+          "roundPoints": 8,
+          "penalties": 0,
+          "cumulative": 27,
+          "eliminated": false,
+          "rebought": false
+        },
+        {
+          "playerId": "j2",
+          "roundPoints": 0,
+          "penalties": 0,
+          "cumulative": -10,
+          "eliminated": false,
+          "rebought": false
+        },
+        {
+          "playerId": "j3",
+          "roundPoints": 3,
+          "penalties": 0,
+          "cumulative": 28,
+          "eliminated": false,
+          "rebought": false
+        }
+      ]
+    }
+  ],
+  "winnerId": null,
+  "resultsWindowUntil": null,
+  "recentCommands": [
+    "c-0153",
+    "c-0154",
+    "c-0155"
+  ],
+  "version": 156,
+  "createdAt": {
+    "$date": "2026-10-26T22:58:00Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-26T23:41:30Z"
+  },
+  "finishedAt": null
+}

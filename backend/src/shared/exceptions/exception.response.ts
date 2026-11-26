@@ -4,7 +4,7 @@ import { Exception } from './exception';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
- * Clase que representa la respuesta de error de la aplicación.
+ * Error response of the application.
  * @class
  */
 export class ExceptionResponse {
@@ -13,8 +13,8 @@ export class ExceptionResponse {
 	private readonly success: boolean;
 
 	/**
-	 * @param {string} [message=ExceptionMessagesConstants.INTERNAL_SERVER_ERROR] El mensaje de error.
-	 * @param {number} [code=HttpStatus.INTERNAL_SERVER_ERROR] El código de error.
+	 * @param {string} [message=ExceptionMessagesConstants.INTERNAL_SERVER_ERROR] The error message.
+	 * @param {number} [code=HttpStatus.INTERNAL_SERVER_ERROR] The error code.
 	 */
 	constructor(
 		message: string = ExceptionMessagesConstants.INTERNAL_SERVER_ERROR,
@@ -26,9 +26,9 @@ export class ExceptionResponse {
 	}
 
 	/**
-	 * Convierte una excepción básica al modelo de respuesta.
+	 * Converts a basic exception into the response model.
 	 * @static
-	 * @param {Exception} exception La excepción a convertir.
+	 * @param {Exception} exception The exception to convert.
 	 * @returns {ExceptionResponse}
 	 */
 	public static fromExceptionBase(exception: Exception): ExceptionResponse {
@@ -36,7 +36,7 @@ export class ExceptionResponse {
 	}
 
 	/**
-	 * Convierte la respuesta de error a su objeto de transferencia.
+	 * Converts the error response into its transfer object.
 	 * @public
 	 * @returns {ExceptionResponseDTO}
 	 */
@@ -50,8 +50,8 @@ export class ExceptionResponse {
 }
 
 /**
- * Clase que representa el objeto de transferencia de la respuesta de un error
- * de la aplicación.
+ * Transfer object of an error response
+ * of the application.
  * @class
  */
 export class ExceptionResponseDTO {

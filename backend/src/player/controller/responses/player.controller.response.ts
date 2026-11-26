@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlayerDTO } from '../../../dominio/player/player';
+import { PlayerDTO } from '../../../domain/player/player';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**
- * La respuesta por defecto del controlador de los jugadores.
+ * Default response of the player controller.
  */
 export class PlayerControllerResponse extends DefaultResponse {
 	@ApiProperty({ type: PlayerDTO }) player: PlayerDTO;

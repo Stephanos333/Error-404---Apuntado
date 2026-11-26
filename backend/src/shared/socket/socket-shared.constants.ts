@@ -1,9 +1,9 @@
 /**
- * Constantes para definir las configuraciones compartidas de los sockets.
+ * Constants with the shared socket configuration.
  */
 export enum SocketSharedConstants {
 	/**
-	 * Listener en dónde se envían los mensajes de error de los sockets.
+	 * Listener where the socket error messages are sent.
 	 */
 	LISTENER_ERROR_MESSAGES = 'ERROR_MESSAGES',
 }

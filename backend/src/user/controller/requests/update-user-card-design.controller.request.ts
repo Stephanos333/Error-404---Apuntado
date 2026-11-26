@@ -3,8 +3,8 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que contiene los datos requeridos para actualizar el
- * diseño de carta de un usuario.
+ * Data required to update the
+ * card design of a user.
  * @class
  */
 export class UpdateUserCardDesignControllerRequest {

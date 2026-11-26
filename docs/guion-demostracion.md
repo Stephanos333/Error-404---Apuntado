@@ -28,7 +28,7 @@ Si el equipo expone con tres personas, E3 asume también el papel de E4.
 | ☐ | En el navegador B: DevTools → **Network → WS**, con el filtro de mensajes listo | Para mostrar las salas pública y privada (R04) |
 | ☐ | Pestaña de **Swagger** (`/docs`) y, en un bloc de notas, los tokens de **U1 y U2** (DevTools → Application → Local Storage → `KEY_ACCESS_TOKEN`) | Para enviar un comando fuera de turno con el token de quien no tiene el turno |
 | ☐ | Pestaña de **GitHub Actions** con la última ejecución de `CI/CD` abierta en el resumen del job `arquitectura` | Evidencia de las puertas de calidad y las métricas |
-| ☐ | Captura o terminal con la salida de `npm run test:e2e` (8/8) y de `npm run test:estricto` (28/28) | Respaldo si no hay red para mostrar el pipeline |
+| ☐ | Captura o terminal con la salida de `npm run test:e2e` (8/8) y de `npm run test:strict` (28/28) | Respaldo si no hay red para mostrar el pipeline |
 | ☐ | **Video de respaldo (60 a 90 s) en dos clips:** (1) Apuntado: un *tocar* válido, la ronda extra y la liquidación con el inicio de la ronda 2; (2) Clásica: un 4-3-3 válido, la pantalla del ganador y el saldo actualizado | Ver la advertencia de abajo. Una partida de Apuntado solo termina cuando alguien llega a 101 o a -51, lo que toma muchas rondas; la Clásica termina con el primer 4-3-3 |
 | ☐ | Diapositivas con los diagramas 01 (despliegue), 02 (secuencia del cierre) y 04 (escalabilidad) | Apoyo visual de E3 |
 
@@ -107,12 +107,12 @@ abre y **B** el otro. El panel superior del tablero dice a quién le toca.
 
 | Paso | Quién | Acción | Resultado esperado | Qué destacar |
 |---|---|---|---|---|
-| 8 | E4 | En Swagger, con el token de **B**, ejecuta `POST /api/partidas/actual/comandos/robar` con `{"origen": "MAZO", "version": 0, "idComando": "demo-fuera-de-turno"}` | **409** con `TURNO_NO_CORRESPONDE` | El servidor es la única autoridad: la interfaz deshabilita los botones, pero quien decide es el backend |
+| 8 | E4 | En Swagger, con el token de **B**, ejecuta `POST /api/matches/current/commands/draw` con `{"origen": "MAZO", "version": 0, "idComando": "demo-fuera-de-turno"}` | **409** con `TURNO_NO_CORRESPONDE` | El servidor es la única autoridad: la interfaz deshabilita los botones, pero quien decide es el backend |
 | 9 | A | Señala el estado: "Tu turno: organiza tus grupos y descarta". Tiene 11 cartas y no roba | — | La fase del turno la decide el servidor |
 | 10 | A | Selecciona 3 cartas → **"Formar grupo"**; luego selecciona una carta suelta → **"Descartar"** | En ambos navegadores: cambia el turno, se ve el tope del pozo y A queda con 10 cartas | Un comando = una escritura condicional por versión |
 | 11 | E2 | En **DevTools → WS** del navegador B, abre el último mensaje `SHIFT_CHANGED_LISTENER` | Trae la vista pública: tope del pozo, turno y solo **cuántas** cartas tiene cada jugador (`cartasEnMano`), nunca cuáles | **R04:** la sala pública `partida:{gameId}` no recibe cartas |
 | 12 | B | Roba del **mazo** (clic en el mazo) | B tiene 11 cartas; el otro navegador solo ve que B tiene 11 | En DevTools de B aparece `PRIVATE_HAND_LISTENER` con **su** mano: llega por la sala privada `usuario:{userId}` |
-| 13 | B | Pulsa **F5** en medio del turno | El tablero vuelve exactamente al mismo estado | **R07:** `GET /api/partidas/actual` + versión; el cliente nunca retrocede |
+| 13 | B | Pulsa **F5** en medio del turno | El tablero vuelve exactamente al mismo estado | **R07:** `GET /api/matches/current` + versión; el cliente nunca retrocede |
 | 14 | B | Forma un grupo y descarta | Vuelve el turno de A | — |
 
 Si B es U1, el paso 11 se mira en las DevTools del navegador A; conviene abrirlas en los dos.
@@ -157,7 +157,7 @@ Reproducir el video de respaldo, o seguir en vivo si se dio el caso:
 | 17 | GitHub Actions | Los 5 jobs del workflow `CI/CD` | "Nada llega a `main` sin pasar arquitectura, backend, frontend y contenedores; el despliegue solo se dispara después." |
 | 18 | Resumen del job `arquitectura` | Tabla de métricas | "El contrato tiene distancia 0,09 a la secuencia principal y los plug-ins solo los conoce la raíz de composición. La función más compleja del núcleo tiene CC 7, con un umbral de 10." |
 | 19 | Captura o terminal | `test:e2e` 8/8 | "Dos jugadores cierran a la vez: exactamente uno gana y el pozo se paga una vez; el otro recibe 409 `RONDA_YA_CERRADA`." |
-| 20 | Captura o terminal | `test:estricto` 28/28 | "Las 28 fitness functions pasan en modo estricto, con la línea base de deuda vacía." |
+| 20 | Captura o terminal | `test:strict` 28/28 | "Las 28 fitness functions pasan en modo estricto, con la línea base de deuda vacía." |
 
 ### 13:00 – 15:00 · Cierre, escalabilidad y preguntas (E3)
 
@@ -180,7 +180,7 @@ Reproducir el video de respaldo, o seguir en vivo si se dio el caso:
 | ¿Qué pasa si dos jugadores cierran al mismo tiempo? | Escritura condicional por `version`: uno gana; el otro recibe 409 `RONDA_YA_CERRADA`. Probado con un *replica set* real (e2e 8/8). |
 | ¿Cómo evitan que un jugador vea las cartas del otro? | Salas separadas y vistas filtradas; una prueba revisa en profundidad cada mensaje público. Además, el comando se valida en el servidor. |
 | ¿Por qué los comandos van por REST y no por el socket? | Semántica clara de errores (409), idempotencia por `idComando` y pruebas sencillas. El socket solo notifica estados ya confirmados (ADR-05). |
-| ¿Qué pasa si se cae el servidor después de guardar y antes de notificar? | El evento se pierde, pero el estado está guardado: el cliente detecta el salto de versión o se reconecta y relee `GET /api/partidas/actual`. Es un *trade-off* aceptado en ADR-05. |
+| ¿Qué pasa si se cae el servidor después de guardar y antes de notificar? | El evento se pierde, pero el estado está guardado: el cliente detecta el salto de versión o se reconecta y relee `GET /api/matches/current`. Es un *trade-off* aceptado en ADR-05. |
 | ¿Cómo agregarían una modalidad nueva? | Un paquete en `backend/plugins/<id>/` que implemente `ReglaJuegoPlugin` y una línea en `ReglasPluginsModule`. El registro valida el contrato al arrancar. |
 | ¿Por qué no se demostró *tocar* en vivo? | Porque el barajado es criptográficamente seguro: no se puede preparar una mano. Es la misma propiedad que evita las trampas. |
 | ¿Qué falta para producción real? | Migrar contraseñas a argon2id (R12), temporizadores de abandono (R08) y una prueba de carga (R09). Capítulo 5, §5.3. |

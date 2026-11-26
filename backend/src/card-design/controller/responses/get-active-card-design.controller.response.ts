@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CardDesignDTO } from '../../../dominio/card-design/card-design';
+import { CardDesignDTO } from '../../../domain/card-design/card-design';
 import { DefaultResponse } from '../../../shared/default.response';
 
 /**
- * Clase en dónde se define la data en la respuesta del controlador.
+ * Data of the controller response.
  * @class
  * @extends CardDesignDTO
  */
@@ -12,8 +12,8 @@ export class GetActiveCardDesignsResponseData extends CardDesignDTO {
 }
 
 /**
- * Clase que define la respuesta de cuando se intenta acceder a los
- * diseños de carta activos.
+ * Response when the active card designs
+ * are requested.
  * @class
  * @extends DefaultResponse
  */

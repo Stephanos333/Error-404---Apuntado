@@ -15,7 +15,7 @@
   `api/`, `aplicacion/`, `dominio/` e `infraestructura/`.
 - **Punto de partida del E3.** El prototipo estaba dividido por entidades (`user`, `game`, `match`,
   `player`, `card`). Cada carpeta mezclaba controlador, servicio, modelo y esquema Mongoose. FF-03
-  detectaba un ciclo entre 8 módulos y la línea base de `tests/architecture/linea-base.json` lo
+  detectaba un ciclo entre 8 módulos y la línea base de `tests/architecture/baseline.json` lo
   toleraba en modo trinquete.
 - **Fuerzas en la fase 1 del E3:**
   1. Romper el ciclo antes de construir el agregado `partidas` (ADR-04) y el orquestador de turnos
@@ -48,7 +48,7 @@ Se adopta **B**. `backend/src/` queda en capas transversales con una dirección 
 | Persistencia | `database/` | Nada interno | Esquemas Mongoose, `PartidaRepository`, `UnidadDeTrabajo` y **registros propios** (`database.records.ts`) |
 | Transversal | `shared/` | Nada interno | Excepciones base, filtro global y utilidades |
 
-Los plug-ins (`backend/plugins/clasica`, `backend/plugins/apuntado`) quedan fuera de `src/` y solo
+Los plug-ins (`backend/plugins/classic`, `backend/plugins/apuntado`) quedan fuera de `src/` y solo
 conocen el contrato de `reglas/` (ADR-03).
 
 La pieza que rompe el ciclo es la **inversión de dependencias en la persistencia**. `database/`
@@ -64,7 +64,7 @@ el ciclo.
 
 **Positivas:**
 
-- FF-03 pasa en modo estricto con `linea-base.json` vacío: no queda ningún ciclo entre archivos ni
+- FF-03 pasa en modo estricto con `baseline.json` vacío: no queda ningún ciclo entre archivos ni
   entre carpetas.
 - El motor de reglas y los plug-ins se prueban sin NestJS ni MongoDB (FF-05). Agregar una variante
   toca `plugins/` y la raíz de composición, nunca el orquestador (Ca de los plug-ins = 1).

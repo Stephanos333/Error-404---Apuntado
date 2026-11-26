@@ -1,55 +1,55 @@
 /**
- * @enum {string} Constantes relacionadas con la base de datos del proyecto.
+ * @enum {string} Constants related to the project database.
  * @readonly
  */
 export enum DatabaseConstants {
 	/**
-	 * Esta constante representa el nombre de la conexión a la
-	 * base de datos.
+	 * Name of the database
+	 * connection.
 	 */
 	DATABASE_CONNECTION_NAME = 'DATABASE_CONNECTION_NAME',
 	/**
-	 * Esta constante representa el nombre de la colección de diseños de
-	 * cartas en la base de datos.
+	 * Name of the card designs collection
+	 * in the database.
 	 */
 	CARD_DESIGN_COLLECTION_NAME = 'Card-design',
 	/**
-	 * Esta constante representa el provider del esquema de los diseños de cartas.
+	 * Provider of the card designs schema.
 	 */
 	CARD_DESIGN_PROVIDER = 'CARD_DESIGN_PROVIDER',
 	/**
-	 * Esta constante representa el nombre de la colección de juegos
-	 * en la base de datos.
+	 * Name of the games collection
+	 * in the database.
 	 */
 	GAME_COLLECTION_NAME = 'Game',
 	/**
-	 * Esta constante representa el provider del esquema de los juegos.
+	 * Provider of the games schema.
 	 */
 	GAME_PROVIDER = 'GAME_PROVIDER',
 	/**
-	 * Colección del agregado Partida (ADR-04, `docs/schemas/partidas.schema.json`).
+	 * Collection of the Match aggregate (ADR-04, `docs/schemas/matches.schema.json`).
 	 */
-	PARTIDAS_COLLECTION_NAME = 'partidas',
+	MATCHES_COLLECTION_NAME = 'matches',
 	/**
-	 * Colección del libro de tokens (ADR-04, `docs/schemas/asientos_tokens.schema.json`).
+	 * Collection of the token ledger (ADR-04, `docs/schemas/token_ledger.schema.json`).
 	 */
-	ASIENTOS_TOKENS_COLLECTION_NAME = 'asientos_tokens',
+	TOKEN_LEDGER_COLLECTION_NAME = 'token_ledger',
 	/**
-	 * Esta constante representa el nombre de la colección
-	 * de los jugadores en la base de datos.
+	 * Name of the players collection
+	 * in the database.
 	 */
 	PLAYER_COLLECTION_NAME = 'Player',
 	/**
-	 * Esta constante representa el provider del esquema de los jugadores.
+	 * Provider of the players schema.
 	 */
 	PLAYER_PROVIDER = 'PLAYER_PROVIDER',
 	/**
-	 * Esta constante representa el nombre de la colección de usuarios
-	 * en la base de datos.
+	 * Name of the users collection
+	 * in the database.
 	 */
 	USER_COLLECTION_NAME = 'User',
 	/**
-	 * Esta constante representa el provider del esquema de los usuarios.
+	 * Provider of the users schema.
 	 */
 	USER_PROVIDER = 'USER_PROVIDER',
 }

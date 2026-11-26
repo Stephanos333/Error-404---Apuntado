@@ -1,24 +1,24 @@
 /**
- * @enum {string} Constantes que representan la configuración de
- * los controladores de los diseños de cartas.
+ * @enum {string} Constants with the configuration of
+ * the card design controllers.
  */
 export enum CardDesignControllerConstants {
 	/**
-	 * Prefijo utilizado para todos los controladores de los diseños de cartas.
+	 * Prefix used by every card design controller.
 	 */
 	CONTROLLER_PREFIX = 'card-design',
 	/**
-	 * Tag que agrupa todos los controladores de los diseños de cartas.
+	 * Tag that groups every card design controller.
 	 */
 	CONTROLLER_TAG = 'Card Design',
 	/**
-	 * Url utilizada para el controlador que permite traer los diseños
-	 * de cartas activos.
+	 * Url of the controller that fetches the active card
+	 * designs.
 	 */
 	GET_ACTIVE_CARD_DESIGNS_URL = 'active',
 	/**
-	 * Url utilizada para el controlador que permite traer el diseño
-	 * actual del usuario.
+	 * Url of the controller that fetches the user's current
+	 * design.
 	 */
 	GET_CURRENT_CARD_DESIGN = 'current',
 }

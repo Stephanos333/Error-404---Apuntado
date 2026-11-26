@@ -12,8 +12,8 @@ export type GameType = {
     betByPlayer: number;
     isPublic: boolean;
     wasInitiated: boolean;
-    /** Mode (rule plug-in): `clasica` or `apuntado`. */
+    /** Mode (rule plug-in): `classic` or `apuntado`. */
     ruleId?: string;
-    /** `_id` of the `partidas` aggregate once the game has started. */
-    partidaId?: string;
+    /** `_id` of the `matches` aggregate once the game has started. */
+    matchId?: string;
 }

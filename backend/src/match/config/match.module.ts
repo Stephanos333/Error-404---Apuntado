@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AplicacionModule } from '../../aplicacion/aplicacion.module';
+import { ApplicationModule } from '../../application/application.module';
 import { MatchController } from '../controller/match.controller';
 /**
- * Clase que representa el módulo de las partidas y sus respectivas configuraciones.\
- * Configura:
- * - Los controladores de las partidas.
- * Los servicios los provee el módulo de aplicación.
+ * Module of the matches and their configuration.\
+ * It configures:
+ * - The match controllers.
+ * The services are provided by the application module.
  * @class
  * @module
  */
 @Module({
-	imports: [AplicacionModule],
+	imports: [ApplicationModule],
 	controllers: [MatchController],
 })
 export class MatchModule {

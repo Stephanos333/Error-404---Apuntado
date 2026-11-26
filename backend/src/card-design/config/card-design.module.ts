@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AplicacionModule } from '../../aplicacion/aplicacion.module';
+import { ApplicationModule } from '../../application/application.module';
 import { CardDesignController } from '../controller/card-design.controller';
 /**
- * Clase que representa el módulo de los diseños de cartas y sus
- * respectivas configuraciones.
- * Configura:
- * - Los controladores de los diseños de cartas.
- * Los servicios los provee el módulo de aplicación.
+ * Module of the card designs and their
+ * configuration.
+ * It configures:
+ * - The card design controllers.
+ * The services are provided by the application module.
  */
 @Module({
-	imports: [AplicacionModule],
+	imports: [ApplicationModule],
 	controllers: [CardDesignController],
 })
 export class CardDesignModule {

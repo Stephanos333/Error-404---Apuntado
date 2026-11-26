@@ -69,7 +69,7 @@ export function GameBoardComponent(props: {
     const [confirmClose, setConfirmClose] = useState<boolean>(false);
     const groupsRound = useRef<number | undefined>();
     const previousHand = useRef<Set<string> | null>(null);
-    const roundNumber: number | undefined = match?.ronda?.numero;
+    const roundNumber: number | undefined = match?.round?.number;
 
     /**
      * When a new hand arrives the local organization is kept (minus the cards that left).
@@ -84,8 +84,8 @@ export function GameBoardComponent(props: {
         }
         const sameRound = groupsRound.current === roundNumber;
         groupsRound.current = roundNumber;
-        setGroups((previous) => reconcileGroups(sameRound ? previous : null, hand.cartas, hand.grupos));
-        const inHand = new Set(hand.cartas.map(cardKey));
+        setGroups((previous) => reconcileGroups(sameRound ? previous : null, hand.cards, hand.groups));
+        const inHand = new Set(hand.cards.map(cardKey));
         setSelection((previous) => previous.filter((k) => inHand.has(k)));
 
         // Highlights the card that just arrived (a draw), not a whole new deal.
@@ -101,19 +101,19 @@ export function GameBoardComponent(props: {
         return () => clearTimeout(timer);
     }, [newCards]);
 
-    const round = match?.ronda ?? null;
-    const cards: MatchCard[] = hand?.cartas ?? [];
+    const round = match?.round ?? null;
+    const cards: MatchCard[] = hand?.cards ?? [];
     const currentGroups: MatchCard[][] = groups ?? [];
     const loose: MatchCard[] = leftoversOf(cards, currentGroups);
     const shownLoose: MatchCard[] = sortMode === 'ARRIVAL' ? loose : sortCards(loose, sortMode);
     const selected: MatchCard[] = loose.filter((c) => selection.includes(cardKey(c)));
-    const playable: boolean = match?.estado === 'EN_JUEGO' && (round?.estado === 'EN_TURNOS' || round?.estado === 'RONDA_EXTRA');
-    const myTurn: boolean = !!hand && playable && round?.turno.jugadorId === props.myId;
-    const canDraw: boolean = myTurn && round?.turno.fase === 'ESPERANDO_ROBO';
-    const withEleven: boolean = myTurn && round?.turno.fase === 'CON_11_CARTAS';
-    const isApuntado: boolean = match?.modalidad === 'apuntado';
+    const playable: boolean = match?.status === 'IN_PROGRESS' && (round?.status === 'IN_TURNS' || round?.status === 'EXTRA_ROUND');
+    const myTurn: boolean = !!hand && playable && round?.turn.playerId === props.myId;
+    const canDraw: boolean = myTurn && round?.turn.phase === 'AWAITING_DRAW';
+    const withEleven: boolean = myTurn && round?.turn.phase === 'HOLDING_11_CARDS';
+    const isApuntado: boolean = match?.mode === 'apuntado';
     const nameOf = (playerId: string): string =>
-        match?.jugadores.find((j) => j.jugadorId === playerId)?.nombreUsuario ?? 'otro jugador';
+        match?.players.find((j) => j.playerId === playerId)?.username ?? 'otro jugador';
 
     /** Live preview of a close with the selected card as the discard. */
     const closePreview = useMemo(() => {
@@ -121,9 +121,9 @@ export function GameBoardComponent(props: {
         if (!discard) return {shape: null, ready: false, discard: null, leftovers: [] as MatchCard[]};
         const leftovers = leftoversOf(cards, currentGroups, discard);
         const shape = closeShape(currentGroups, leftovers);
-        const allowed = !!shape && (isApuntado || shape === 'GANAR_4_3_3');
+        const allowed = !!shape && (isApuntado || shape === 'WIN_4_3_3');
         const melds = currentGroups.every((g) => meldKind(g) !== null);
-        const knockOk = shape !== 'TOCAR' || points(leftovers) < KNOCK_THRESHOLD;
+        const knockOk = shape !== 'KNOCK' || points(leftovers) < KNOCK_THRESHOLD;
         return {shape: allowed ? shape : null, ready: allowed && melds && knockOk, discard, leftovers};
     }, [selected, cards, currentGroups, isApuntado]);
 
@@ -139,8 +139,8 @@ export function GameBoardComponent(props: {
 
     const draw = async (source: DrawIntent['source']): Promise<void> => {
         if (!canDraw || sending) return;
-        if (source === 'DISCARD_PILE' && !round?.topeDescarte) {
-            showAlert(AlertTypeConstants.WARNING_ALERT, 'POZO_DESCARTE_VACIO');
+        if (source === 'DISCARD_PILE' && !round?.topDiscard) {
+            showAlert(AlertTypeConstants.WARNING_ALERT, 'EMPTY_DISCARD_PILE');
             return;
         }
         await execute(() => props.client.draw({source}));
@@ -213,15 +213,15 @@ export function GameBoardComponent(props: {
         if (!match || !round) return {title: 'Esperando el estado de la partida…'};
         if (!hand) return {title: 'Quedaste eliminado', detail: 'Puedes seguir mirando la partida.'};
         if (!playable) return {title: 'Contando los puntos de la ronda…'};
-        if (!myTurn) return {title: `Turno de ${nameOf(round.turno.jugadorId)}`, detail: 'Mientras tanto, organiza tus grupos.'};
+        if (!myTurn) return {title: `Turno de ${nameOf(round.turn.playerId)}`, detail: 'Mientras tanto, organiza tus grupos.'};
         if (canDraw) return {title: 'Tu turno', detail: 'Roba una carta del mazo o la de arriba del descarte.'};
         return {title: 'Tu turno', detail: 'Organiza tus grupos y descarta una carta, o cierra si tu mano está lista.'};
     };
 
-    const extraRound = round?.rondaExtra;
-    const top: MatchCard | null = round?.topeDescarte ?? null;
+    const extraRound = round?.extraRound;
+    const top: MatchCard | null = round?.topDiscard ?? null;
     const {title, detail} = status();
-    const closeLabel: string = closePreview.shape === 'TOCAR' ? 'Tocar' : closePreview.shape === 'GANAR_4_3_3' || !isApuntado ? 'Cerrar 4-3-3' : 'Cerrar o tocar';
+    const closeLabel: string = closePreview.shape === 'KNOCK' ? 'Tocar' : closePreview.shape === 'WIN_4_3_3' || !isApuntado ? 'Cerrar 4-3-3' : 'Cerrar o tocar';
     const looseCount: number = loose.length;
 
     /** Draws a card of the hand. */
@@ -251,14 +251,14 @@ export function GameBoardComponent(props: {
                         className={`board-pile board-deck ${canDraw ? 'is-available' : ''}`}
                         onClick={() => draw('DECK')}
                         disabled={!canDraw || sending}
-                        aria-label={`Robar del mazo, quedan ${round?.cartasEnMazo ?? 0} cartas`}
+                        aria-label={`Robar del mazo, quedan ${round?.cardsInDeck ?? 0} cartas`}
                     >
                         <span className='board-deck-stack' aria-hidden='true'>
                             <CardBackComponent/>
                             <CardBackComponent/>
                             <CardBackComponent/>
                         </span>
-                        <span className='board-pile-label'>Mazo <span className='num'>{round?.cartasEnMazo ?? 0}</span></span>
+                        <span className='board-pile-label'>Mazo <span className='num'>{round?.cardsInDeck ?? 0}</span></span>
                     </button>
 
                     <div className='board-status' role='status' aria-live='polite'>
@@ -275,8 +275,8 @@ export function GameBoardComponent(props: {
                         {
                             extraRound
                                 ? <span className='board-extra'>
-                                    Ronda extra: {nameOf(extraRound.tocadorId)} tocó.
-                                    {extraRound.pendientes.length > 0 ? ` Falta${extraRound.pendientes.length === 1 ? '' : 'n'}: ${extraRound.pendientes.map(nameOf).join(', ')}.` : ''}
+                                    Ronda extra: {nameOf(extraRound.knockerId)} tocó.
+                                    {extraRound.pending.length > 0 ? ` Falta${extraRound.pending.length === 1 ? '' : 'n'}: ${extraRound.pending.map(nameOf).join(', ')}.` : ''}
                                 </span>
                                 : <></>
                         }
@@ -294,7 +294,7 @@ export function GameBoardComponent(props: {
                                 ? <CardComponent designName={props.design} suit={cardImage(top).suit} type={cardImage(top).type} positionClassName='board-discard-top'/>
                                 : <span className='board-discard-empty' aria-hidden='true'>Vacío</span>
                         }
-                        <span className='board-pile-label'>Descarte <span className='num'>{round?.cartasEnDescarte ?? 0}</span></span>
+                        <span className='board-pile-label'>Descarte <span className='num'>{round?.cardsInDiscardPile ?? 0}</span></span>
                     </button>
                 </div>
             </section>
@@ -370,10 +370,10 @@ export function GameBoardComponent(props: {
                     {
                         !withEleven
                             ? (canDraw ? 'Primero roba una carta.' : '')
-                            : round?.turno.intentoCierre
+                            : round?.turn.closeAttempted
                                 ? 'Ya intentaste cerrar en este turno: ahora descarta una carta.'
                                 : closePreview.ready
-                                    ? <strong className='board-ready'>¡Tu mano está lista para {closePreview.shape === 'TOCAR' ? 'tocar' : 'cerrar'}!</strong>
+                                    ? <strong className='board-ready'>¡Tu mano está lista para {closePreview.shape === 'KNOCK' ? 'tocar' : 'cerrar'}!</strong>
                                     : selected.length === 1
                                         ? 'Esa carta será la que descartas.'
                                         : 'Selecciona la carta que vas a descartar.'
@@ -392,7 +392,7 @@ export function GameBoardComponent(props: {
                         size='large'
                         className={closePreview.ready ? 'board-close-ready' : ''}
                         onClick={() => close()}
-                        disabled={!withEleven || sending || !!round?.turno.intentoCierre}
+                        disabled={!withEleven || sending || !!round?.turn.closeAttempted}
                     >{closeLabel}</Button>
                 </div>
             </div>
@@ -402,7 +402,7 @@ export function GameBoardComponent(props: {
                     <DialogContent>
                         <h2 className='board-dialog-title'>¿Cerrar de todos modos?</h2>
                         <p>
-                            {closePreview.shape === 'TOCAR' && points(closePreview.leftovers) >= KNOCK_THRESHOLD
+                            {closePreview.shape === 'KNOCK' && points(closePreview.leftovers) >= KNOCK_THRESHOLD
                                 ? 'La carta que te sobra vale 5 puntos o más, así que no puedes tocar.'
                                 : 'Alguno de tus grupos no parece una terna, cuarta o escalera válida.'}
                             {isApuntado ? ' Si el cierre no es válido sumas 3 puntos y el turno sigue.' : ' Si el cierre no es válido, el turno sigue.'}

@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que representa los datos requeridos para ingresar a un juego.
+ * Data required to join a game.
  * @class
  */
 export class JoinGameControllerRequest {

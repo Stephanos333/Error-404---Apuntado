@@ -1,58 +1,58 @@
 /**
- * @enum {string} Constantes que representan los tipos de cartas.
+ * @enum {string} Constants for the card types.
  * @readonly
  */
 export enum CardTypeConstants {
 	/**
-	 * Representa la carta A.
+	 * The A card.
 	 */
 	A = 'A',
 	/**
-	 * Representa la carta número 2.
+	 * The number 2 card.
 	 */
 	C2 = 'C2',
 	/**
-	 * Representa la carta número 3.
+	 * The number 3 card.
 	 */
 	C3 = 'C3',
 	/**
-	 * Representa la carta número 4.
+	 * The number 4 card.
 	 */
 	C4 = 'C4',
 	/**
-	 * Representa la carta número 5.
+	 * The number 5 card.
 	 */
 	C5 = 'C5',
 	/**
-	 * Representa la carta número 6.
+	 * The number 6 card.
 	 */
 	C6 = 'C6',
 	/**
-	 * Representa la carta número 7.
+	 * The number 7 card.
 	 */
 	C7 = 'C7',
 	/**
-	 * Representa la carta número 8.
+	 * The number 8 card.
 	 */
 	C8 = 'C8',
 	/**
-	 * Representa la carta número 9.
+	 * The number 9 card.
 	 */
 	C9 = 'C9',
 	/**
-	 * Representa la carta número 10.
+	 * The number 10 card.
 	 */
 	C10 = 'C10',
 	/**
-	 * Representa la carta J.
+	 * The J card.
 	 */
 	J = 'J',
 	/**
-	 * Representa la carta Q.
+	 * The Q card.
 	 */
 	Q = 'Q',
 	/**
-	 * Representa la carta A.
+	 * The A card.
 	 */
 	K = 'K',
 }

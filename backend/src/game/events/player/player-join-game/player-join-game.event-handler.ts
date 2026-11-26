@@ -1,10 +1,10 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { PlayerJoinGameEvent } from '../../../../dominio/events/player/player-join-game/player-join-game.event';
+import { PlayerJoinGameEvent } from '../../../../domain/events/player/player-join-game/player-join-game.event';
 import { GameSocket } from '../../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 
 /**
- * Handler que captura el evento de haber ingresado a un juego.
+ * Handler that captures the event of having joined a game.
  */
 @EventsHandler(PlayerJoinGameEvent)
 export class PlayerJoinGameEventHandler implements IEventHandler<PlayerJoinGameEvent> {
@@ -12,14 +12,14 @@ export class PlayerJoinGameEventHandler implements IEventHandler<PlayerJoinGameE
 	private readonly logger: Logger = new Logger(PlayerJoinGameEventHandler.name);
 
 	/**
-	 * @param socket El socket de eventos de los juegos.
+	 * @param socket The socket of the game events.
 	 */
 	constructor(private readonly socket: GameSocket) {
 	}
 
 	/**
-	 * Ejecuta el evento.
-	 * @param event El evento en ejecución.
+	 * Runs the event.
+	 * @param event The event being run.
 	 */
 	async handle(event: PlayerJoinGameEvent): Promise<void> {
 		try {

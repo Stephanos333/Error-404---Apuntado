@@ -1,10 +1,10 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { GameReadyToStartEvent } from '../../../dominio/events/game-ready-to-start/game-ready-to-start.event';
+import { GameReadyToStartEvent } from '../../../domain/events/game-ready-to-start/game-ready-to-start.event';
 import { GameSocket } from '../../socket/game.socket';
 import { Logger } from '@nestjs/common';
 
 /**
- * Capturador de eventos para indicar que un juego ya está listo para ser iniciado.
+ * Event handler that signals that a game is ready to be started.
  */
 @EventsHandler(GameReadyToStartEvent)
 export class GameReadyToStartEventHandler implements IEventHandler<GameReadyToStartEvent> {
@@ -12,14 +12,14 @@ export class GameReadyToStartEventHandler implements IEventHandler<GameReadyToSt
 	private readonly logger: Logger = new Logger(GameReadyToStartEventHandler.name);
 
 	/**
-	 * @param socket El websocket de eventos de los juegos.
+	 * @param socket The websocket of the game events.
 	 */
 	constructor(private readonly socket: GameSocket) {
 	}
 
 	/**
-	 * Ejecuta el evento.
-	 * @param event El evento en ejecución.
+	 * Runs the event.
+	 * @param event The event being run.
 	 */
 	handle(event: GameReadyToStartEvent) {
 		try {

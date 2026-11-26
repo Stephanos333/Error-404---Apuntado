@@ -1,20 +1,20 @@
 import { Controller, Get } from '@nestjs/common';
 import { CardDesignControllerConstants } from './card-design.controller.constants';
 import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CardDesignService } from '../../aplicacion/card-design/card-design.service';
+import { CardDesignService } from '../../application/card-design/card-design.service';
 import { AuthDecorator } from '../../security/auth.decorator';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
 import { GetActiveCardDesignsControllerResponse } from './responses/get-active-card-design.controller.response';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { UserService } from '../../aplicacion/user/user.service';
-import { User } from '../../dominio/user/user';
-import { UserId } from '../../dominio/user/user-id';
+import { UserService } from '../../application/user/user.service';
+import { User } from '../../domain/user/user';
+import { UserId } from '../../domain/user/user-id';
 import { GetCurrentCardDesignControllerResponse } from './responses/get-current-card-design.controller.response';
-import { CardDesign } from '../../dominio/card-design/card-design';
+import { CardDesign } from '../../domain/card-design/card-design';
 
 /**
- * Clase que contiene los puntos de entrada a la aplicación
- * para los diseños de cartas.
+ * Entry points of the application
+ * for the card designs.
  * @class
  */
 @Controller(CardDesignControllerConstants.CONTROLLER_PREFIX)
@@ -22,10 +22,10 @@ import { CardDesign } from '../../dominio/card-design/card-design';
 export class CardDesignController {
 
 	/**
-	 * @param {CardDesignService} service Los servicios que permiten interactuar
-	 * con los diseños de cartas.
-	 * @param {UserService} userService Los servicios que permiten interactuar
-	 * con los usuarios.
+	 * @param {CardDesignService} service The services to interact
+	 * with the card designs.
+	 * @param {UserService} userService The services to interact
+	 * with the users.
 	 */
 	constructor(
 		private readonly service: CardDesignService,
@@ -34,10 +34,10 @@ export class CardDesignController {
 	}
 
 	/**
-	 * Controlador GET que permite a un usuario acceder a los diseños de
-	 * cartas activos.
-	 * @param {UserDecoratorType} user El usuario que accede a los datos.
-	 * @returns {GetActiveCardDesignsControllerResponse} Los diseños de carta.
+	 * GET controller that lets a user access the active card
+	 * designs.
+	 * @param {UserDecoratorType} user The user accessing the data.
+	 * @returns {GetActiveCardDesignsControllerResponse} The card designs.
 	 */
 	@Get(CardDesignControllerConstants.GET_ACTIVE_CARD_DESIGNS_URL)
 	@AuthDecorator()
@@ -57,9 +57,9 @@ export class CardDesignController {
 	}
 
 	/**
-	 * Controlador GET que permite al usuario consultar su diseño de cartas actual.
-	 * @param {UserDecoratorType} user El usuario que accede al diseño de carta
-	 * @returns {GetCurrentCardDesignControllerResponse} El diseño de carta actual.
+	 * GET controller that lets the user check their current card design.
+	 * @param {UserDecoratorType} user The user accessing the card design
+	 * @returns {GetCurrentCardDesignControllerResponse} The current card design.
 	 */
 	@Get(CardDesignControllerConstants.GET_CURRENT_CARD_DESIGN)
 	@AuthDecorator()

@@ -1,0 +1,7 @@
+{
+  "description": "Known architectural debt (D3, 2026-11-20): paid off. The FF-03 cycles, the FF-05 framework imports and the FF-04 violations were removed in the MVP refactoring. It must only shrink; any new entry requires an approved ADR.",
+  "fileCycles": [],
+  "moduleCycles": [],
+  "engineWithFramework": [],
+  "complexity": []
+}

@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { AplicacionModule } from '../../aplicacion/aplicacion.module';
+import { ApplicationModule } from '../../application/application.module';
 import { GameController } from '../controller/game.controller';
 import { GameSocket } from '../socket/game.socket';
 import Events from '../events';
 /**
- * Clase que representa el módulo de los juegos y sus respectivas
- * configuraciones.
- * Configura:
- * - Los controladores de los juegos.
- * - El gateway WebSocket de los juegos y los manejadores de eventos que lo notifican.
- * Los servicios los provee el módulo de aplicación.
+ * Module of the games and their
+ * configuration.
+ * It configures:
+ * - The game controllers.
+ * - The WebSocket gateway of the games and the event handlers that notify through it.
+ * The services are provided by the application module.
  * @class
  */
 @Module({
-	imports: [AplicacionModule, CqrsModule],
+	imports: [ApplicationModule, CqrsModule],
 	controllers: [GameController],
 	providers: [GameSocket, ...Events],
 })

@@ -3,7 +3,7 @@ import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'cl
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que representa los datos requeridos para crear un juego.
+ * Data required to create a game.
  * @class
  */
 export class CreateGameControllerRequest {
@@ -31,7 +31,7 @@ export class CreateGameControllerRequest {
 		name: string;
 	@ApiProperty({
 		required: false,
-		description: 'Id del plug-in de reglas (p. ej. "clasica" o "apuntado"). Si se omite se usa la regla predeterminada.',
+		description: 'Id of the rule plug-in (e.g. "classic" or "apuntado"). The default rule is used when omitted.',
 	})
 	@IsOptional()
 	@IsString({ message: ExceptionMessagesConstants.GAME_RULE_MUST_BE_A_STRING_ERROR })

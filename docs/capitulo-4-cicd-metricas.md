@@ -40,7 +40,7 @@ flowchart LR
 
 | Job | Qué ejecuta | Qué garantiza | Artefacto |
 |---|---|---|---|
-| `arquitectura` | `npm ci`, `npm test` (trinquete), `npm run test:estricto`, `npm run metricas` en `tests/architecture` | La estructura no se degrada: capas, microkernel, ciclos, complejidad, motor sin framework y esquemas de datos (sección 4.3). | `metricas-arquitectura` (JSON y Markdown); la tabla también aparece en el resumen del job. |
+| `arquitectura` | `npm ci`, `npm test` (trinquete), `npm run test:strict`, `npm run metrics` en `tests/architecture` | La estructura no se degrada: capas, microkernel, ciclos, complejidad, motor sin framework y esquemas de datos (sección 4.3). | `metricas-arquitectura` (JSON y Markdown); la tabla también aparece en el resumen del job. |
 | `backend` | `npm ci`, `tsc --noEmit`, `jest --ci --coverage` (106 pruebas), `npm run test:e2e` (8 pruebas con un replica set de MongoDB en memoria), `npm run build` | El código compila. Las reglas, los plug-ins, el agregado y el orquestador se comportan como se espera. La concurrencia del cierre (R03) sigue protegida. | `cobertura-backend` (informe LCOV) |
 | `frontend` | `yarn install --frozen-lockfile`, `yarn lint`, `yarn test` (16 pruebas Vitest), `yarn build` (`tsc && vite build`) | La SPA compila con el mismo lockfile que la imagen Docker y la lógica del tablero (traducción de comandos, versiones) sigue correcta. | — |
 | `contenedores` | `docker compose config`, `docker compose up -d --build` y una prueba de humo con `curl` sobre `:3000/docs`, `:5173/` y `:5173/docs` (a través del proxy de Nginx); además comprueba que `mongo-init` terminó con código 0 | Las dos imágenes se construyen y el sistema completo arranca en el orden de salud definido: replica set PRIMARY → validadores → backend sano → frontend. | Registros de los contenedores si falla |
@@ -122,7 +122,7 @@ de dolor**: componentes concretos de los que dependen muchos, caros de cambiar. 
 ### 4.2.2 Definiciones operativas en este proyecto
 
 Estas métricas nacieron para lenguajes orientados a clases. Para aplicarlas a TypeScript hubo que
-tomar las siguientes decisiones, implementadas en `tests/architecture/metricas.ts`:
+tomar las siguientes decisiones, implementadas en `tests/architecture/metrics.ts`:
 
 - **Componente.** Cada carpeta `src/<módulo>`. En las capas `aplicacion/`, `dominio/` y
   `reglas/`, el componente es la subcarpeta (`src/dominio/partida`, `src/reglas/contrato`, ...).
@@ -260,13 +260,13 @@ el grafo de `import` del compilador de TypeScript con el algoritmo de Tarjan, ES
 ### 4.3.2 Modo trinquete y modo estricto
 
 - **Trinquete (*ratchet*, `npm test`).** Se toleran solo las violaciones registradas en
-  `linea-base.json` (deuda conocida); cualquier violación nueva hace fallar el pipeline. La
+  `baseline.json` (deuda conocida); cualquier violación nueva hace fallar el pipeline. La
   arquitectura puede mejorar, pero nunca empeorar.
-- **Estricto (`npm run test:estricto`, `ARQ_ESTRICTO=1`).** Se ignora la línea base: cualquier
+- **Estricto (`npm run test:strict`, `ARCH_STRICT=1`).** Se ignora la línea base: cualquier
   violación hace fallar el pipeline. Es la meta de la refactorización.
 
 En el Entregable 2 la línea base registraba un ciclo entre 8 módulos y el motor de cartas acoplado
-a NestJS. En el Entregable 3 esa deuda se saldó, así que hoy `linea-base.json` está vacío y los dos
+a NestJS. En el Entregable 3 esa deuda se saldó, así que hoy `baseline.json` está vacío y los dos
 modos dan el mismo resultado: **28/28 en trinquete y 28/28 en estricto**. La única prueba que se
 comporta distinto según el modo es la meta-prueba del trinquete, que es justamente la que verifica
 esa diferencia. El pipeline ejecuta ambos modos como bloqueantes: el trinquete protege contra
@@ -283,7 +283,7 @@ Durante esta fase se encontró un caso de ese tipo. La parte (b) de FF-02, "el n
 plug-ins concretos", buscaba las carpetas del diseño del Entregable 2 (`juego`, `puntaje`, `sala`).
 El backend del Entregable 3 no tiene esas carpetas, así que sobre el código real la regla no
 revisaba nada: un import de un plug-in desde el orquestador habría pasado sin detectarse. Se
-corrigió en `arquitectura.config.ts`, agregando las carpetas reales del núcleo (`dominio`,
+corrigió en `architecture.config.ts`, agregando las carpetas reales del núcleo (`dominio`,
 `aplicacion`, `reglas`, `partida`, `game`). La raíz de composición `src/reglas-plugins.module.ts`
 queda fuera de esas carpetas, como corresponde.
 
@@ -330,8 +330,8 @@ Cuando una métrica se estabilice, puede convertirse en fitness function. Por ej
 # Fitness functions y métricas (no requieren el backend instalado)
 cd tests/architecture && npm ci
 npm test                 # 28/28, modo trinquete
-npm run test:estricto    # 28/28, modo estricto
-npm run metricas         # escribe docs/metricas/metricas-arquitectura.{json,md}
+npm run test:strict    # 28/28, modo estricto
+npm run metrics         # escribe docs/metricas/metricas-arquitectura.{json,md}
 
 # Backend
 cd backend && npm ci

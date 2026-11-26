@@ -3,8 +3,8 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que representa los datos requeridos para que un
- * usuario pueda iniciar sesión.
+ * Data required for a
+ * user to log in.
  *
  * @class
  */

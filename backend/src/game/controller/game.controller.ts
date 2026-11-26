@@ -1,4 +1,4 @@
-import { GameService } from '../../aplicacion/game/game.service';
+import { GameService } from '../../application/game/game.service';
 import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
 import { GameControllerConstants } from './game.controller.constants';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -7,21 +7,21 @@ import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response
 import { GameControllerResponse } from './responses/game.controller.response';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
 import { CreateGameControllerRequest } from './requests/create-game.controller.request';
-import { Game, GameDTO } from '../../dominio/game/game';
-import { UserId } from '../../dominio/user/user-id';
+import { Game, GameDTO } from '../../domain/game/game';
+import { UserId } from '../../domain/user/user-id';
 import { GetPublicGamesControllerResponse } from './responses/get-public-games.controller.response';
 import { GetCurrentGameControllerResponse } from './responses/get-current-game.controller.response';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { GameDecorator } from '../../security/game.decorator';
-import { PlayerService } from '../../aplicacion/player/player.service';
-import { GameId } from '../../dominio/game/game-id';
+import { PlayerService } from '../../application/player/player.service';
+import { GameId } from '../../domain/game/game-id';
 import { JoinGameControllerRequest } from './requests/join-game-controller.request';
-import { TurnOrchestrator } from '../../aplicacion/partida/turn-orchestrator.service';
+import { TurnOrchestrator } from '../../application/match/turn-orchestrator.service';
 import { DefaultResponse } from '../../shared/default.response';
 
 /**
- * Clase que contiene los puntos de entrada a la aplicación
- * para los usuarios.
+ * Entry points of the application
+ * for the games.
  * @class
  */
 @Controller(GameControllerConstants.CONTROLLER_PREFIX)
@@ -29,22 +29,22 @@ import { DefaultResponse } from '../../shared/default.response';
 export class GameController {
 
 	/**
-	 * @param {GameService} service Los servicios que permiten interactuar con los juegos.
-	 * @param {PlayerService} playerService Los servicios que permiten interactuar con los jugadores.
-	 * @param {TurnOrchestrator} orquestador El orquestador de turnos (estado de la partida).
+	 * @param {GameService} service The services to interact with the games.
+	 * @param {PlayerService} playerService The services to interact with the players.
+	 * @param {TurnOrchestrator} orchestrator The turn orchestrator (match state).
 	 */
 	constructor(
 		private readonly service: GameService,
 		private readonly playerService: PlayerService,
-		private readonly orquestador: TurnOrchestrator,
+		private readonly orchestrator: TurnOrchestrator,
 	) {
 	}
 
 	/**
-	 * Controlador POST que permite crear un juego.
-	 * @param {CreateGameControllerRequest} body Los datos requeridos para crear el juego.
-	 * @param {UserDecoratorType} user El usuario que está generando el juego.
-	 * @returns {GameControllerResponse} La respuesta con el juego generado.
+	 * POST controller that creates a game.
+	 * @param {CreateGameControllerRequest} body The data required to create the game.
+	 * @param {UserDecoratorType} user The user creating the game.
+	 * @returns {GameControllerResponse} The response with the created game.
 	 */
 	@Post()
 	@AuthDecorator()
@@ -63,11 +63,11 @@ export class GameController {
 	}
 
 	/**
-	 * Controlador GET que permite traer el juego actual de un jugador.
-	 * @param {UserDTO} user Los datos de autenticación del usuario.
-	 * @param {GameDTO} game El juego solicitado.
-	 * @returns {GetPublicGamesControllerResponse} La respuesta del controlador
-	 * con el juego solicitado.
+	 * GET controller that fetches the current game of a player.
+	 * @param {UserDTO} user The authentication data of the user.
+	 * @param {GameDTO} game The requested game.
+	 * @returns {GetPublicGamesControllerResponse} The controller response
+	 * with the requested game.
 	 */
 	@Get(GameControllerConstants.GET_CURRENT_GAME_DETAIL_URL)
 	@GameAuthDecorator()
@@ -83,17 +83,17 @@ export class GameController {
 			new GameId(game.gameId),
 			new UserId(user.userId),
 		);
-		if (game.partidaId) {
-			// Solo la vista pública: las cartas privadas se consultan en GET /partidas/actual.
-			response.partida = (await this.orquestador.obtenerEstado(game.partidaId, user.userId)).publica;
+		if (game.matchId) {
+			// Only the public view: the private cards are fetched with GET /matches/current.
+			response.match = (await this.orchestrator.getState(game.matchId, user.userId)).publicView;
 		}
 		return response;
 	}
 
 	/**
-	 * Controlador GET que permite traer todos los juegos públicos y disponibles.
-	 * @returns {GetPublicGamesControllerResponse} La respuesta que contiene los juegos públicos
-	 * disponibles.
+	 * GET controller that fetches every public and available game.
+	 * @returns {GetPublicGamesControllerResponse} The response with the available public
+	 * games.
 	 */
 	@Get(GameControllerConstants.GET_PUBLIC_GAMES_URL)
 	@AuthDecorator()
@@ -107,10 +107,10 @@ export class GameController {
 	}
 
 	/**
-	 * Controlador PATCH que permite que un jugador ingrese a un juego.
-	 * @param {JoinGameControllerRequest} body Los datos requeridos para ingresar a un juego.
-	 * @param {UserDecoratorType} user El usuario que ingresa al juego.
-	 * @returns {GameControllerConstants} La respuesta del controlador con el juego al que se ingresó.
+	 * PATCH controller that lets a player join a game.
+	 * @param {JoinGameControllerRequest} body The data required to join a game.
+	 * @param {UserDecoratorType} user The user joining the game.
+	 * @returns {GameControllerConstants} The controller response with the joined game.
 	 */
 	@Patch(GameControllerConstants.JOIN_GAME_URL)
 	@AuthDecorator()
@@ -127,9 +127,9 @@ export class GameController {
 	}
 
 	/**
-	 * Controlador DELETE que permite cancelar o abandonar la sala de espera actual.
-	 * @param {UserDecoratorType} user El usuario autenticado.
-	 * @returns {Promise<DefaultResponse>} La respuesta de la operación.
+	 * DELETE controller that cancels or leaves the current waiting room.
+	 * @param {UserDecoratorType} user The authenticated user.
+	 * @returns {Promise<DefaultResponse>} The response of the operation.
 	 */
 	@Delete(GameControllerConstants.GET_CURRENT_GAME_DETAIL_URL)
 	@AuthDecorator()

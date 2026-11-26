@@ -81,9 +81,9 @@ Se adopta el estilo **Microkernel, desplegado como Monolito Modular** (un quantu
 
 | Verificación | Tipo | Dónde |
 |---|---|---|
-| FF-02: los plug-ins no dependen entre sí; el núcleo (`juego`, `puntaje`, `sala`) no importa plug-ins concretos; cada plug-in solo depende del contrato y del evaluador; sin ciclos | Fitness function automatizada (TSArch) | `tests/architecture/ff02-independencia-plugins.spec.ts` |
-| FF-05: el contrato, el evaluador y los plug-ins no importan NestJS, Mongoose, Socket.IO ni RxJS | Fitness function automatizada | `ff05-motor-reglas-sin-framework.spec.ts` |
-| FF-04: ningún método evaluador de combinaciones supera CC 10 | Fitness function automatizada (ESLint) | `ff04-complejidad-ciclomatica.spec.ts` |
+| FF-02: los plug-ins no dependen entre sí; el núcleo (`juego`, `puntaje`, `sala`) no importa plug-ins concretos; cada plug-in solo depende del contrato y del evaluador; sin ciclos | Fitness function automatizada (TSArch) | `tests/architecture/ff02-plugin-independence.spec.ts` |
+| FF-05: el contrato, el evaluador y los plug-ins no importan NestJS, Mongoose, Socket.IO ni RxJS | Fitness function automatizada | `ff05-framework-free-rule-engine.spec.ts` |
+| FF-04: ningún método evaluador de combinaciones supera CC 10 | Fitness function automatizada (ESLint) | `ff04-cyclomatic-complexity.spec.ts` |
 | Suite de contrato parametrizada: la misma batería de casos (4-3-3, tocar, escaleras con y sin vuelta, comodín, umbrales) se ejecuta contra **cada** entrada del manifiesto | Prueba automatizada (pendiente de implementar con el refactor) | `backend/plugins/**/contrato.spec.ts` |
 | Arranque con un plug-in de contrato incompatible → el servicio no inicia | Prueba de integración | `reglas/registro` |
 | Revisión del PR de una variante: solo toca `backend/plugins/<id>/` y el manifiesto | Manual | Plantilla de PR |

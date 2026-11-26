@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# Inicialización de la base de datos del Sistema Apuntado (servicio mongo-init de docker-compose).
-#  1. Crea las colecciones con sus validadores $jsonSchema estrictos y los índices del modelo
-#     documental (docs/schemas/crear-colecciones.mongodb.js, ADR-04).
-#  2. Carga el catálogo de diseños de carta: sin el diseño por defecto no se pueden registrar usuarios.
-# Es idempotente: se puede ejecutar en cada arranque.
+# Database initialization for the Apuntado system (docker-compose mongo-init service).
+#  1. Migrates old data to the English data contracts (one-off, idempotent).
+#  2. Creates the collections with their strict $jsonSchema validators and the indexes of the
+#     document model (docs/schemas/create-collections.mongodb.js, ADR-04).
+#  3. Loads the card design catalog: users cannot register without the default design.
+# It is idempotent: it can run on every start.
 set -euo pipefail
 
 URI="${MONGODB_URI:-mongodb://mongodb:27017/apuntado?replicaSet=rs0}"
 
-echo "[mongo-init] Aplicando validadores e índices (docs/schemas)..."
+echo "[mongo-init] Migrating to the English data contracts..."
+mongosh "$URI" --quiet --file /docker/mongo/migrate-english-contracts.js
+
+echo "[mongo-init] Applying validators and indexes (docs/schemas)..."
 cd /
-mongosh "$URI" --quiet --file /docs/schemas/crear-colecciones.mongodb.js
+mongosh "$URI" --quiet --file /docs/schemas/create-collections.mongodb.js
 
-echo "[mongo-init] Cargando el catálogo de diseños de carta..."
-mongosh "$URI" --quiet --file /docker/mongo/seed-disenos-carta.js
+echo "[mongo-init] Loading the card design catalog..."
+mongosh "$URI" --quiet --file /docker/mongo/seed-card-designs.js
 
-echo "[mongo-init] Base de datos lista."
+echo "[mongo-init] Database ready."

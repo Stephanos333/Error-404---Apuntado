@@ -1,1 +1,1 @@
-export * from './regla-apuntado.plugin';
+export * from './apuntado-rule.plugin';

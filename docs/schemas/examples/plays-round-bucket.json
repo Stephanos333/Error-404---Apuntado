@@ -1,0 +1,77 @@
+{
+  "_id": {
+    "$oid": "0000000000000000000000c3"
+  },
+  "matchId": {
+    "$oid": "0000000000000000000000a1"
+  },
+  "roundNumber": 3,
+  "closed": false,
+  "count": 4,
+  "events": [
+    {
+      "sequence": 1,
+      "type": "DEAL",
+      "playerId": null,
+      "card": null,
+      "detail": {
+        "initial": "j3",
+        "cardsPerPlayer": {
+          "j3": 11,
+          "j1": 10,
+          "j2": 10
+        }
+      },
+      "version": 149,
+      "createdAt": {
+        "$date": "2026-10-26T23:30:25Z"
+      }
+    },
+    {
+      "sequence": 2,
+      "type": "DISCARD",
+      "playerId": "j3",
+      "card": {
+        "rank": "K",
+        "suit": "DIAMONDS",
+        "deckNumber": 1,
+        "designId": {
+          "$oid": "0000000000000000000000d1"
+        }
+      },
+      "detail": null,
+      "version": 150,
+      "createdAt": {
+        "$date": "2026-10-26T23:31:02Z"
+      }
+    },
+    {
+      "sequence": 3,
+      "type": "PENALTY",
+      "playerId": "j2",
+      "card": null,
+      "detail": {
+        "reason": "GROUP_2_IS_NOT_A_THREE",
+        "points": 2
+      },
+      "version": 152,
+      "createdAt": {
+        "$date": "2026-10-26T23:33:40Z"
+      }
+    },
+    {
+      "sequence": 4,
+      "type": "DRAW_FROM_DECK",
+      "playerId": "j1",
+      "card": null,
+      "detail": {
+        "hiddenCard": true
+      },
+      "version": 156,
+      "createdAt": {
+        "$date": "2026-10-26T23:41:30Z"
+      }
+    }
+  ],
+  "revealedHands": []
+}

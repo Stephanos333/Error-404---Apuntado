@@ -10,5 +10,5 @@ export type GetCurrentGameDetailResponse = {
     game: GameType;
     players: PlayerWithUserType[];
     /** Public view of the match in progress (no private cards). */
-    partida?: PublicMatchView;
+    match?: PublicMatchView;
 }

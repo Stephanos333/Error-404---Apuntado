@@ -7,14 +7,14 @@ import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response
 import { SessionControllerConstants } from './session.controller.constants';
 import { SessionService } from '../session.service';
 import { UserDecorator } from '../user.decorator';
-import { UserDTO } from '../../dominio/user/user';
-import { UserId } from '../../dominio/user/user-id';
+import { UserDTO } from '../../domain/user/user';
+import { UserId } from '../../domain/user/user-id';
 import { RefreshTokenControllerRequest } from './requests/refresh-token.controller.request';
 import { RefreshTokenControllerResponse } from './responses/refresh-token.controller.response';
 
 /**
- * Clase que contiene los puntos de entrada a la aplicación
- * para las sesiones.
+ * Entry points of the application
+ * for the sessions.
  *
  * @class
  */
@@ -23,17 +23,17 @@ import { RefreshTokenControllerResponse } from './responses/refresh-token.contro
 export class SessionController {
 
 	/**
-	 * @param {SessionService} service Los servicios que permiten
-	 * interactuar con la sesión de la aplicación.
+	 * @param {SessionService} service The services to interact
+	 * with the application session.
 	 */
 	constructor(private readonly service: SessionService) {
 	}
 
 	/**
-	 * Controlador POST que permite a un usuario iniciar sesión.
-	 * @param {UserDTO} user Los datos del usuario después del inicio de sesión.
-	 * @returns {LoginControllerResponse} La respuesta correspondiente al inicio
-	 * de sesión.
+	 * POST controller that lets a user log in.
+	 * @param {UserDTO} user The user data after logging in.
+	 * @returns {LoginControllerResponse} The login
+	 * response.
 	 */
 	@Post(SessionControllerConstants.LOGIN_URL)
 	@UseGuards(LoginGuard)
@@ -50,10 +50,10 @@ export class SessionController {
 	}
 
 	/**
-	 * Controlador POST que permite a un usuario refrescar su token de inicio de sesión.
-	 * @param {RefreshTokenControllerRequest} body Los datos necesarios para refrescar el
-	 * token de acceso del usuario.
-	 * @returns {RefreshTokenControllerResponse} Retorna el nuevo token de acceso.
+	 * POST controller that lets a user refresh their login token.
+	 * @param {RefreshTokenControllerRequest} body The data needed to refresh the
+	 * user's access token.
+	 * @returns {RefreshTokenControllerResponse} The new access token.
 	 */
 	@Post(SessionControllerConstants.REFRESH_TOKEN_URL)
 	@ApiCreatedResponse({ type: RefreshTokenControllerResponse })

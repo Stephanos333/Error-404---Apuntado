@@ -1,22 +1,22 @@
 /**
- * @enum {string} Constantes que representan las pintas de las cartas.
+ * @enum {string} Constants for the card suits.
  * @readonly
  */
 export enum CardSuitConstants {
 	/**
-	 * Representa los tréboles.
+	 * Clubs.
 	 */
 	CLUB = 'CLUB',
 	/**
-	 * Representa los diamantes.
+	 * Diamonds.
 	 */
 	DIAMOND = 'DIAMOND',
 	/**
-	 * Representa los corazones.
+	 * Hearts.
 	 */
 	HEART = 'HEART',
 	/**
-	 * Representa las picas.
+	 * Spades.
 	 */
 	SPADE = 'SPADE',
 }

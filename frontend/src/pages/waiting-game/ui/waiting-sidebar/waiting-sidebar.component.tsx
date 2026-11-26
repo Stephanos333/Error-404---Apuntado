@@ -15,7 +15,7 @@ import {PaperTheme} from '../../../../config/app.theme.tsx';
 import './waiting-sidebar.component.css';
 
 /** Readable mode name. */
-const MODE_NAME: Record<string, string> = {apuntado: 'Apuntado a 101', clasica: 'Clásica 4-3-3'};
+const MODE_NAME: Record<string, string> = {apuntado: 'Apuntado a 101', classic: 'Clásica 4-3-3'};
 
 /**
  * Waiting room side panel: table details, invitation and the host/guest actions.

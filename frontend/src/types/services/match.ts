@@ -1,7 +1,7 @@
 import {CloseType, MatchCard, PrivateHandView, PublicMatchView} from '../match.type.ts';
 
 /**
- * Match services (`/api/partidas/actual`). Every command carries `version` (optimistic
+ * Match services (`/api/matches/current`). Every command carries `version` (optimistic
  * concurrency) and `idComando` (idempotency, UUID v4). Property names are the API contract.
  */
 
@@ -9,15 +9,15 @@ import {CloseType, MatchCard, PrivateHandView, PublicMatchView} from '../match.t
 export type MatchResponse = {
     success: boolean;
     /** `false` when the command had already been applied (idempotent resend). */
-    aplicado: boolean;
-    partida: PublicMatchView;
-    mano: PrivateHandView | null;
+    applied: boolean;
+    match: PublicMatchView;
+    hand: PrivateHandView | null;
 };
 
 /** Concurrency data of every command. */
 export type CommandBase = {
     version: number;
-    idComando: string;
+    commandId: string;
 };
 
 // ---- Player intents (built by the UI) --------------------------------------------
@@ -47,20 +47,20 @@ export type CloseIntent = {
 // The backend identifies cards by their index in the hand it sent: the client translates
 // cards to indexes using the hand of the same version.
 
-/** POST /api/partidas/actual/comandos/robar */
+/** POST /api/matches/current/commands/draw */
 export type DrawRequest = CommandBase & {
-    origen: 'MAZO' | 'DESCARTE';
+    source: 'DECK' | 'DISCARD_PILE';
 };
 
-/** POST /api/partidas/actual/comandos/descartar */
+/** POST /api/matches/current/commands/discard */
 export type DiscardRequest = CommandBase & {
-    carta: number;
-    grupos?: number[][];
+    card: number;
+    groups?: number[][];
 };
 
-/** POST /api/partidas/actual/comandos/cerrar */
+/** POST /api/matches/current/commands/close */
 export type CloseRequest = CommandBase & {
-    tipo: CloseType;
-    grupos: number[][];
-    descarte: number;
+    type: CloseType;
+    groups: number[][];
+    discard: number;
 };

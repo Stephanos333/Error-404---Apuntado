@@ -24,10 +24,10 @@ import {ScoreboardComponent} from './ui/scoreboard/scoreboard.component.tsx';
 import {useMatch} from './use-match.ts';
 
 /** Readable mode name. */
-export const MODE_NAME: Record<string, string> = {apuntado: 'Apuntado a 101', clasica: 'Clásica 4-3-3'};
+export const MODE_NAME: Record<string, string> = {apuntado: 'Apuntado a 101', classic: 'Clásica 4-3-3'};
 
 /**
- * Match page (the `partidas` aggregate). State comes from `GET /api/partidas/actual` and from
+ * Match page (the `matches` aggregate). State comes from `GET /api/matches/current` and from
  * the public and private socket rooms.
  */
 export function GamePage(): JSX.Element {
@@ -46,18 +46,18 @@ export function GamePage(): JSX.Element {
 
     /** Notices for the public match events. */
     const handleMessage = useCallback((message: PublicMatchMessage): void => {
-        switch (message.evento) {
-        case 'CIERRE_FALLIDO':
-            if (message.jugadorId === myId) showAlert(AlertTypeConstants.WARNING_ALERT, 'CLOSE_FAILED_MESSAGE');
+        switch (message.event) {
+        case 'CLOSE_FAILED':
+            if (message.playerId === myId) showAlert(AlertTypeConstants.WARNING_ALERT, 'CLOSE_FAILED_MESSAGE');
             break;
-        case 'JUGADOR_TOCO':
-            showAlert(AlertTypeConstants.WARNING_ALERT, message.jugadorId === myId ? 'YOU_KNOCKED_MESSAGE' : 'PLAYER_KNOCKED_MESSAGE');
+        case 'PLAYER_KNOCKED':
+            showAlert(AlertTypeConstants.WARNING_ALERT, message.playerId === myId ? 'YOU_KNOCKED_MESSAGE' : 'PLAYER_KNOCKED_MESSAGE');
             break;
-        case 'RONDA_INICIADA':
+        case 'ROUND_STARTED':
             showAlert(AlertTypeConstants.SUCCESS_ALERT, 'ROUND_STARTED_MESSAGE');
             break;
-        case 'PARTIDA_FINALIZADA':
-            navigate(RoutesConstants.SHOW_MATCH_WINNER, {state: {match: message.partida, myId}});
+        case 'MATCH_FINISHED':
+            navigate(RoutesConstants.SHOW_MATCH_WINNER, {state: {match: message.match, myId}});
             break;
         default:
             break;
@@ -94,11 +94,11 @@ export function GamePage(): JSX.Element {
 
     /** If the match had already finished when loading (e.g. after a reload), show the result. */
     useEffect(() => {
-        if (match?.estado === 'FINALIZADA') navigate(RoutesConstants.SHOW_MATCH_WINNER, {state: {match, myId}});
+        if (match?.status === 'FINISHED') navigate(RoutesConstants.SHOW_MATCH_WINNER, {state: {match, myId}});
     }, [match, navigate, myId]);
 
     /** The tab title tells you it is your turn when you are looking at another tab. */
-    const myTurn: boolean = !!match?.ronda && match.ronda.turno.jugadorId === myId && match.estado === 'EN_JUEGO';
+    const myTurn: boolean = !!match?.round && match.round.turn.playerId === myId && match.status === 'IN_PROGRESS';
     useEffect(() => {
         document.title = myTurn ? '¡Tu turno! · Apuntado' : 'Apuntado';
         return () => {
@@ -106,7 +106,7 @@ export function GamePage(): JSX.Element {
         };
     }, [myTurn]);
 
-    const modeName: string = match ? MODE_NAME[match.modalidad] ?? match.modalidad : '';
+    const modeName: string = match ? MODE_NAME[match.mode] ?? match.mode : '';
 
     return (
         <div className='game-page page-container'>
@@ -115,9 +115,9 @@ export function GamePage(): JSX.Element {
                     match
                         ? <div className='game-page-facts'>
                             <span className='game-page-fact'>{modeName}</span>
-                            {match.ronda ? <span className='game-page-fact'>Ronda <strong className='num'>{match.ronda.numero}</strong></span> : <></>}
+                            {match.round ? <span className='game-page-fact'>Ronda <strong className='num'>{match.round.number}</strong></span> : <></>}
                             <Tooltip title='Pozo de la partida' arrow>
-                                <span className='game-page-fact game-page-pot'><TokenAmountComponent amount={match.pozo.total} size='sm' label='fichas en el pozo'/></span>
+                                <span className='game-page-fact game-page-pot'><TokenAmountComponent amount={match.pot.total} size='sm' label='fichas en el pozo'/></span>
                             </Tooltip>
                         </div>
                         : <></>

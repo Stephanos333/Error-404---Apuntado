@@ -1,28 +1,28 @@
 /**
- * @enum {string} Constantes que representan la configuración de
- * los controladores de los usuarios.
+ * @enum {string} Constants with the configuration of
+ * the user controllers.
  * @readonly
  */
 export enum UserControllerConstants {
 	/**
-	 * Prefijo utilizado para todos los controladores de los usuarios.
+	 * Prefix used by every user controller.
 	 */
 	CONTROLLER_PREFIX = 'user',
 	/**
-	 * Tag que agrupa todos los controladores de los usuarios.
+	 * Tag that groups every user controller.
 	 */
 	CONTROLLER_TAG = 'User',
 	/**
-	 * Url utilizada para el controlador que retorna al usuario.
+	 * Url of the controller that returns the user.
 	 */
 	GET_ME_URL = 'me',
 	/**
-	 * Url utilizada para el controlador que actualiza el diseño
-	 * de carta del usuario.
+	 * Url of the controller that updates the user's card
+	 * design.
 	 */
 	UPDATE_USER_CARD_DESIGN_URL = 'card-design',
 	/**
-	 * Url utilizada para el controlador que actualiza el icono de un usuario.
+	 * Url of the controller that updates the icon of a user.
 	 */
 	UPDATE_USER_ICON = 'icon',
 }

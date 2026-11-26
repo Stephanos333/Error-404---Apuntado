@@ -6,7 +6,7 @@ import {CardRank, CardSuit, CloseType, MatchCard} from '../../types/match.type.t
 import {CloseIntent, CloseRequest, DiscardIntent, DiscardRequest, DrawIntent, DrawRequest} from '../../types/services/match.ts';
 
 /** Unique key of a card in a hand (with two decks there are repeated cards). */
-export const cardKey = (c: MatchCard): string => `${c.valor}-${c.palo}-${c.baraja}`;
+export const cardKey = (c: MatchCard): string => `${c.rank}-${c.suit}-${c.deckNumber}`;
 
 /** Card equality. */
 export const sameCard = (a: MatchCard, b: MatchCard): boolean => cardKey(a) === cardKey(b);
@@ -37,7 +37,7 @@ export class InvalidIntentError extends Error {
  */
 export function cardIndex(hand: MatchCard[], card: MatchCard): number {
     const i = hand.findIndex((c) => sameCard(c, card));
-    if (i < 0) throw new InvalidIntentError('CARTA_NO_ESTA_EN_LA_MANO');
+    if (i < 0) throw new InvalidIntentError('CARD_NOT_IN_HAND');
     return i;
 }
 
@@ -67,55 +67,55 @@ export function leftoversOf(hand: MatchCard[], groups: MatchCard[][], excluded?:
     return hand.filter((c) => !used.has(cardKey(c)));
 }
 
-/** `robar` body. */
-export function drawBody(intent: DrawIntent, version: number, idComando: string): DrawRequest {
-    return {origen: intent.source === 'DISCARD_PILE' ? 'DESCARTE' : 'MAZO', version, idComando};
+/** `draw` body. */
+export function drawBody(intent: DrawIntent, version: number, commandId: string): DrawRequest {
+    return {source: intent.source === 'DISCARD_PILE' ? 'DISCARD_PILE' : 'DECK', version, commandId};
 }
 
-/** `descartar` body: the card and the groups become indexes of the current hand. */
-export function discardBody(hand: MatchCard[], intent: DiscardIntent, version: number, idComando: string): DiscardRequest {
-    const carta = cardIndex(hand, intent.card);
-    const grupos = intent.groups ? groupsToIndexes(hand, intent.groups) : undefined;
-    if (grupos?.flat().includes(carta)) throw new InvalidIntentError('GRUPOS_INVALIDOS');
-    return {carta, grupos, version, idComando};
+/** `discard` body: the card and the groups become indexes of the current hand. */
+export function discardBody(hand: MatchCard[], intent: DiscardIntent, version: number, commandId: string): DiscardRequest {
+    const card = cardIndex(hand, intent.card);
+    const groups = intent.groups ? groupsToIndexes(hand, intent.groups) : undefined;
+    if (groups?.flat().includes(card)) throw new InvalidIntentError('INVALID_GROUPS');
+    return {card, groups, version, commandId};
 }
 
 /**
- * `cerrar` body. Checks that the declaration matches the hand: groups, discard and leftovers
+ * `close` body. Checks that the declaration matches the hand: groups, discard and leftovers
  * must cover exactly the 11 cards, without repeats.
  * @throws {InvalidIntentError} GRUPOS_INVALIDOS
  */
-export function closeBody(hand: MatchCard[], intent: CloseIntent, version: number, idComando: string): CloseRequest {
+export function closeBody(hand: MatchCard[], intent: CloseIntent, version: number, commandId: string): CloseRequest {
     const {groups, discard, leftovers} = intent.declaration;
     const declared = [...groups.flat(), discard, ...leftovers].map(cardKey);
     const matches = declared.length === hand.length && new Set(declared).size === hand.length && hand.every((c) => declared.includes(cardKey(c)));
-    if (!matches) throw new InvalidIntentError('GRUPOS_INVALIDOS');
-    return {tipo: intent.closeType, grupos: groupsToIndexes(hand, groups), descarte: cardIndex(hand, discard), version, idComando};
+    if (!matches) throw new InvalidIntentError('INVALID_GROUPS');
+    return {type: intent.closeType, groups: groupsToIndexes(hand, groups), discard: cardIndex(hand, discard), version, commandId};
 }
 
 /**
  * Close shape from the group sizes (whether the melds are valid is up to the server):
- * 1 four + 2 threes with no leftovers is 4-3-3; 3 threes + 1 leftover is a knock (tocar).
+ * 1 four + 2 threes with no leftovers is 4-3-3; 3 threes + 1 leftover is a knock.
  * `null` when the organization has neither shape.
  */
 export function closeShape(groups: MatchCard[][], leftovers: MatchCard[]): CloseType | null {
     const sizes = groups.filter((g) => g.length > 0).map((g) => g.length).sort().join(',');
-    if (sizes === '3,3,4' && leftovers.length === 0) return 'GANAR_4_3_3';
-    if (sizes === '3,3,3' && leftovers.length === 1) return 'TOCAR';
+    if (sizes === '3,3,4' && leftovers.length === 0) return 'WIN_4_3_3';
+    if (sizes === '3,3,3' && leftovers.length === 1) return 'KNOCK';
     return null;
 }
 
 /** Points of each rank (same table as the backend: A, J, Q and K are worth 10). */
 const CARD_POINTS: Record<CardRank, number> = {
-    AS: 10, DOS: 2, TRES: 3, CUATRO: 4, CINCO: 5, SEIS: 6, SIETE: 7, OCHO: 8, NUEVE: 9, DIEZ: 10, J: 10, Q: 10, K: 10,
+    ACE: 10, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8, NINE: 9, TEN: 10, J: 10, Q: 10, K: 10,
 };
 
 /** Sum of the cards' points (informative: the server decides). */
-export const points = (cards: MatchCard[]): number => cards.reduce((s, c) => s + CARD_POINTS[c.valor], 0);
+export const points = (cards: MatchCard[]): number => cards.reduce((s, c) => s + CARD_POINTS[c.rank], 0);
 
 /** Numeric value of each rank for runs (A = 1 … K = 13). */
 const RANK_VALUE: Record<CardRank, number> = {
-    AS: 1, DOS: 2, TRES: 3, CUATRO: 4, CINCO: 5, SEIS: 6, SIETE: 7, OCHO: 8, NUEVE: 9, DIEZ: 10, J: 11, Q: 12, K: 13,
+    ACE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8, NINE: 9, TEN: 10, J: 11, Q: 12, K: 13,
 };
 
 /** Kind of meld a group forms. */
@@ -131,14 +131,14 @@ export type MeldKind = 'SET' | 'RUN';
  */
 export function meldKind(group: MatchCard[]): MeldKind | null {
     if (group.length < 3 || group.length > 4) return null;
-    const sameRank = group.every((c) => c.valor === group[0].valor);
+    const sameRank = group.every((c) => c.rank === group[0].rank);
     if (sameRank) {
         const copies = new Map<string, number>();
-        group.forEach((c) => copies.set(c.palo, (copies.get(c.palo) ?? 0) + 1));
+        group.forEach((c) => copies.set(c.suit, (copies.get(c.suit) ?? 0) + 1));
         return Math.max(...copies.values()) <= 2 ? 'SET' : null;
     }
-    if (!group.every((c) => c.palo === group[0].palo)) return null;
-    const values = [...new Set(group.map((c) => RANK_VALUE[c.valor]))].sort((a, b) => a - b);
+    if (!group.every((c) => c.suit === group[0].suit)) return null;
+    const values = [...new Set(group.map((c) => RANK_VALUE[c.rank]))].sort((a, b) => a - b);
     if (values.length !== group.length) return null;
     const gaps = values.filter((v, i) => i > 0 && v - values[i - 1] !== 1).length;
     const wrapsAround = values[0] + 13 - values[values.length - 1] === 1;
@@ -148,7 +148,7 @@ export function meldKind(group: MatchCard[]): MeldKind | null {
 /** Sort orders for the loose cards (display only). */
 export type HandSort = 'RANK' | 'SUIT';
 
-const SUIT_ORDER: Record<CardSuit, number> = {PICAS: 0, CORAZONES: 1, TREBOLES: 2, DIAMANTES: 3};
+const SUIT_ORDER: Record<CardSuit, number> = {SPADES: 0, HEARTS: 1, CLUBS: 2, DIAMONDS: 3};
 
 /**
  * Sorts cards for display without touching the hand order the backend relies on.
@@ -157,27 +157,27 @@ const SUIT_ORDER: Record<CardSuit, number> = {PICAS: 0, CORAZONES: 1, TREBOLES: 
  */
 export function sortCards(cards: MatchCard[], by: HandSort): MatchCard[] {
     return [...cards].sort((a, b) => {
-        const rank = RANK_VALUE[a.valor] - RANK_VALUE[b.valor];
-        const suit = SUIT_ORDER[a.palo] - SUIT_ORDER[b.palo];
+        const rank = RANK_VALUE[a.rank] - RANK_VALUE[b.rank];
+        const suit = SUIT_ORDER[a.suit] - SUIT_ORDER[b.suit];
         return by === 'RANK' ? rank || suit : suit || rank;
     });
 }
 
 /** Image code of each rank (`public/assets/images/card/<design>/<suit>-<rank>.png`). */
 const RANK_IMAGE: Record<CardRank, string> = {
-    AS: 'A', DOS: 'C2', TRES: 'C3', CUATRO: 'C4', CINCO: 'C5', SEIS: 'C6', SIETE: 'C7', OCHO: 'C8', NUEVE: 'C9', DIEZ: 'C10', J: 'J', Q: 'Q', K: 'K',
+    ACE: 'A', TWO: 'C2', THREE: 'C3', FOUR: 'C4', FIVE: 'C5', SIX: 'C6', SEVEN: 'C7', EIGHT: 'C8', NINE: 'C9', TEN: 'C10', J: 'J', Q: 'Q', K: 'K',
 };
 
 /** Image code of each suit. */
-const SUIT_IMAGE: Record<CardSuit, string> = {TREBOLES: 'CLUB', DIAMANTES: 'DIAMOND', CORAZONES: 'HEART', PICAS: 'SPADE'};
+const SUIT_IMAGE: Record<CardSuit, string> = {CLUBS: 'CLUB', DIAMONDS: 'DIAMOND', HEARTS: 'HEART', SPADES: 'SPADE'};
 
 /** Data for `CardComponent` from a match card. */
-export const cardImage = (c: MatchCard): { suit: string; type: string } => ({suit: SUIT_IMAGE[c.palo], type: RANK_IMAGE[c.valor]});
+export const cardImage = (c: MatchCard): { suit: string; type: string } => ({suit: SUIT_IMAGE[c.suit], type: RANK_IMAGE[c.rank]});
 
 /** Backend errors after which the local state is stale and must be fetched again. */
-const ERRORS_THAT_REFRESH = new Set(['VERSION_DESACTUALIZADA', 'RONDA_YA_CERRADA', 'TURNO_NO_CORRESPONDE', 'FASE_DE_TURNO_INVALIDA']);
+const ERRORS_THAT_REFRESH = new Set(['STALE_VERSION', 'ROUND_ALREADY_CLOSED', 'NOT_YOUR_TURN', 'INVALID_TURN_PHASE']);
 
-/** Whether `GET /api/partidas/actual` must be requested after the error. */
+/** Whether `GET /api/matches/current` must be requested after the error. */
 export const shouldRefresh = (code: string): boolean => ERRORS_THAT_REFRESH.has(code);
 
 /**

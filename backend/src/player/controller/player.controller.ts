@@ -1,29 +1,29 @@
-import { PlayerService } from '../../aplicacion/player/player.service';
+import { PlayerService } from '../../application/player/player.service';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PlayerControllerConstants } from './player.controller.constants';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { PlayerControllerResponse } from './responses/player.controller.response';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
-import { Player } from '../../dominio/player/player';
+import { Player } from '../../domain/player/player';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { UserId } from '../../dominio/user/user-id';
-import { User } from '../../dominio/user/user';
-import { UserService } from '../../aplicacion/user/user.service';
+import { UserId } from '../../domain/user/user-id';
+import { User } from '../../domain/user/user';
+import { UserService } from '../../application/user/user.service';
 
 /**
- * El controlador de los jugadores (membresía en la sala).
+ * Controller of the players (room membership).
  *
- * Los comandos de turno (robar, descartar, cerrar) se movieron a `PartidaController`
- * (`/partidas/actual/comandos/*`): operan sobre el agregado `partidas` con concurrencia
- * optimista e idempotencia (ADR-04).
+ * The turn commands (draw, discard, close) moved to `MatchPlayController`
+ * (`/matches/current/commands/*`): they operate on the `matches` aggregate with optimistic
+ * concurrency and idempotency (ADR-04).
  */
 @Controller(PlayerControllerConstants.CONTROLLER_PREFIX)
 @ApiTags(PlayerControllerConstants.CONTROLLER_TAG)
 export class PlayerController {
 	/**
-	 * @param {UserService} userService Los servicios de los usuarios.
-	 * @param {PlayerService} playerService Los servicios de los jugadores.
+	 * @param {UserService} userService The user services.
+	 * @param {PlayerService} playerService The player services.
 	 */
 	constructor(
 		private readonly userService: UserService,
@@ -31,9 +31,9 @@ export class PlayerController {
 	) {}
 
 	/**
-	 * Punto de entrada GET para obtener el jugador actual de un usuario.
-	 * @param {UserDecoratorType} user El usuario que consume el servicio.
-	 * @returns {PlayerControllerResponse} El jugador actual.
+	 * GET entry point that fetches the current player of a user.
+	 * @param {UserDecoratorType} user The user consuming the service.
+	 * @returns {PlayerControllerResponse} The current player.
 	 */
 	@Get(PlayerControllerConstants.GET_CURRENT_PLAYER_URL)
 	@GameAuthDecorator()

@@ -1,11 +1,11 @@
-# Pipeline CI/CD del Sistema Apuntado (Entregable 3, capítulo 4).
+# CI/CD pipeline of the Apuntado system (Deliverable 3, chapter 4).
 #
-# Etapas (todas bloqueantes):
-#   arquitectura  fitness functions FF-01..FF-06 en modo trinquete y estricto + métricas (Ca, Ce, I, A, D, CC)
-#   backend       tsc · pruebas unitarias con cobertura · e2e de concurrencia (replica set en memoria) · nest build
-#   frontend      lint · pruebas Vitest · tsc + vite build
-#   contenedores  build de las imágenes y prueba de humo con docker compose (mongodb rs0 → mongo-init → backend → frontend)
-#   despliegue    solo en push a main y con todas las etapas en verde: dispara los deploy hooks de Render
+# Stages (all of them blocking):
+#   architecture  fitness functions FF-01..FF-06 in ratchet and strict mode + metrics (Ca, Ce, I, A, D, CC)
+#   backend       tsc · unit tests with coverage · concurrency e2e (in-memory replica set) · nest build
+#   frontend      lint · Vitest tests · tsc + vite build
+#   containers    image build and smoke test with docker compose (mongodb rs0 → mongo-init → backend → frontend)
+#   deploy        only on push to main with every stage green: triggers the Render deploy hooks
 name: CI/CD
 
 on:
@@ -25,7 +25,7 @@ env:
   NODE_VERSION: 20
 
 jobs:
-  arquitectura:
+  architecture:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -39,18 +39,18 @@ jobs:
           cache: npm
           cache-dependency-path: tests/architecture/package-lock.json
       - run: npm ci
-      # Modo trinquete: bloquea el merge si aparece una violación arquitectónica nueva.
-      - name: Fitness functions (modo trinquete)
+      # Ratchet mode: blocks the merge if a new architectural violation appears.
+      - name: Fitness functions (ratchet mode)
         run: npm test
-      # Modo estricto: bloquea el merge si existe cualquier violación (la línea base está vacía).
-      - name: Fitness functions (modo estricto)
-        run: npm run test:estricto
-      # Métricas estructurales: se publican en el resumen del job y como artefacto.
-      - name: Métricas de arquitectura (CC, Ca, Ce, I, A, D)
-        run: npm run metricas
+      # Strict mode: blocks the merge if any violation exists (the baseline is empty).
+      - name: Fitness functions (strict mode)
+        run: npm run test:strict
+      # Structural metrics: published in the job summary and as an artifact.
+      - name: Architecture metrics (CC, Ca, Ce, I, A, D)
+        run: npm run metrics
       - uses: actions/upload-artifact@v4
         with:
-          name: metricas-arquitectura
+          name: architecture-metrics
           path: docs/metricas/
 
   backend:
@@ -66,24 +66,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: backend/package-lock.json
-      - name: Instalar dependencias (lockfile congelado)
+      - name: Install dependencies (frozen lockfile)
         run: npm ci --no-audit --no-fund
-      - name: Verificación de tipos
+      - name: Type check
         run: npx tsc --noEmit -p tsconfig.json
-      - name: Pruebas unitarias, de contrato y casos borde (con cobertura)
+      - name: Unit, contract and edge case tests (with coverage)
         run: npx jest --ci --coverage --coverageReporters=text-summary --coverageReporters=lcov
-      - name: Caché de binarios de MongoDB (mongodb-memory-server)
+      - name: MongoDB binaries cache (mongodb-memory-server)
         uses: actions/cache@v4
         with:
           path: ~/.cache/mongodb-binaries
           key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('backend/package-lock.json') }}
-      - name: Pruebas e2e de concurrencia (replica set en memoria)
+      - name: Concurrency e2e tests (in-memory replica set)
         run: npm run test:e2e -- --ci
-      - name: Compilación de producción
+      - name: Production build
         run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: cobertura-backend
+          name: backend-coverage
           path: backend/coverage/lcov-report/
 
   frontend:
@@ -99,36 +99,36 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
-      - name: Instalar dependencias (lockfile congelado)
+      - name: Install dependencies (frozen lockfile)
         run: yarn install --frozen-lockfile
       - name: Lint
         run: yarn lint
-      - name: Pruebas de la lógica del tablero (Vitest)
+      - name: Board logic tests (Vitest)
         run: yarn test
-      - name: Compilación (tsc + vite build)
+      - name: Build (tsc + vite build)
         run: yarn build
 
-  contenedores:
+  containers:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: [backend, frontend]
     env:
-      # Secretos de prueba: solo existen dentro del runner efímero.
+      # Test secrets: they only exist inside the ephemeral runner.
       JWT_SECRET: ci-jwt-secret-${{ github.run_id }}
       JWT_REFRESH_SECRET: ci-jwt-refresh-secret-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
-      - name: Validar docker-compose.yml
+      - name: Validate docker-compose.yml
         run: docker compose config --quiet
-      - name: Construir imágenes y levantar el sistema completo
+      - name: Build the images and start the whole system
         run: docker compose up -d --build
-      - name: Prueba de humo (backend, SPA y proxy de Nginx)
+      - name: Smoke test (backend, SPA and Nginx proxy)
         run: |
-          for intento in $(seq 1 60); do
+          for attempt in $(seq 1 60); do
             if curl -fsSL -o /dev/null http://localhost:3000/docs \
               && curl -fsSL -o /dev/null http://localhost:5173/ \
               && curl -fsSL -o /dev/null http://localhost:5173/docs; then
-              echo "Sistema disponible tras ${intento} intento(s)."
+              echo "System available after ${attempt} attempt(s)."
               break
             fi
             sleep 5
@@ -138,28 +138,28 @@ jobs:
           curl -fsSL -o /dev/null http://localhost:5173/docs
           docker compose ps
           test "$(docker inspect -f '{{.State.ExitCode}}' "$(docker compose ps -a -q mongo-init)")" = "0"
-      - name: Registros de los contenedores (si falla)
+      - name: Container logs (on failure)
         if: failure()
         run: docker compose logs --no-color
-      - name: Apagar y borrar volúmenes
+      - name: Stop and remove volumes
         if: always()
         run: docker compose down -v
 
-  despliegue:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [arquitectura, backend, frontend, contenedores]
+    needs: [architecture, backend, frontend, containers]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - name: Disparar el despliegue en Render
+      - name: Trigger the Render deploy
         env:
           HOOK_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
           HOOK_FRONTEND: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
         run: |
           if [ -z "$HOOK_BACKEND" ] || [ -z "$HOOK_FRONTEND" ]; then
-            echo "::warning::Faltan los secretos RENDER_DEPLOY_HOOK_BACKEND / RENDER_DEPLOY_HOOK_FRONTEND: no se despliega."
+            echo "::warning::The RENDER_DEPLOY_HOOK_BACKEND / RENDER_DEPLOY_HOOK_FRONTEND secrets are missing: skipping the deploy."
             exit 0
           fi
           curl -fsS -X POST "$HOOK_BACKEND" > /dev/null
           curl -fsS -X POST "$HOOK_FRONTEND" > /dev/null
-          echo "Despliegue solicitado en Render (backend y frontend)."
+          echo "Deploy requested on Render (backend and frontend)."

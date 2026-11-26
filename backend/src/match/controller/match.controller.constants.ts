@@ -1,14 +1,14 @@
 /**
- * @enum {string} Constantes que representan la configuración de los controladores de las partidas.
+ * @enum {string} Constants with the configuration of the match controllers.
  * @readonly
  */
 export enum MatchControllerConstants {
 	/**
-	 * Prefijo utilizado para todos los controladores de las partidas.
+	 * Prefix used by every match controller.
 	 */
 	CONTROLLER_PREFIX = 'match',
 	/**
-	 * Tag que agrupa todos los controladores de las partidas.
+	 * Tag that groups every match controller.
 	 */
 	CONTROLLER_TAG = 'Match',
 }

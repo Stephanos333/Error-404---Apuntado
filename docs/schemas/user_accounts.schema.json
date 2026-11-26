@@ -1,0 +1,97 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "username": {
+        "bsonType": "string",
+        "minLength": 3,
+        "maxLength": 20
+      },
+      "passwordHash": {
+        "bsonType": "string",
+        "pattern": "^\\$argon2id\\$",
+        "description": "argon2id with salt"
+      },
+      "role": {
+        "bsonType": "string",
+        "enum": [
+          "PLAYER",
+          "ADMIN"
+        ]
+      },
+      "icon": {
+        "bsonType": "string"
+      },
+      "activeDesignId": {
+        "bsonType": "objectId"
+      },
+      "ownedDesigns": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "objectId"
+        },
+        "minItems": 0,
+        "maxItems": 100
+      },
+      "tokenBalance": {
+        "bsonType": "int",
+        "minimum": 0,
+        "description": "cache of the token_ledger sum; updated in the same transaction"
+      },
+      "activeMatchId": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ],
+        "description": "RD-31: a single unfinished match"
+      },
+      "stats": {
+        "bsonType": "object",
+        "properties": {
+          "matchesPlayed": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "matchesWon": {
+            "bsonType": "int",
+            "minimum": 0
+          },
+          "tokensWon": {
+            "bsonType": "int",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "matchesPlayed",
+          "matchesWon",
+          "tokensWon"
+        ]
+      },
+      "version": {
+        "bsonType": "int",
+        "minimum": 0
+      },
+      "createdAt": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "username",
+      "passwordHash",
+      "role",
+      "icon",
+      "activeDesignId",
+      "ownedDesigns",
+      "tokenBalance",
+      "stats",
+      "version",
+      "createdAt"
+    ]
+  }
+}

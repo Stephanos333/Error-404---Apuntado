@@ -3,8 +3,8 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ExceptionMessagesConstants } from '../../../shared/exceptions/exception-messages.constants';
 
 /**
- * Clase que representa los datos requeridos para que un
- * usuario pueda refrescar su token de acceso.
+ * Data required for a
+ * user to refresh their access token.
  *
  * @class
  */

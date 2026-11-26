@@ -1,12 +1,12 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, Patch, Post, UseInterceptors } from '@nestjs/common';
-import { UserService } from '../../aplicacion/user/user.service';
+import { UserService } from '../../application/user/user.service';
 import { UserControllerConstants } from './user.controller.constants';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDecorator } from '../../security/auth.decorator';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
 import { GetUserControllerResponse, GetUserResponseData } from './responses/get-user-controller.response';
-import { User } from '../../dominio/user/user';
-import { UserId } from '../../dominio/user/user-id';
+import { User } from '../../domain/user/user';
+import { UserId } from '../../domain/user/user-id';
 import { ExceptionResponseDTO } from '../../shared/exceptions/exception.response';
 import { CreateUserControllerRequest } from './requests/create-user.controller.request';
 import { SessionService } from '../../security/session.service';
@@ -15,13 +15,13 @@ import { UpdateUserCardDesignControllerRequest } from './requests/update-user-ca
 import { CardDesignId } from '../../card/card-design-id';
 import { DefaultResponse } from '../../shared/default.response';
 import { UpdateUserIconController } from './requests/update-user-icon.controller.request';
-import { UserIcon } from '../../dominio/user/user-icon';
-import { CardDesignService } from '../../aplicacion/card-design/card-design.service';
-import { CardDesign } from '../../dominio/card-design/card-design';
+import { UserIcon } from '../../domain/user/user-icon';
+import { CardDesignService } from '../../application/card-design/card-design.service';
+import { CardDesign } from '../../domain/card-design/card-design';
 
 /**
- * Clase que contiene los puntos de entrada a la aplicación
- * para los usuarios.
+ * Entry points of the application
+ * for the users.
  *
  * @class
  */
@@ -30,9 +30,9 @@ import { CardDesign } from '../../dominio/card-design/card-design';
 export class UserController {
 
 	/**
-	 * @param {UserService} service Los servicios que permiten interactuar con los usuarios.
-	 * @param {SessionService} sessionService Los servicios que permiten interactuar con la sesión del usuario.
-	 * @param {CardDesignService} cardDesignService Los servicios que permiten actualizar con los diseños de cartas del usuario.
+	 * @param {UserService} service The services to interact with the users.
+	 * @param {SessionService} sessionService The services to interact with the user's session.
+	 * @param {CardDesignService} cardDesignService The services to update the user's card designs.
 	 */
 	constructor(
 		private readonly service: UserService,
@@ -42,9 +42,9 @@ export class UserController {
 	}
 
 	/**
-	 * Controlador POST que permite crear un usuario.
-	 * @param {CreateUserControllerRequest} body Datos requeridos para crear el usuario.
-	 * @returns {CreateUserControllerResponse} La información de acceso a la aplicación.
+	 * POST controller that creates a user.
+	 * @param {CreateUserControllerRequest} body Data required to create the user.
+	 * @returns {CreateUserControllerResponse} The access information of the application.
 	 */
 	@Post()
 	@ApiCreatedResponse({ type: CreateUserControllerResponse })
@@ -60,9 +60,9 @@ export class UserController {
 	}
 
 	/**
-	 * Controlador GET que permite a un usuario obtener sus datos.
-	 * @param {UserDecoratorType} user El usuario solicitado.
-	 * @returns {GetUserControllerResponse} La respuesta correspondiente al controlador.
+	 * GET controller that lets a user fetch their data.
+	 * @param {UserDecoratorType} user The requested user.
+	 * @returns {GetUserControllerResponse} The controller response.
 	 */
 	@Get(UserControllerConstants.GET_ME_URL)
 	@AuthDecorator()
@@ -77,11 +77,11 @@ export class UserController {
 	}
 
 	/**
-	 * Controlador PATCH que permite actualizar el diseño de carta
-	 * de un usuario.
-	 * @param {UpdateUserCardDesignControllerRequest} body El diseño de carta deseado.
-	 * @param {UserDecoratorType} user El usuario que se está actualizando.
-	 * @returns {GetUserControllerResponse} La respuesta correspondiente al controlador.
+	 * PATCH controller that updates the card design
+	 * of a user.
+	 * @param {UpdateUserCardDesignControllerRequest} body The desired card design.
+	 * @param {UserDecoratorType} user The user being updated.
+	 * @returns {GetUserControllerResponse} The controller response.
 	 */
 	@Patch(UserControllerConstants.UPDATE_USER_CARD_DESIGN_URL)
 	@AuthDecorator()
@@ -99,10 +99,10 @@ export class UserController {
 	}
 
 	/**
-	 * Controlador PATCH que permite actualizar el icono de un usuario.
-	 * @param body El icono deseado.
-	 * @param user El usuario que se está actualizando.
-	 * @returns {DefaultResponse} La respuesta correspondiente al controlador.
+	 * PATCH controller that updates the icon of a user.
+	 * @param body The desired icon.
+	 * @param user The user being updated.
+	 * @returns {DefaultResponse} The controller response.
 	 */
 	@Patch(UserControllerConstants.UPDATE_USER_ICON)
 	@AuthDecorator()

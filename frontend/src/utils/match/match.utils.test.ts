@@ -17,13 +17,13 @@ import {
     sortCards,
 } from './match.utils.ts';
 
-const c = (valor: CardRank, palo: CardSuit, baraja = 1): MatchCard => ({valor, palo, baraja});
+const c = (value: CardRank, suit: CardSuit, deckNumber = 1): MatchCard => ({rank: value, suit, deckNumber});
 
 /** 11-card hand: four sevens, three kings, a run of hearts and 1 loose card. */
-const FOUR = [c('SIETE', 'PICAS'), c('SIETE', 'CORAZONES'), c('SIETE', 'TREBOLES'), c('SIETE', 'DIAMANTES')];
-const THREE = [c('K', 'PICAS'), c('K', 'CORAZONES'), c('K', 'TREBOLES')];
-const RUN = [c('DOS', 'CORAZONES'), c('TRES', 'CORAZONES'), c('CUATRO', 'CORAZONES')];
-const DISCARD = c('NUEVE', 'DIAMANTES');
+const FOUR = [c('SEVEN', 'SPADES'), c('SEVEN', 'HEARTS'), c('SEVEN', 'CLUBS'), c('SEVEN', 'DIAMONDS')];
+const THREE = [c('K', 'SPADES'), c('K', 'HEARTS'), c('K', 'CLUBS')];
+const RUN = [c('TWO', 'HEARTS'), c('THREE', 'HEARTS'), c('FOUR', 'HEARTS')];
+const DISCARD = c('NINE', 'DIAMONDS');
 const HAND = [DISCARD, ...RUN, ...FOUR, ...THREE];
 
 describe('generateCommandId', () => {
@@ -36,48 +36,48 @@ describe('generateCommandId', () => {
 
 describe('translating intents into the backend contract', () => {
     it('draw: DISCARD_PILE is sent as DESCARTE', () => {
-        expect(drawBody({source: 'DISCARD_PILE'}, 7, 'id')).toEqual({origen: 'DESCARTE', version: 7, idComando: 'id'});
-        expect(drawBody({source: 'DECK'}, 7, 'id').origen).toBe('MAZO');
+        expect(drawBody({source: 'DISCARD_PILE'}, 7, 'id')).toEqual({source: 'DISCARD_PILE', version: 7, commandId: 'id'});
+        expect(drawBody({source: 'DECK'}, 7, 'id').source).toBe('DECK');
     });
 
     it('discard: cards and groups become hand indexes', () => {
         const body = discardBody(HAND, {card: DISCARD, groups: [THREE]}, 3, 'id');
-        expect(body).toEqual({carta: 0, grupos: [[8, 9, 10]], version: 3, idComando: 'id'});
+        expect(body).toEqual({card: 0, groups: [[8, 9, 10]], version: 3, commandId: 'id'});
     });
 
     it('discard: tells apart equal cards from different decks', () => {
-        const hand = [c('AS', 'PICAS', 1), c('AS', 'PICAS', 2)];
-        expect(discardBody(hand, {card: c('AS', 'PICAS', 2)}, 1, 'id').carta).toBe(1);
+        const hand = [c('ACE', 'SPADES', 1), c('ACE', 'SPADES', 2)];
+        expect(discardBody(hand, {card: c('ACE', 'SPADES', 2)}, 1, 'id').card).toBe(1);
     });
 
     it('discard: rejects a card that is not in the hand or is inside a group', () => {
-        expect(() => discardBody(HAND, {card: c('Q', 'PICAS')}, 1, 'id')).toThrow(InvalidIntentError);
-        expect(() => discardBody(HAND, {card: THREE[0], groups: [THREE]}, 1, 'id')).toThrow('GRUPOS_INVALIDOS');
+        expect(() => discardBody(HAND, {card: c('Q', 'SPADES')}, 1, 'id')).toThrow(InvalidIntentError);
+        expect(() => discardBody(HAND, {card: THREE[0], groups: [THREE]}, 1, 'id')).toThrow('INVALID_GROUPS');
     });
 
     it('close 4-3-3: builds the body with type, groups and discard', () => {
         const body = closeBody(HAND, {
-            closeType: 'GANAR_4_3_3',
+            closeType: 'WIN_4_3_3',
             declaration: {groups: [FOUR, THREE, RUN], discard: DISCARD, leftovers: []},
         }, 5, 'id');
-        expect(body).toEqual({tipo: 'GANAR_4_3_3', grupos: [[4, 5, 6, 7], [8, 9, 10], [1, 2, 3]], descarte: 0, version: 5, idComando: 'id'});
+        expect(body).toEqual({type: 'WIN_4_3_3', groups: [[4, 5, 6, 7], [8, 9, 10], [1, 2, 3]], discard: 0, version: 5, commandId: 'id'});
     });
 
     it('close: the declaration must cover exactly the hand', () => {
         const incomplete = {groups: [FOUR, THREE], discard: DISCARD, leftovers: []};
-        expect(() => closeBody(HAND, {closeType: 'GANAR_4_3_3', declaration: incomplete}, 1, 'id')).toThrow('GRUPOS_INVALIDOS');
+        expect(() => closeBody(HAND, {closeType: 'WIN_4_3_3', declaration: incomplete}, 1, 'id')).toThrow('INVALID_GROUPS');
         const repeated = {groups: [FOUR, THREE, RUN], discard: DISCARD, leftovers: [DISCARD]};
-        expect(() => closeBody(HAND, {closeType: 'TOCAR', declaration: repeated}, 1, 'id')).toThrow('GRUPOS_INVALIDOS');
+        expect(() => closeBody(HAND, {closeType: 'KNOCK', declaration: repeated}, 1, 'id')).toThrow('INVALID_GROUPS');
     });
 });
 
 describe('close shape from the organization', () => {
     it('1 four + 2 threes with no leftovers is 4-3-3', () => {
-        expect(closeShape([THREE, FOUR, RUN], [])).toBe('GANAR_4_3_3');
+        expect(closeShape([THREE, FOUR, RUN], [])).toBe('WIN_4_3_3');
     });
 
     it('3 threes + 1 leftover is a knock', () => {
-        expect(closeShape([THREE, RUN, FOUR.slice(0, 3)], [FOUR[3]])).toBe('TOCAR');
+        expect(closeShape([THREE, RUN, FOUR.slice(0, 3)], [FOUR[3]])).toBe('KNOCK');
     });
 
     it('any other organization is not a close', () => {
@@ -89,7 +89,7 @@ describe('close shape from the organization', () => {
         const loose = leftoversOf(HAND, [FOUR, THREE], DISCARD);
         expect(loose).toEqual(RUN);
         expect(points(loose)).toBe(9);
-        expect(points([c('AS', 'PICAS'), c('J', 'PICAS')])).toBe(20);
+        expect(points([c('ACE', 'SPADES'), c('J', 'SPADES')])).toBe(20);
     });
 });
 
@@ -97,28 +97,28 @@ describe('meld feedback (same rule as the backend evaluator)', () => {
     it('sets: same rank, at most two copies of a card', () => {
         expect(meldKind(THREE)).toBe('SET');
         expect(meldKind(FOUR)).toBe('SET');
-        expect(meldKind([c('AS', 'PICAS', 1), c('AS', 'PICAS', 2), c('AS', 'CORAZONES')])).toBe('SET');
-        expect(meldKind([c('AS', 'PICAS', 1), c('AS', 'PICAS', 2), c('AS', 'PICAS', 1)])).toBeNull();
+        expect(meldKind([c('ACE', 'SPADES', 1), c('ACE', 'SPADES', 2), c('ACE', 'HEARTS')])).toBe('SET');
+        expect(meldKind([c('ACE', 'SPADES', 1), c('ACE', 'SPADES', 2), c('ACE', 'SPADES', 1)])).toBeNull();
     });
 
     it('runs: same suit and consecutive, wrapping from K to A', () => {
         expect(meldKind(RUN)).toBe('RUN');
-        expect(meldKind([c('Q', 'PICAS'), c('K', 'PICAS'), c('AS', 'PICAS')])).toBe('RUN');
-        expect(meldKind([c('K', 'PICAS'), c('AS', 'PICAS'), c('DOS', 'PICAS')])).toBe('RUN');
-        expect(meldKind([c('DIEZ', 'PICAS'), c('J', 'PICAS'), c('Q', 'PICAS'), c('K', 'PICAS')])).toBe('RUN');
+        expect(meldKind([c('Q', 'SPADES'), c('K', 'SPADES'), c('ACE', 'SPADES')])).toBe('RUN');
+        expect(meldKind([c('K', 'SPADES'), c('ACE', 'SPADES'), c('TWO', 'SPADES')])).toBe('RUN');
+        expect(meldKind([c('TEN', 'SPADES'), c('J', 'SPADES'), c('Q', 'SPADES'), c('K', 'SPADES')])).toBe('RUN');
     });
 
     it('rejects mixed suits, gaps and wrong sizes', () => {
-        expect(meldKind([c('DOS', 'CORAZONES'), c('TRES', 'PICAS'), c('CUATRO', 'CORAZONES')])).toBeNull();
-        expect(meldKind([c('DOS', 'CORAZONES'), c('CUATRO', 'CORAZONES'), c('CINCO', 'CORAZONES')])).toBeNull();
+        expect(meldKind([c('TWO', 'HEARTS'), c('THREE', 'SPADES'), c('FOUR', 'HEARTS')])).toBeNull();
+        expect(meldKind([c('TWO', 'HEARTS'), c('FOUR', 'HEARTS'), c('FIVE', 'HEARTS')])).toBeNull();
         expect(meldKind(THREE.slice(0, 2))).toBeNull();
         expect(meldKind([...FOUR, DISCARD])).toBeNull();
     });
 
     it('sorts loose cards for display by rank or suit', () => {
-        const loose = [c('K', 'PICAS'), c('DOS', 'CORAZONES'), c('DOS', 'PICAS')];
-        expect(sortCards(loose, 'RANK').map((x) => x.valor)).toEqual(['DOS', 'DOS', 'K']);
-        expect(sortCards(loose, 'SUIT').map((x) => x.palo)).toEqual(['PICAS', 'PICAS', 'CORAZONES']);
+        const loose = [c('K', 'SPADES'), c('TWO', 'HEARTS'), c('TWO', 'SPADES')];
+        expect(sortCards(loose, 'RANK').map((x) => x.rank)).toEqual(['TWO', 'TWO', 'K']);
+        expect(sortCards(loose, 'SUIT').map((x) => x.suit)).toEqual(['SPADES', 'SPADES', 'HEARTS']);
     });
 });
 
@@ -144,15 +144,15 @@ describe('versions and refetching', () => {
     });
 
     it('refetches after concurrency and turn errors', () => {
-        ['VERSION_DESACTUALIZADA', 'RONDA_YA_CERRADA', 'TURNO_NO_CORRESPONDE', 'FASE_DE_TURNO_INVALIDA']
+        ['STALE_VERSION', 'ROUND_ALREADY_CLOSED', 'NOT_YOUR_TURN', 'INVALID_TURN_PHASE']
             .forEach((code) => expect(shouldRefresh(code)).toBe(true));
-        expect(shouldRefresh('GRUPOS_INVALIDOS')).toBe(false);
+        expect(shouldRefresh('INVALID_GROUPS')).toBe(false);
     });
 });
 
 describe('card image', () => {
     it('maps rank and suit to the file names', () => {
-        expect(cardImage(c('AS', 'TREBOLES'))).toEqual({suit: 'CLUB', type: 'A'});
-        expect(cardImage(c('DIEZ', 'CORAZONES'))).toEqual({suit: 'HEART', type: 'C10'});
+        expect(cardImage(c('ACE', 'CLUBS'))).toEqual({suit: 'CLUB', type: 'A'});
+        expect(cardImage(c('TEN', 'HEARTS'))).toEqual({suit: 'HEART', type: 'C10'});
     });
 });

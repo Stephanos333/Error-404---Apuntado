@@ -4,8 +4,8 @@ import { UserDecoratorType } from '../user.decorator';
 import * as process from 'process';
 
 /**
- * Clase en dónde se define la lógica de la guardia que utilizan
- * todos los servicios de la aplicación.
+ * Logic of the guard used by
+ * every service of the application.
  *
  * @class
  * @extends {extends PassportStrategy(Strategy)}
@@ -13,9 +13,9 @@ import * as process from 'process';
 export class JwtStrategy extends PassportStrategy(Strategy) {
 
 	/**
-	 * - Determina de dónde debe extraer el token.
-	 * - Determina que no debe ignorar la expiración.
-	 * - Determina el secret que debe usar para decodificar el token.
+	 * - Determines where the token must be extracted from.
+	 * - Determines that the expiration must not be ignored.
+	 * - Determines the secret used to decode the token.
 	 */
 	constructor() {
 		super({
@@ -26,9 +26,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	}
 
 	/**
-	 * Función que guarda la información del token en el request del usuario.
-	 * @param {UserDecoratorType} payload La información extraída del token.
-	 * @returns {UserDecoratorType} La información que se almacenará en el request del usuario.s
+	 * Stores the token information in the user's request.
+	 * @param {UserDecoratorType} payload The information extracted from the token.
+	 * @returns {UserDecoratorType} The information stored in the user's request.
 	 */
 	async validate(payload: UserDecoratorType): Promise<UserDecoratorType> {
 		return { userId: payload.userId };

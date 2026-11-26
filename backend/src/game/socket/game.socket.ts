@@ -11,24 +11,24 @@ import { Logger, UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { GameAuthDecorator } from '../../security/game-auth.decorator';
 import { GameDecorator } from '../../security/game.decorator';
-import { Game, GameDTO } from '../../dominio/game/game';
+import { Game, GameDTO } from '../../domain/game/game';
 import { AppExceptionFilter } from '../../shared/exceptions/app.exception-filter';
 import { UserDecorator, UserDecoratorType } from '../../security/user.decorator';
-import { User, UserDTO } from '../../dominio/user/user';
-import { Player, PlayerDTO } from '../../dominio/player/player';
-import { PlayerWithUserDTO } from '../../dominio/player/player-with-user.dto';
-import { Partida } from '../../dominio/partida/partida';
-import { EventoPartida } from '../../dominio/partida/comandos-partida';
-import { planificarNotificaciones } from './notificaciones-partida';
-import { salaPrivada, salaPublica } from './salas';
+import { User, UserDTO } from '../../domain/user/user';
+import { Player, PlayerDTO } from '../../domain/player/player';
+import { PlayerWithUserDTO } from '../../domain/player/player-with-user.dto';
+import { Match } from '../../domain/match/match';
+import { MatchEvent } from '../../domain/match/match-commands';
+import { planNotifications } from './match-notifications';
+import { privateRoom, publicRoom } from './rooms';
 
 /**
- * Websocket con socket.io para manejar los eventos de los juegos.
+ * Socket.io websocket that handles the game events.
  *
- * Seguridad (R04): cada cliente autenticado se une a dos salas.
- * - `partida:{salaId}` (pública): solo recibe vistas públicas, nunca cartas privadas ni el mazo.
- * - `usuario:{userId}` (privada): solo recibe la mano de ese usuario.
- * El servidor es la única autoridad: este gateway solo notifica estados ya confirmados.
+ * Security (R04): every authenticated client joins two rooms.
+ * - `match:{roomId}` (public): only receives public views, never private cards nor the deck.
+ * - `user:{userId}` (private): only receives that user's hand.
+ * The server is the only authority: this gateway only notifies already confirmed states.
  */
 @WebSocketGateway({
 	cors: true,
@@ -39,11 +39,11 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 	private readonly logger: Logger = new Logger(GameSocket.name);
 
 	/**
-	 * Evento que captura el mensaje GameSocketConstants.GAME_CONNECTION_EVENT en dónde
-	 * se une al usuario a la sala pública de su juego y a su sala privada.
-	 * @param user El usuario autenticado (JWT).
-	 * @param game El juego al que pertenece (validado por la guardia del juego).
-	 * @param socket El cliente conectado.
+	 * Handles the GameSocketConstants.GAME_CONNECTION_EVENT message, where the user
+	 * joins the public room of their game and their private room.
+	 * @param user The authenticated user (JWT).
+	 * @param game The game they belong to (validated by the game guard).
+	 * @param socket The connected client.
 	 */
 	@SubscribeMessage(GameSocketConstants.GAME_CONNECTION_EVENT)
 	@UseFilters(AppExceptionFilter)
@@ -56,16 +56,16 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 		this.logger.log(
 			`[${this.gameConnection.name}] INIT :: user: ${user.userId}, game: ${game.gameId}, socket: ${socket.id}`,
 		);
-		socket.join([salaPublica(game.gameId), salaPrivada(user.userId)]);
+		socket.join([publicRoom(game.gameId), privateRoom(user.userId)]);
 		socket.data.gameId = game.gameId;
 		socket.data.userId = user.userId;
 	}
 
 	/**
-	 * Función que notifica que un usuario ingresó a un juego.
-	 * @param user El usuario ingresado.
-	 * @param player El jugador generado.
-	 * @param game El juego al que ingresó.
+	 * Notifies that a user joined a game.
+	 * @param user The user who joined.
+	 * @param player The created player.
+	 * @param game The joined game.
 	 */
 	async joinPlayer(user: User, player: Player, game: Game): Promise<void> {
 		this.logger.log(
@@ -86,47 +86,47 @@ export class GameSocket implements OnGatewayInit, OnGatewayConnection {
 			cardDesignId: userDTO.currentDesignId,
 			cardDesignName: userDTO.currentDesignName,
 		};
-		this.wsServer.to(salaPublica(game.gameId.toString())).emit(GameSocketConstants.JOIN_PLAYER_LISTENER, args);
+		this.wsServer.to(publicRoom(game.gameId.toString())).emit(GameSocketConstants.JOIN_PLAYER_LISTENER, args);
 		this.logger.log(`[${this.joinPlayer.name}] FINISH ::`);
 	}
 
 	/**
-	 * Función que notifica que un juego está listo para iniciar.
-	 * @param game El juego que está listo para iniciar.
+	 * Notifies that a game is ready to start.
+	 * @param game The game that is ready to start.
 	 */
 	gameReadyToStart(game: Game): void {
 		this.logger.log(`[${this.gameReadyToStart.name}] INIT :: game: ${game.gameId.toString()}`);
 		const gameDTO: GameDTO = game.toDTO();
-		this.wsServer.to(salaPublica(gameDTO.gameId)).emit(GameSocketConstants.GAME_READY_TO_START_LISTENER, gameDTO);
+		this.wsServer.to(publicRoom(gameDTO.gameId)).emit(GameSocketConstants.GAME_READY_TO_START_LISTENER, gameDTO);
 		this.logger.log(`[${this.gameReadyToStart.name}] FINISH ::`);
 	}
 
 	/**
-	 * Notifica un comando confirmado de la partida: vista pública a la sala de la mesa y
-	 * la mano de cada jugador afectado a su sala privada. Reemplaza los antiguos
-	 * `MATCH_STARTED` (que enviaba el mazo completo) y `SHIFT_CHANGED` (que enviaba la mano
-	 * del siguiente jugador a toda la sala).
-	 * @param {string} salaId El id del juego (sala).
-	 * @param {Partida} partida El estado confirmado.
-	 * @param {ReadonlyArray<EventoPartida>} eventos Los eventos del comando.
+	 * Notifies a confirmed match command: the public view to the table room and the hand
+	 * of each affected player to their private room. It replaces the old `MATCH_STARTED`
+	 * (which sent the whole deck) and `SHIFT_CHANGED` (which sent the next player's hand
+	 * to the whole room).
+	 * @param {string} roomId The id of the game (room).
+	 * @param {Match} match The confirmed state.
+	 * @param {ReadonlyArray<MatchEvent>} events The events of the command.
 	 */
-	notificarPartida(salaId: string, partida: Partida, eventos: ReadonlyArray<EventoPartida>): void {
-		for (const envio of planificarNotificaciones(salaId, partida, eventos)) {
-			this.wsServer.to(envio.sala).emit(envio.mensaje, envio.contenido);
+	notifyMatch(roomId: string, match: Match, events: ReadonlyArray<MatchEvent>): void {
+		for (const delivery of planNotifications(roomId, match, events)) {
+			this.wsServer.to(delivery.room).emit(delivery.message, delivery.content);
 		}
-		this.logger.log(`[${this.notificarPartida.name}] partida: ${partida._id} version: ${partida.version}`);
+		this.logger.log(`[${this.notifyMatch.name}] match: ${match._id} version: ${match.version}`);
 	}
 
 	/**
-	 * Evento que se ejecuta cuando se inicializa el websocket.
+	 * Runs when the websocket is initialized.
 	 */
 	afterInit(): void {
 		this.logger.log(`[${this.afterInit.name}] ${GameSocketConstants.GAME_SOCKET_NAMESPACE} Socket initialized.`);
 	}
 
 	/**
-	 * Evento que se ejecuta cuando se conecta un websocket.
-	 * @param client El cliente conectado.
+	 * Runs when a websocket connects.
+	 * @param client The connected client.
 	 */
 	handleConnection(client: Socket): void {
 		this.logger.log(`[${this.handleConnection.name}] Socket connected : ${client.id}`);

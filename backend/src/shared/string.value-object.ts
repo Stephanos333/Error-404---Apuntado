@@ -1,6 +1,6 @@
 /**
- * Clase que representa los strings importantes
- * de la aplicación.
+ * Important strings
+ * of the application.
  * @class
  */
 export class StringValueObject {
@@ -8,14 +8,14 @@ export class StringValueObject {
 	protected value: string;
 
 	/**
-	 * @param {string} value El valor que se está almacenando.
+	 * @param {string} value The stored value.
 	 */
 	constructor(value: string) {
 		this.value = value;
 	}
 
 	/**
-	 * Extrae el valor almacenado y lo convierte a un string.
+	 * Extracts the stored value and converts it into a string.
 	 * @returns {string}
 	 */
 	toString(): string {

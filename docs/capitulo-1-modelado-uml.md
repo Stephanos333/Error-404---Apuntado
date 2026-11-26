@@ -42,7 +42,7 @@ La fuente de verdad es `docker-compose.yml`, `frontend/nginx.conf` y los dos `Do
 | **Servidor Web y API** `«executionEnvironment»` | Host Docker con el proyecto `apuntado` de docker compose y la red interna `apuntado_default` | Contiene los tres contenedores de las filas siguientes. |
 | Contenedor `frontend` | `nginx:1.27-alpine`, escucha en `:80` y se publica en el host como `:5173` | Estáticos de la SPA en `/usr/share/nginx/html` y `nginx.conf`, que actúa como proxy inverso de `/api/`, `/socket.io/` y `/docs`. |
 | Contenedor `backend` | `node:20.18-alpine`, usuario sin privilegios `node`, escucha en `:3000` | `dist/src/main.js` (NestJS 10: REST `/api`, Socket.IO `/game` y Swagger `/docs`) y los plug-ins compilados `dist/plugins/clasica` y `dist/plugins/apuntado`. |
-| Contenedor `mongo-init` | `mongo:7.0`, tarea de una sola ejecución (`restart: "no"`) | `init.sh`, `crear-colecciones.mongodb.js` (validadores `$jsonSchema` e índices) y `seed-disenos-carta.js`. |
+| Contenedor `mongo-init` | `mongo:7.0`, tarea de una sola ejecución (`restart: "no"`) | `init.sh`, `create-collections.mongodb.js` (validadores `$jsonSchema` e índices) y `seed-card-designs.js`. |
 | **Servidor de Base de Datos** `«device»` | Contenedor `mongodb` (`mongo:7.0`, `mongod --replSet rs0`, `:27017`) | Base `apuntado` en replica set `rs0` con las colecciones `partidas`, `asientos_tokens`, `User`, `Game`, `Player` y `Card-design`. Persiste en el volumen `mongo-data` montado en `/data/db`. |
 
 ### Rutas de comunicación
@@ -104,7 +104,7 @@ ronda dos veces (R03).
 
 | Línea de vida | Clase real | Responsabilidad en el flujo |
 |---|---|---|
-| Jugador (SPA React) | `PartidaClient` del frontend | Envía `POST /api/partidas/actual/comandos/cerrar` y escucha las salas. |
+| Jugador (SPA React) | `PartidaClient` del frontend | Envía `POST /api/matches/current/commands/close` y escucha las salas. |
 | `PartidaController` «REST» | `partida/controller/partida.controller.ts` | La guardia del juego resuelve la partida a partir del JWT. El controlador traduce el cuerpo a un `ComandoTurno` y la respuesta a vistas filtradas. |
 | `TurnOrchestrator` | `aplicacion/partida/turn-orchestrator.service.ts` | Coordina la ruta del comando (método `ejecutar`): idempotencia, regla, cálculo, control de versión, escritura y publicación. |
 | `RegistroReglas` | `reglas/registro/registro-reglas.ts` | Entrega el plug-in que quedó fijado en la partida al crearla (`configuracion.plugin.id`). |
@@ -204,8 +204,8 @@ Si otro comando ganó la carrera entre la lectura y la escritura, el filtro no c
 - 409 `TURNO_NO_CORRESPONDE`, si el turno pasó a otro jugador;
 - 409 `VERSION_DESACTUALIZADA`, en cualquier otro caso.
 
-El cliente descarta su intención y relee el estado con `GET /api/partidas/actual`. Este
-comportamiento está probado en `backend/test/concurrencia-cierre.e2e-spec.ts` (8 pruebas con un
+El cliente descarta su intención y relee el estado con `GET /api/matches/current`. Este
+comportamiento está probado en `backend/test/close-concurrency.e2e-spec.ts` (8 pruebas con un
 replica set real en memoria).
 
 ### Notificación después del commit (ADR-05)
@@ -350,7 +350,7 @@ Ninguna simplificación cambia una relación ni una firma pública.
 |---|---|---|---|
 | Hosting del frontend | Vercel como CDN estático | Nginx en contenedor, en el mismo origen que la API (Vercel sigue siendo una opción documentada en el README) | Un solo comando (`docker compose up`), un solo certificado y sin CORS. |
 | Carga de plug-ins | Manifiesto `config/reglas.plugins.json` + `import()` dinámico | Registro estático en `ReglasPluginsModule` (raíz de composición) | El MVP tiene dos modalidades. La raíz de composición mantiene el aislamiento (FF-02) sin la complejidad de cargar módulos en tiempo de ejecución. |
-| Entrada de los comandos | `GameApiGateway` y `POST /partidas/{id}/cierres` | `PartidaController` y `POST /api/partidas/actual/comandos/cerrar`; la partida sale del JWT | Un jugador no puede actuar sobre la partida de otro porque nunca envía su id. |
+| Entrada de los comandos | `GameApiGateway` y `POST /partidas/{id}/cierres` | `PartidaController` y `POST /api/matches/current/commands/close`; la partida sale del JWT | Un jugador no puede actuar sobre la partida de otro porque nunca envía su id. |
 | Papel del WebSocket | Comunicación en tiempo real | `GameSocket` solo une a las salas y notifica estados confirmados; los comandos van por REST | El servidor es la única autoridad y las respuestas 409 son explícitas. |
 | Almacén del estado | `IGameStateStore` / `MongoGameStateStore` | `PartidaRepository` (driver nativo) + `UnidadDeTrabajo` | Control exacto del documento que exige el validador `$jsonSchema`. |
 | Filtro de concurrencia | `version`, turno y `rondaActual.estado` | `version`, turno y `comandosRecientes: {$ne}` | La versión ya cubre el cambio de estado y el filtro por `idComando` añade la idempotencia. |

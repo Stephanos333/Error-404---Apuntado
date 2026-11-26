@@ -1,7 +1,7 @@
 import { StringValueObject } from './string.value-object';
 
 /**
- * Clase que representa los ids de la aplicación.
+ * Ids of the application.
  * @class
  * @abstract
  * @extends {StringValueObject}
@@ -9,7 +9,7 @@ import { StringValueObject } from './string.value-object';
 export abstract class IdValueObject extends StringValueObject {
 
 	/**
-	 * @param {string} value El valor que se está almacenando.
+	 * @param {string} value The stored value.
 	 * @protected
 	 */
 	constructor(value: string) {
@@ -18,8 +18,8 @@ export abstract class IdValueObject extends StringValueObject {
 	}
 
 	/**
-	 * Función abstracta que debe validar un ID de la aplicación.
-	 * @param {string} value El valor a validar.
+	 * Abstract function that must validate an ID of the application.
+	 * @param {string} value The value to validate.
 	 * @protected
 	 */
 	protected abstract validate(value: string): void;

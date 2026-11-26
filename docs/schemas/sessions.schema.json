@@ -1,0 +1,30 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "userId": {
+        "bsonType": "objectId"
+      },
+      "refreshTokenHash": {
+        "bsonType": "string"
+      },
+      "expiresAt": {
+        "bsonType": "date"
+      },
+      "createdAt": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "_id",
+      "userId",
+      "refreshTokenHash",
+      "expiresAt",
+      "createdAt"
+    ]
+  }
+}
