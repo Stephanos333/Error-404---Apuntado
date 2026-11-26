@@ -3,6 +3,49 @@
 title Sistema Apuntado · Diagrama de clases de implementación del MVP (UML 2.5)\n<size:11>Microkernel con inversión de dependencias</size>
 
 skinparam shadowing false
+' Estilo neutro (equivalente al tema por defecto de PlantUML moderno)
+skinparam backgroundColor #FFFFFF
+skinparam TitleFontStyle bold
+skinparam TitleFontSize 14
+skinparam ArrowColor #181818
+skinparam ArrowFontColor #000000
+skinparam NoteBackgroundColor #FEFFDD
+skinparam NoteBorderColor #181818
+skinparam LegendBackgroundColor #DDDDDD
+skinparam LegendBorderColor #181818
+skinparam ParticipantBackgroundColor #E2E2F0
+skinparam ParticipantBorderColor #181818
+skinparam ActorBackgroundColor #E2E2F0
+skinparam ActorBorderColor #181818
+skinparam DatabaseBackgroundColor #E2E2F0
+skinparam DatabaseBorderColor #181818
+skinparam SequenceLifeLineBorderColor #181818
+skinparam SequenceGroupBorderColor #181818
+skinparam SequenceGroupHeaderFontStyle bold
+skinparam SequenceDividerBackgroundColor #EEEEEE
+skinparam SequenceDividerBorderColor #181818
+skinparam SequenceReferenceBorderColor #181818
+skinparam ClassBackgroundColor #F1F1F1
+skinparam ClassBorderColor #181818
+skinparam ClassHeaderBackgroundColor #F1F1F1
+skinparam InterfaceBackgroundColor #F1F1F1
+skinparam InterfaceBorderColor #181818
+skinparam PackageBorderColor #181818
+skinparam PackageBackgroundColor #FFFFFF
+skinparam NodeBackgroundColor #FFFFFF
+skinparam NodeBorderColor #181818
+skinparam ArtifactBackgroundColor #F1F1F1
+skinparam ArtifactBorderColor #181818
+skinparam ComponentBackgroundColor #F1F1F1
+skinparam ComponentBorderColor #181818
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #181818
+skinparam QueueBackgroundColor #F1F1F1
+skinparam QueueBorderColor #181818
+skinparam RectangleBorderColor #181818
+skinparam UsecaseBorderColor #181818
+skinparam StorageBorderColor #181818
+skinparam StorageBackgroundColor #F1F1F1
 skinparam defaultFontName Arial
 skinparam defaultFontSize 10
 skinparam classAttributeIconSize 0
@@ -12,611 +55,612 @@ left to right direction
 scale max 4000 width
 hide circle
 
-package "src/reglas/contrato" as CONTRATO {
+package "src/rules/contract" as CONTRACT {
 
-  interface ReglaJuegoPlugin <<interface>> {
-    + descriptor : DescriptorRegla {readOnly}
-    + configuracionReparto() : ConfiguracionReparto
-    + cierresPermitidos() : ReadonlyArray<TipoCierre>
-    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
-    + efectoCierre(resultado : ResultadoValidacion, tipo : TipoCierre) : EfectoCierre
-    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
-    + evaluarDesenlace(marcador : Marcador, cerradorId : string) : Desenlace
+  interface GameRulePlugin <<interface>> {
+    + descriptor : RuleDescriptor {readOnly}
+    + dealSettings() : DealSettings
+    + allowedCloses() : ReadonlyArray<CloseType>
+    + validateClose(hand : DeclaredHand, type : CloseType) : ValidationResult
+    + closeEffect(result : ValidationResult, closeType : CloseType) : CloseEffect
+    + settleRound(hands : ReadonlyArray<OpponentHand>) : RoundSettlement
+    + evaluateOutcome(scoreboard : Scoreboard, closerId : string) : Outcome
   }
 
-  class DescriptorRegla <<interface>> {
+  class RuleDescriptor <<interface>> {
     + id : string {readOnly}
-    + nombre : string {readOnly}
+    + name : string {readOnly}
     + version : string {readOnly}
-    + versionContrato : string {readOnly}
-    + multironda : boolean {readOnly}
+    + contractVersion : string {readOnly}
+    + multiRound : boolean {readOnly}
   }
 
-  class Carta <<interface>> {
-    {field} + valor : number {readOnly}  — 1 (A) .. 13 (K)
-    + palo : Palo {readOnly}
+  class ContractCard <<interface>> {
+    {field} + rank : number {readOnly}  — 1 (A) .. 13 (K)
+    + suit : ContractSuit {readOnly}
   }
 
-  class ManoDeclarada <<interface>> {
-    + grupos : ReadonlyArray<ReadonlyArray<Carta>>
-    + sobrantes : ReadonlyArray<Carta>
-    + descarte? : Carta
+  class DeclaredHand <<interface>> {
+    + groups : ReadonlyArray<ReadonlyArray<ContractCard>>
+    + leftovers : ReadonlyArray<ContractCard>
+    + discard? : ContractCard
   }
 
-  class ManoRival <<interface>> {
-    + jugadorId : string
-    + grupos : ReadonlyArray<ReadonlyArray<Carta>>
-    + sobrantes : ReadonlyArray<Carta>
+  class OpponentHand <<interface>> {
+    + playerId : string
+    + groups : ReadonlyArray<ReadonlyArray<ContractCard>>
+    + leftovers : ReadonlyArray<ContractCard>
   }
 
-  class ResultadoValidacion <<interface>> {
-    + esValido : boolean
-    + motivo? : string
+  class ValidationResult <<interface>> {
+    + valid : boolean
+    + reason? : string
   }
 
-  class EfectoCierre <<interface>> {
-    + terminaRonda : boolean
-    + rondaExtra : boolean
-    + ajustePuntos : number
+  class CloseEffect <<interface>> {
+    + endsRound : boolean
+    + extraRound : boolean
+    + pointsAdjustment : number
   }
 
-  class ConfiguracionReparto <<interface>> {
-    + cartasPorJugador : number
-    + cartasJugadorInicial : number
+  class DealSettings <<interface>> {
+    + cardsPerPlayer : number
+    + firstPlayerCards : number
   }
 
-  class LiquidacionRonda <<interface>> {
-    + penalizaciones : Readonly<Record<string, number>>
+  class RoundSettlement <<interface>> {
+    + penalties : Readonly<Record<string, number>>
   }
 
-  class Desenlace <<interface>> {
-    + terminada : boolean
-    + ganadorId? : string
-    + eliminados : ReadonlyArray<string>
+  class Outcome <<interface>> {
+    + finished : boolean
+    + winnerId? : string
+    + eliminated : ReadonlyArray<string>
   }
 
-  class Marcador <<type>> {
+  class Scoreboard <<type>> {
     Readonly<Record<string, number>>
   }
 
-  enum TipoCierre <<enumeration>> {
-    GANAR_4_3_3
-    TOCAR
+  enum CloseType <<enumeration>> {
+    WIN_4_3_3
+    KNOCK
   }
 
-  enum Palo <<enumeration>> {
+  enum ContractSuit <<enumeration>> {
     CLUB
     DIAMOND
     HEART
     SPADE
   }
 
-  ReglaJuegoPlugin *-- "1" DescriptorRegla : descriptor
-  ManoDeclarada o-- "0..*" Carta
-  ManoRival o-- "0..*" Carta
-  Carta --> "1" Palo
+  GameRulePlugin *-- "1" RuleDescriptor : descriptor
+  DeclaredHand o-- "0..*" ContractCard
+  OpponentHand o-- "0..*" ContractCard
+  ContractCard --> "1" ContractSuit
 }
 
-package "src/reglas/evaluador" as EVAL {
+package "src/rules/evaluator" as EVAL {
 
   interface IHandEvaluator <<interface>> {
-    + esCombinacion(grupo : ReadonlyArray<Carta>) : boolean
-    + esTerna(grupo : ReadonlyArray<Carta>) : boolean
-    + esCuarta(grupo : ReadonlyArray<Carta>) : boolean
-    + esCuartaYDosTernas(grupos : ReadonlyArray<ReadonlyArray<Carta>>) : boolean
-    + sonTresTernas(grupos : ReadonlyArray<ReadonlyArray<Carta>>) : boolean
-    + puntos(cartas : ReadonlyArray<Carta>) : number
-    + puntosNoCombinados(grupos : ReadonlyArray<ReadonlyArray<Carta>>, sobrantes : ReadonlyArray<Carta>) : number
+    + isMeld(group : ReadonlyArray<ContractCard>) : boolean
+    + isThree(group : ReadonlyArray<ContractCard>) : boolean
+    + isFour(group : ReadonlyArray<ContractCard>) : boolean
+    + isFourAndTwoThrees(groups : ReadonlyArray<ReadonlyArray<ContractCard>>) : boolean
+    + areThreeThrees(groups : ReadonlyArray<ReadonlyArray<ContractCard>>) : boolean
+    + points(cards : ReadonlyArray<ContractCard>) : number
+    + unmatchedPoints(groups : ReadonlyArray<ReadonlyArray<ContractCard>>, leftovers : ReadonlyArray<ContractCard>) : number
   }
 
-  class EvaluadorManos {
-    - politicaEscalera : PoliticaEscalera = 'CON_VUELTA' {readOnly}
-    + constructor(politicaEscalera : PoliticaEscalera = 'CON_VUELTA')
+  class HandEvaluator {
+    - runPolicy : RunPolicy = 'WITH_WRAP' {readOnly}
+    + constructor(runPolicy : RunPolicy = 'WITH_WRAP')
     {method} + «las 7 operaciones de IHandEvaluator»
   }
 
-  class "evaluador-manos" as FuncEval <<utility>> {
-    + TOTAL_VALORES : number = 13 {readOnly}
-    + COPIAS_MAXIMAS_POR_CARTA : number = 2 {readOnly}
-    - PUNTOS_POR_VALOR : readonly number[] {readOnly}
-    + esCartaValida(carta : Carta) : boolean
-    + puntosCarta(carta : Carta) : number
-    + esGrupoDeValor(grupo : ReadonlyArray<Carta>) : boolean
-    + esEscalera(grupo : ReadonlyArray<Carta>, politica : PoliticaEscalera = 'CON_VUELTA') : boolean
-    - maximoDeCopias(grupo : ReadonlyArray<Carta>) : number
-    - esLineal(valores : ReadonlyArray<number>) : boolean
-    - saltos(valores : ReadonlyArray<number>) : number
-    - esConsecutivaCircular(valores : ReadonlyArray<number>) : boolean
-    - esConsecutivaSinVuelta(valores : ReadonlyArray<number>) : boolean
+  class "hand-evaluator" as HandEvaluatorModule <<utility>> {
+    + TOTAL_RANKS : number = 13 {readOnly}
+    + MAX_COPIES_PER_CARD : number = 2 {readOnly}
+    - POINTS_BY_RANK : readonly number[] {readOnly}
+    + isValidCard(card : ContractCard) : boolean
+    + cardPoints(card : ContractCard) : number
+    + isSameRankGroup(group : ReadonlyArray<ContractCard>) : boolean
+    + isRun(group : ReadonlyArray<ContractCard>, policy : RunPolicy = 'WITH_WRAP') : boolean
+    - maxCopies(group : ReadonlyArray<ContractCard>) : number
+    - isLinear(values : ReadonlyArray<number>) : boolean
+    - gaps(values : ReadonlyArray<number>) : number
+    - isCircularSequence(values : ReadonlyArray<number>) : boolean
+    - isSequenceWithoutWrap(values : ReadonlyArray<number>) : boolean
   }
 
-  enum PoliticaEscalera <<enumeration>> {
-    CON_VUELTA
-    SIN_VUELTA
+  enum RunPolicy <<enumeration>> {
+    WITH_WRAP
+    WITHOUT_WRAP
   }
 
-  EvaluadorManos ..|> IHandEvaluator
-  EvaluadorManos --> "1" PoliticaEscalera : politicaEscalera
-  EvaluadorManos ..> FuncEval : <<use>>
-  FuncEval ..> PoliticaEscalera
+  HandEvaluator ..|> IHandEvaluator
+  HandEvaluator --> "1" RunPolicy : runPolicy
+  HandEvaluator ..> HandEvaluatorModule : <<use>>
+  HandEvaluatorModule ..> RunPolicy
 }
 
-package "src/reglas/registro" as REGISTRO {
+package "src/rules/registry" as REGISTRY {
 
-  class RegistroReglas {
-    - reglas : Map<string, ReglaJuegoPlugin> {readOnly}
-    - idPredeterminado? : string
-    - versionNucleo : string = VERSION_CONTRATO {readOnly}
-    + constructor(versionNucleo : string = VERSION_CONTRATO)
-    + registrar(plugin : ReglaJuegoPlugin, opciones : OpcionesRegistro = {}) : void
-    + obtener(id? : string) : ReglaJuegoPlugin
-    + existe(id : string) : boolean
-    + <<get>> predeterminada() : string | undefined
+  class RuleRegistry {
+    - rules : Map<string, GameRulePlugin> {readOnly}
+    - defaultId? : string
+    - coreVersion : string = CONTRACT_VERSION {readOnly}
+    + constructor(coreVersion : string = CONTRACT_VERSION)
+    + register(plugin : GameRulePlugin, options : RegistryOptions = {}) : void
+    + get(id? : string) : GameRulePlugin
+    + exists(id : string) : boolean
+    + <<get>> isDefault() : string | undefined
     + ids() : string[]
-    - validarForma(plugin, id) : void
-    - pruebaDeHumo(plugin, id) : void
+    - validateShape(plugin : GameRulePlugin, id : string | undefined) : void
+    - smokeTest(plugin : GameRulePlugin, id : string) : void
   }
 
-  class OpcionesRegistro <<interface>> {
-    + predeterminada? : boolean
+  class RegistryOptions <<interface>> {
+    + isDefault? : boolean
   }
 
   class PluginIncompatibleError
 
-  class ReglaNoRegistradaError
+  class RuleNotRegisteredError
 
-  RegistroReglas o-- "0..*" ReglaJuegoPlugin : reglas
-  RegistroReglas ..> OpcionesRegistro
-  RegistroReglas ..> PluginIncompatibleError : <<throw>>
-  RegistroReglas ..> ReglaNoRegistradaError : <<throw>>
+  RuleRegistry o-- "0..*" GameRulePlugin : rules
+  RuleRegistry ..> RegistryOptions
+  RuleRegistry ..> PluginIncompatibleError : <<throw>>
+  RuleRegistry ..> RuleNotRegisteredError : <<throw>>
 }
 
 package "backend/plugins" as PLUGINS {
 
-  class ReglaClasicaPlugin {
-    + descriptor : DescriptorRegla = {id: 'clasica', multironda: false} {readOnly}
-    - evaluador : IHandEvaluator {readOnly}
-    + constructor(evaluador : IHandEvaluator = new EvaluadorManos())
-    + configuracionReparto() : ConfiguracionReparto
-    + cierresPermitidos() : ReadonlyArray<TipoCierre>
-    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
-    + efectoCierre(resultado : ResultadoValidacion) : EfectoCierre
-    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
-    + evaluarDesenlace(marcador : Marcador, cerradorId : string) : Desenlace
+  class ClassicRulePlugin {
+    + descriptor : RuleDescriptor = {id: 'classic', multiRound: false} {readOnly}
+    - evaluator : IHandEvaluator {readOnly}
+    + constructor(evaluator : IHandEvaluator = new HandEvaluator())
+    + dealSettings() : DealSettings
+    + allowedCloses() : ReadonlyArray<CloseType>
+    + validateClose(hand : DeclaredHand, type : CloseType) : ValidationResult
+    + closeEffect(result : ValidationResult) : CloseEffect
+    + settleRound(hands : ReadonlyArray<OpponentHand>) : RoundSettlement
+    + evaluateOutcome(scoreboard : Scoreboard, closerId : string) : Outcome
   }
 
-  class ReglaApuntadoPlugin {
-    + descriptor : DescriptorRegla = {id: 'apuntado', multironda: true} {readOnly}
-    - parametros : ParametrosApuntado {readOnly}
-    - evaluador : IHandEvaluator {readOnly}
-    + constructor(parametros : Partial<ParametrosApuntado> = {}, evaluador : IHandEvaluator = new EvaluadorManos())
-    + configuracionReparto() : ConfiguracionReparto
-    + cierresPermitidos() : ReadonlyArray<TipoCierre>
-    + validarCierre(mano : ManoDeclarada, tipo : TipoCierre) : ResultadoValidacion
-    + efectoCierre(resultado : ResultadoValidacion, tipo : TipoCierre) : EfectoCierre
-    + liquidarRonda(manos : ReadonlyArray<ManoRival>) : LiquidacionRonda
-    + evaluarDesenlace(marcador : Marcador) : Desenlace
-    - validarCuartaYDosTernas(mano : ManoDeclarada) : ResultadoValidacion
-    - validarTocar(mano : ManoDeclarada) : ResultadoValidacion
+  class ApuntadoRulePlugin {
+    + descriptor : RuleDescriptor = {id: 'apuntado', multiRound: true} {readOnly}
+    - parameters : ApuntadoParameters {readOnly}
+    - evaluator : IHandEvaluator {readOnly}
+    + constructor(parameters : Partial<ApuntadoParameters> = {}, evaluator : IHandEvaluator = new HandEvaluator())
+    + dealSettings() : DealSettings
+    + allowedCloses() : ReadonlyArray<CloseType>
+    + validateClose(hand : DeclaredHand, type : CloseType) : ValidationResult
+    + closeEffect(result : ValidationResult, type : CloseType) : CloseEffect
+    + settleRound(hands : ReadonlyArray<OpponentHand>) : RoundSettlement
+    + evaluateOutcome(scoreboard : Scoreboard) : Outcome
+    - validateFourAndTwoThrees(hand : DeclaredHand) : ValidationResult
+    - validateKnock(hand : DeclaredHand) : ValidationResult
   }
 
-  class ParametrosApuntado <<interface>> {
-    + limiteEliminacion : number = 101
-    + limiteVictoria : number = -51
-    + umbralTocar : number = 5
-    + bonificacionCierre : number = 10
-    + castigoCierreFalso : number = 3
+  class ApuntadoParameters <<interface>> {
+    + eliminationLimit : number = 101
+    + victoryLimit : number = -51
+    + knockThreshold : number = 5
+    + closeBonus : number = 10
+    + falseClosePenalty : number = 3
   }
 
-  ReglaApuntadoPlugin *-- "1" ParametrosApuntado : parametros
+  ApuntadoRulePlugin *-- "1" ApuntadoParameters : parameters
 }
 
-package "src/dominio/partida" as DOMINIO {
+package "src/domain/match" as DOMAIN {
 
-  class Partida <<interface>> {
+  class Match <<interface>> {
     + _id : string
-    + codigoInvitacion : string
-    + nombre : string
-    + estado : EstadoPartida
-    + anfitrionId : string
-    + configuracion : ConfiguracionPartida
-    + jugadores : JugadorPartida[]
-    + pozo : PozoPartida
-    + rondaActual : RondaPartida | null
-    + marcador : EntradaMarcador[]
-    + ganadorId : string | null
-    + ventanaHasta : Date | null
-    {field} + comandosRecientes : string[]  — máx. 20 (idempotencia)
+    + invitationCode : string
+    + name : string
+    + status : MatchStatus
+    + hostId : string
+    + settings : MatchSettings
+    + players : MatchPlayer[]
+    + pot : MatchPot
+    + currentRound : MatchRound | null
+    + scoreboard : ScoreboardEntry[]
+    + winnerId : string | null
+    + resultsWindowUntil : Date | null
+    {field} + recentCommands : string[]  — máx. 20 (idempotencia)
     + version : number  — concurrencia optimista
-    + creadaEn : Date
-    + actualizadaEn : Date
-    + finalizadaEn : Date | null
+    + createdAt : Date
+    + updatedAt : Date
+    + finishedAt : Date | null
   }
 
-  class ConfiguracionPartida <<interface>> {
-    + modalidad : string
+  class MatchSettings <<interface>> {
+    + mode : string
     + plugin : {id : string, version : string}
-    + cupo : number
-    + apuestaPorJugador : number
-    + visibilidad : 'PUBLICA' | 'PRIVADA'
-    + tipoEscalera : 'CON_VUELTA' | 'SIN_VUELTA'
-    + comodinesActivos : boolean
-    + reengancheActivo : boolean
-    + victoriaNegativaActiva : boolean
-    + parametros : ParametrosPartida
+    + capacity : number
+    + betPerPlayer : number
+    + visibility : 'PUBLIC' | 'PRIVATE'
+    + runType : 'WITH_WRAP' | 'WITHOUT_WRAP'
+    + jokersEnabled : boolean
+    + rebuyEnabled : boolean
+    + negativeVictoryEnabled : boolean
+    + parameters : MatchParameters
   }
 
-  class ParametrosPartida <<interface>> {
-    + limiteEliminacion, umbralTocar, castigoCierreInvalido : number
-    + bonificacionCierre, umbralVictoriaNegativa, valorComodin : number
-    + comodinesPorBaraja, jugadoresDobleBaraja : number
-    + graciaDesconexionSeg, ventanaResultadosSeg : number
+  class MatchParameters <<interface>> {
+    + eliminationLimit, knockThreshold, invalidClosePenalty : number
+    + closeBonus, negativeVictoryThreshold, jokerValue : number
+    + jokersPerDeck, twoDeckPlayers : number
+    + disconnectGraceSec, resultsWindowSec : number
   }
 
-  class JugadorPartida <<interface>> {
-    {field} + jugadorId : string  — userId (UUID)
-    + usuarioId : string  — ObjectId hex
-    + nombreUsuario : string
-    + posicion : number
-    + estado : EstadoJugadorPartida
-    + puntaje : number
-    + usoReenganche : boolean
-    + conectado : boolean
-    + desconectadoDesde : Date | null
+  class MatchPlayer <<interface>> {
+    {field} + playerId : string  — userId (UUID)
+    + userId : string  — ObjectId hex
+    + username : string
+    + position : number
+    + status : MatchPlayerStatus
+    + score : number
+    + usedRebuy : boolean
+    + connected : boolean
+    + disconnectedSince : Date | null
   }
 
-  class PozoPartida <<interface>> {
+  class MatchPot <<interface>> {
     + total : number
-    + aportes : AportePozo[]
+    + contributions : PotContribution[]
   }
 
-  class AportePozo <<interface>> {
-    + usuarioId : string
-    + tipo : 'APUESTA' | 'REENGANCHE'
-    + monto : number
-    + asientoId : string
+  class PotContribution <<interface>> {
+    + userId : string
+    + type : 'BET' | 'REBUY'
+    + amount : number
+    + ledgerEntryId : string
   }
 
-  class RondaPartida <<interface>> {
-    + numero : number
-    + estado : EstadoRonda
-    + posicionInicial : number
-    + turno : TurnoPartida
-    + mazo : CartaPartida[]
-    + pozoDescarte : CartaPartida[]
-    + manos : ManoJugador[]
-    + rondaExtra : RondaExtra | null
+  class MatchRound <<interface>> {
+    + number : number
+    + status : RoundStatus
+    + startPosition : number
+    + turn : MatchTurn
+    + deck : MatchCard[]
+    + discardPile : MatchCard[]
+    + hands : PlayerHand[]
+    + extraRound : ExtraRound | null
   }
 
-  class TurnoPartida <<interface>> {
-    + jugadorId : string
-    + fase : FaseTurno
-    + intentoCierre : boolean
-    + numero : number
+  class MatchTurn <<interface>> {
+    + playerId : string
+    + phase : TurnPhase
+    + closeAttempted : boolean
+    + number : number
   }
 
-  class ManoJugador <<interface>> {
-    + jugadorId : string
-    + cartas : CartaPartida[]
-    + grupos : number[][]  — índices de cartas
+  class PlayerHand <<interface>> {
+    + playerId : string
+    + cards : MatchCard[]
+    + groups : number[][]  — índices de cartas
   }
 
-  class RondaExtra <<interface>> {
-    + tocadorId : string
-    + pendientes : string[]
+  class ExtraRound <<interface>> {
+    + knockerId : string
+    + pending : string[]
   }
 
-  class CartaPartida <<interface>> {
-    + valor : ValorCarta
-    + palo : PaloCarta
-    + baraja : number  — 1 o 2
+  class MatchCard <<interface>> {
+    + rank : CardRank
+    + suit : CardSuit
+    + deckNumber : number  — 1 o 2
   }
 
-  class EntradaMarcador <<interface>> {
-    + numeroRonda : number
-    + ganadorId : string
-    + tipoCierre : 'GANAR_4_3_3' | 'TOCAR'
-    + puntos : PuntosRonda[]
-    + cerradaEn : Date
+  class ScoreboardEntry <<interface>> {
+    + roundNumber : number
+    + winnerId : string
+    + closeType : 'WIN_4_3_3' | 'KNOCK'
+    + points : RoundPoints[]
+    + closedAt : Date
   }
 
-  class PuntosRonda <<interface>> {
-    + jugadorId : string
-    + puntosRonda : number
-    + castigos : number
-    + acumulado : number
-    + eliminado : boolean
-    + reenganchado : boolean
+  class RoundPoints <<interface>> {
+    + playerId : string
+    + roundPoints : number
+    + penalties : number
+    + cumulative : number
+    + eliminated : boolean
+    + rebought : boolean
   }
 
-  enum EstadoPartida <<enumeration>> {
-    EN_ESPERA
-    EN_JUEGO
-    MOSTRANDO_RESULTADOS
-    FINALIZADA
-    CANCELADA
+  enum MatchStatus <<enumeration>> {
+    WAITING
+    IN_PROGRESS
+    SHOWING_RESULTS
+    FINISHED
+    CANCELLED
   }
 
-  enum EstadoRonda <<enumeration>> {
-    REPARTIENDO
-    EN_TURNOS
-    RONDA_EXTRA
-    LIQUIDANDO
-    CERRADA
+  enum RoundStatus <<enumeration>> {
+    DEALING
+    IN_TURNS
+    EXTRA_ROUND
+    SETTLING
+    CLOSED
   }
 
-  enum FaseTurno <<enumeration>> {
-    ESPERANDO_ROBO
-    CON_11_CARTAS
+  enum TurnPhase <<enumeration>> {
+    AWAITING_DRAW
+    HOLDING_11_CARDS
   }
 
-  enum EstadoJugadorPartida <<enumeration>> {
-    EN_SALA
-    ACTIVO
-    ELIMINADO
-    GANADOR
-    PERDEDOR
+  enum MatchPlayerStatus <<enumeration>> {
+    IN_LOBBY
+    ACTIVE
+    ELIMINATED
+    WINNER
+    LOSER
   }
 
-  enum ValorCarta <<enumeration>> {
-    AS, DOS, TRES, CUATRO, CINCO, SEIS, SIETE
-    OCHO, NUEVE, DIEZ, J, Q, K
+  enum CardRank <<enumeration>> {
+    ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN
+    EIGHT, NINE, TEN, J, Q, K
   }
 
-  enum PaloCarta <<enumeration>> {
-    TREBOLES
-    DIAMANTES
-    CORAZONES
-    PICAS
+  enum CardSuit <<enumeration>> {
+    CLUBS
+    DIAMONDS
+    HEARTS
+    SPADES
   }
 
-  class "comandos-partida" as Comandos <<utility>> {
-    - MAXIMO_GRUPOS : number = 4 {readOnly}
-    - MAXIMO_CARTAS_POR_GRUPO : number = 4 {readOnly}
-    + crearPartida(datos : DatosNuevaPartida, reparto : ConfiguracionReparto, barajador : Barajador) : ResultadoTransicion
-    + repartirRonda(partida : Partida, numero : number, posicionInicial : number, reparto : ConfiguracionReparto, barajador : Barajador) : RondaPartida
-    + robar(actual : Partida, jugadorId : string, origen : OrigenRobo, barajador : Barajador) : ResultadoTransicion
-    + descartar(actual : Partida, jugadorId : string, indice : number, grupos : unknown, contexto : ContextoRegla) : ResultadoTransicion
-    + intentarCierre(actual : Partida, jugadorId : string, datos : DatosCierre, contexto : ContextoRegla) : ResultadoTransicion
-    + jugadoresActivos(partida : Partida) : JugadorPartida[]
-    + rondaEnTurnos(partida : Partida) : RondaPartida
-    + verificarTurno(partida : Partida, jugadorId : string) : RondaPartida
-    + validarGrupos(grupos : unknown, tamanoMano : number, excluidos : number[]) : number[][]
-    + reindexarSinCarta(grupos : number[][], quitada : number) : number[][]
-    - exigirCierrePermitido(regla, ronda, tipo : TipoCierre) : void
-    - iniciarRondaExtra(partida, ronda, toque) : ResultadoTransicion
-    - avanzarRondaExtra(partida, ronda, jugadorId, carta, contexto) : ResultadoTransicion
-    - cerrarRonda(partida, ronda, cierre : CierreValido, contexto) : ResultadoTransicion
-    - concluirRonda(partida, ronda, ganador : GanadorRonda, puntosRonda, contexto, eventosPrevios, descarte?) : ResultadoTransicion
-    - finalizar(partida, desenlace : Desenlace, cerradorId, ahora, eventos) : ResultadoTransicion
-    - entradaMarcador(numeroRonda, ganador, participantes, puntosRonda, eliminados, ahora) : EntradaMarcador
-    - manoDeclarada(cartas, grupos : number[][], descarte : number) : ManoDeclarada
-    - manoRival(mano : ManoJugador) : ManoRival
-    - descartarAlCerrar() · robarDelMazo() · robarDelDescarte() · siguienteActivo() · ordenDesde()
-    - sobrantes() · esGrupoBienFormado() · exigirFase() · exigirIndice() · jugador() · manoDe() · clonar()
+  class "match-commands" as MatchCommandsModule <<utility>> {
+    - MAX_GROUPS : number = 4 {readOnly}
+    - MAX_CARDS_PER_GROUP : number = 4 {readOnly}
+    + createMatch(data : NewMatchData, deal : DealSettings, shuffler : Shuffler) : TransitionResult
+    + dealRound(match : Match, num : number, startPosition : number, deal : DealSettings, shuffler : Shuffler) : MatchRound
+    + draw(current : Match, playerId : string, source : DrawSource, shuffler : Shuffler) : TransitionResult
+    + discard(current : Match, playerId : string, index : number, groups : unknown, context : RuleContext) : TransitionResult
+    + attemptClose(current : Match, playerId : string, data : CloseData, context : RuleContext) : TransitionResult
+    + activePlayers(match : Match) : MatchPlayer[]
+    + roundInTurns(match : Match) : MatchRound
+    + checkTurn(match : Match, playerId : string) : MatchRound
+    + validateGroups(groups : unknown, handSize : number, excluded : number[]) : number[][]
+    + reindexWithoutCard(groups : number[][], removed : number) : number[][]
+    - requireAllowedClose(rule : GameRulePlugin, round : MatchRound, type : CloseType) : void
+    - startExtraRound(match, round, knock) : TransitionResult
+    - advanceExtraRound(match, round, playerId, card, context) : TransitionResult
+    - closeRound(match, round, closeAttempt : ValidClose, context) : TransitionResult
+    - concludeRound(match, round, winner : RoundWinner, roundPoints, context, previousEvents, discard?) : TransitionResult
+    - finish(match, outcome : Outcome, closerId, now, events) : TransitionResult
+    - scoreboardEntry(roundNumber, winner, participants, roundPoints, eliminated, now) : ScoreboardEntry
+    - declaredHand(cards, groups : number[][], discarded : number) : DeclaredHand
+    - opponentHand(hand : PlayerHand) : OpponentHand
+    - discardOnClose() · drawFromDeck() · drawFromDiscard() · nextActive() · orderFrom()
+    - leftovers() · isWellFormedGroup() · requirePhase() · requireIndex() · player() · handOf() · clone()
   }
 
-  class ResultadoTransicion <<interface>> {
-    + partida : Partida {readOnly}
-    + eventos : EventoPartida[] {readOnly}
-    + finalizada : boolean {readOnly}
+  class TransitionResult <<interface>> {
+    + match : Match {readOnly}
+    + events : MatchEvent[] {readOnly}
+    + finished : boolean {readOnly}
   }
 
-  class EventoPartida <<interface>> {
-    + tipo : TipoEventoPartida {readOnly}
-    + jugadorId? : string {readOnly}
-    + detalle : Readonly<Record<string, unknown>> {readOnly}
+  class MatchEvent <<interface>> {
+    + type : MatchEventType {readOnly}
+    + playerId? : string {readOnly}
+    + detail : Readonly<Record<string, unknown>> {readOnly}
   }
 
-  enum TipoEventoPartida <<enumeration>> {
-    PARTIDA_INICIADA
-    CARTA_ROBADA
-    TURNO_CAMBIADO
-    CIERRE_FALLIDO
-    JUGADOR_TOCO
-    RONDA_CERRADA
-    RONDA_INICIADA
-    PARTIDA_FINALIZADA
+  enum MatchEventType <<enumeration>> {
+    MATCH_STARTED
+    CARD_DRAWN
+    TURN_CHANGED
+    CLOSE_FAILED
+    PLAYER_KNOCKED
+    ROUND_CLOSED
+    ROUND_STARTED
+    MATCH_FINISHED
   }
 
-  class ContextoRegla <<interface>> {
-    + regla : ReglaJuegoPlugin
-    + barajador : Barajador
-    + ahora : Date
+  class RuleContext <<interface>> {
+    + rule : GameRulePlugin
+    + shuffler : Shuffler
+    + now : Date
   }
 
-  class DatosCierre <<interface>> {
-    + tipo : TipoCierre
-    + grupos : unknown  — índices por grupo
-    + descarte : number
+  class CloseData <<interface>> {
+    + type : CloseType
+    + groups : unknown  — índices por grupo
+    + discard : number
   }
 
-  class "cartas-partida" as CartasPartida <<utility>> {
-    + aCartaContrato(carta : CartaPartida) : Carta
-    + crearMazo(barajas : number) : CartaPartida[]
+  class "match-cards" as MatchCardsModule <<utility>> {
+    + toContractCard(card : MatchCard) : ContractCard
+    + createDeck(decks : number) : MatchCard[]
   }
 
-  interface Barajador <<interface>> {
-    + barajar<T>(elementos : ReadonlyArray<T>) : T[]
+  interface Shuffler <<interface>> {
+    + shuffle<T>(items : ReadonlyArray<T>) : T[]
   }
 
-  class BarajadorSeguro {
-    + barajar<T>(elementos : ReadonlyArray<T>) : T[]  — Fisher-Yates + crypto.randomInt
+  class SecureShuffler {
+    + shuffle<T>(items : ReadonlyArray<T>) : T[]  — Fisher-Yates + crypto.randomInt
   }
 
-  class "vistas-partida" as Vistas <<utility>> {
-    + vistaPublica(partida : Partida) : VistaPublicaPartida
-    + vistaPrivada(partida : Partida, jugadorId : string) : VistaPrivadaPartida | null
+  class "match-views" as MatchViewsModule <<utility>> {
+    + publicView(match : Match) : PublicMatchView
+    + privateView(match : Match, playerId : string) : PrivateMatchView | null
   }
 
-  class PartidaActualizadaEvent {
-    + salaId : string {readOnly}
-    + partida : Partida {readOnly}
-    + eventos : ReadonlyArray<EventoPartida> {readOnly}
-    + constructor(salaId : string, partida : Partida, eventos : ReadonlyArray<EventoPartida>)
+  class MatchUpdatedEvent {
+    + roomId : string {readOnly}
+    + match : Match {readOnly}
+    + events : ReadonlyArray<MatchEvent> {readOnly}
+    + constructor(roomId : string, match : Match, events : ReadonlyArray<MatchEvent>)
   }
 
-  class PartidaConflictException <<HTTP 409>>
-  class PartidaInvalidaException <<HTTP 400>>
+  class MatchConflictException <<HTTP 409>>
+  class InvalidMatchException <<HTTP 400>>
 
-  Partida *-- "1" ConfiguracionPartida : configuracion
-  ConfiguracionPartida *-- "1" ParametrosPartida : parametros
-  Partida *-- "2..*" JugadorPartida : jugadores
-  Partida *-- "1" PozoPartida : pozo
-  PozoPartida *-- "0..*" AportePozo : aportes
-  Partida *-- "0..1" RondaPartida : rondaActual
-  Partida *-- "0..*" EntradaMarcador : marcador
-  EntradaMarcador *-- "1..*" PuntosRonda : puntos
-  RondaPartida *-- "1" TurnoPartida : turno
-  RondaPartida *-- "2..*" ManoJugador : manos
-  RondaPartida *-- "0..1" RondaExtra : rondaExtra
-  RondaPartida *-- "0..*" CartaPartida : mazo
-  RondaPartida *-- "0..*" CartaPartida : pozoDescarte
-  ManoJugador *-- "0..11" CartaPartida : cartas
+  Match *-- "1" MatchSettings : settings
+  MatchSettings *-- "1" MatchParameters : parameters
+  Match *-- "2..*" MatchPlayer : players
+  Match *-- "1" MatchPot : pot
+  MatchPot *-- "0..*" PotContribution : contributions
+  Match *-- "0..1" MatchRound : currentRound
+  Match *-- "0..*" ScoreboardEntry : scoreboard
+  ScoreboardEntry *-- "1..*" RoundPoints : points
+  MatchRound *-- "1" MatchTurn : turn
+  MatchRound *-- "2..*" PlayerHand : hands
+  MatchRound *-- "0..1" ExtraRound : extraRound
+  MatchRound *-- "0..*" MatchCard : deck
+  MatchRound *-- "0..*" MatchCard : discardPile
+  PlayerHand *-- "0..11" MatchCard : cards
 
-  Partida --> EstadoPartida
-  RondaPartida --> EstadoRonda
-  TurnoPartida --> FaseTurno
-  JugadorPartida --> EstadoJugadorPartida
-  CartaPartida --> ValorCarta
-  CartaPartida --> PaloCarta
+  Match --> MatchStatus
+  MatchRound --> RoundStatus
+  MatchTurn --> TurnPhase
+  MatchPlayer --> MatchPlayerStatus
+  MatchCard --> CardRank
+  MatchCard --> CardSuit
 
-  Comandos ..> Partida : <<transforma (structuredClone)>>
-  Comandos ..> ResultadoTransicion : <<create>>
-  Comandos ..> CartasPartida : <<use>>
-  Comandos ..> PartidaConflictException : <<throw>>
-  Comandos ..> PartidaInvalidaException : <<throw>>
-  ResultadoTransicion o-- "0..*" EventoPartida : eventos
-  EventoPartida --> TipoEventoPartida
-  ContextoRegla --> "1" Barajador : barajador
-  Comandos ..> ContextoRegla
-  BarajadorSeguro ..|> Barajador
-  Vistas ..> Partida : <<filtra (R04)>>
-  PartidaActualizadaEvent o-- "1" Partida : partida
-  PartidaActualizadaEvent o-- "0..*" EventoPartida : eventos
+  MatchCommandsModule ..> Match : <<transforma (structuredClone)>>
+  MatchCommandsModule ..> TransitionResult : <<create>>
+  MatchCommandsModule ..> MatchCardsModule : <<use>>
+  MatchCommandsModule ..> MatchConflictException : <<throw>>
+  MatchCommandsModule ..> InvalidMatchException : <<throw>>
+  TransitionResult o-- "0..*" MatchEvent : events
+  MatchEvent --> MatchEventType
+  RuleContext --> "1" Shuffler : shuffler
+  MatchCommandsModule ..> RuleContext
+  SecureShuffler ..|> Shuffler
+  MatchViewsModule ..> Match : <<filtra (R04)>>
+  MatchUpdatedEvent o-- "1" Match : match
+  MatchUpdatedEvent o-- "0..*" MatchEvent : events
 }
 
-package "src/aplicacion/partida" as APLICACION {
+package "src/application/match" as APPLICATION {
 
   class TurnOrchestrator <<@Injectable>> {
-    - partidas : PartidaRepository {readOnly}
-    - asientos : AsientosTokensRepository {readOnly}
-    - unidadDeTrabajo : UnidadDeTrabajo {readOnly}
-    - registroReglas : RegistroReglas {readOnly}
+    - matches : MatchRepository {readOnly}
+    - ledger : TokenLedgerRepository {readOnly}
+    - unitOfWork : UnitOfWork {readOnly}
+    - ruleRegistry : RuleRegistry {readOnly}
     - eventBus : EventBus {readOnly}
-    - barajador : Barajador {readOnly}
-    - parametros : ParametrosPartida {readOnly}
-    - usuarios : Model<UserRecord> {readOnly}
-    - juegos : Model<GameRecord> {readOnly}
-    - jugadores : Model<PlayerRecord> {readOnly}
-    + iniciarPartida(game : Game, solicitante : UserId) : Promise<Partida>
-    + robar(comando : ComandoTurno, origen : OrigenRobo) : Promise<ResultadoComando>
-    + descartar(comando : ComandoTurno, carta : number, grupos? : number[][]) : Promise<ResultadoComando>
-    + intentarCierre(comando : ComandoTurno, tipo : TipoCierre, grupos : number[][], descarte : number) : Promise<ResultadoComando>
-    + obtenerEstado(partidaId : string, usuarioId : string) : Promise<EstadoParaUsuario>
-    - ejecutar(comando, aplicar : (Partida, ReglaJuegoPlugin) => ResultadoTransicion) : Promise<ResultadoComando>
-    - guardar(nueva, comando, finalizada : boolean) : Promise<void>
-    - resolverConflicto(comando, base : Partida) : Promise<ResultadoComando>
-    - pagarPozo(partida, salaId, session : ClientSession) : Promise<void>
-    - cobrarApuestas() · datosNuevaPartida() — auxiliares de iniciarPartida
-    - cargar(partidaId : string) : Promise<Partida>
-    - publicar(salaId : string, resultado : ResultadoTransicion) : void
+    - shuffler : Shuffler {readOnly}
+    - parameters : MatchParameters {readOnly}
+    - userModel : Model<UserRecord> {readOnly}
+    - gameModel : Model<GameRecord> {readOnly}
+    - playerModel : Model<PlayerRecord> {readOnly}
+    + startMatch(game : Game, requester : UserId) : Promise<Match>
+    + draw(command : TurnCommand, source : DrawSource) : Promise<CommandResult>
+    + discard(command : TurnCommand, card : number, groups? : number[][]) : Promise<CommandResult>
+    + attemptClose(command : TurnCommand, type : CloseType, groups : number[][], discard : number) : Promise<CommandResult>
+    + getState(matchId : string, userId : string) : Promise<StateForUser>
+    - execute(command : TurnCommand, apply : (Match, GameRulePlugin) => TransitionResult) : Promise<CommandResult>
+    - save(next : Match, command : TurnCommand, finished : boolean) : Promise<void>
+    - resolveConflict(command : TurnCommand, base : Match) : Promise<CommandResult>
+    - payPot(match : Match, roomId : string, session : ClientSession) : Promise<void>
+    - chargeBets() · newMatchData() — auxiliares de startMatch
+    - load(matchId : string) : Promise<Match>
+    - publish(roomId : string, result : TransitionResult) : void
   }
 
-  class ComandoTurno <<interface>> {
-    + salaId : string
-    + partidaId : string
-    + usuarioId : string
+  class TurnCommand <<interface>> {
+    + roomId : string
+    + matchId : string
+    + userId : string
     + version : number
-    + idComando : string
+    + commandId : string
   }
 
-  class ResultadoComando <<interface>> {
-    + aplicado : boolean
-    + partida : Partida
+  class CommandResult <<interface>> {
+    + applied : boolean
+    + match : Match
   }
 
-  class EstadoParaUsuario <<interface>> {
-    + publica : VistaPublicaPartida
-    + privada : VistaPrivadaPartida | null
+  class StateForUser <<interface>> {
+    + publicView : PublicMatchView
+    + privateView : PrivateMatchView | null
   }
 
-  class "partida.mapper" as Mapper <<utility>> {
-    + aRegistro(partida : Partida) : PartidaRecord
-    + aDominio(registro : PartidaRecord) : Partida
+  class "match.mapper" as Mapper <<utility>> {
+    + toRecord(match : Match) : MatchRecord
+    + toDomain(record : MatchRecord) : Match
   }
 
-  class EscrituraSinCoincidencia
+  class UnmatchedWriteError
 
-  TurnOrchestrator ..> ComandoTurno
-  TurnOrchestrator ..> ResultadoComando : <<create>>
-  TurnOrchestrator ..> EstadoParaUsuario : <<create>>
+  TurnOrchestrator ..> TurnCommand
+  TurnOrchestrator ..> CommandResult : <<create>>
+  TurnOrchestrator ..> StateForUser : <<create>>
   TurnOrchestrator ..> Mapper : <<use>>
-  TurnOrchestrator ..> EscrituraSinCoincidencia : <<throw / catch>>
+  TurnOrchestrator ..> UnmatchedWriteError : <<throw / catch>>
 }
 
 package "src/database" as DATABASE {
 
-  class PartidaRepository <<@Injectable>> {
-    + buscarPorId(id : Types.ObjectId, session? : ClientSession) : Promise<PartidaRecord | null>
-    + actualizarSiCoincide(partida : PartidaRecord, condicion : CondicionComando, session? : ClientSession) : Promise<boolean>
+  class MatchRepository <<@Injectable>> {
+    + findById(id : Types.ObjectId, session? : ClientSession) : Promise<MatchRecord | null>
+    + insert(match : MatchRecord, session? : ClientSession) : Promise<void>
+    + updateIfMatches(match : MatchRecord, condition : CommandCondition, session? : ClientSession) : Promise<boolean>
   }
 
-  class CondicionComando <<interface>> {
+  class CommandCondition <<interface>> {
     + version : number
-    + jugadorId : string
-    + idComando : string
+    + playerId : string
+    + commandId : string
   }
 
-  class AsientosTokensRepository <<@Injectable>> {
-    + registrar(asientos : AsientoTokensRecord[], session : ClientSession) : Promise<void>
+  class TokenLedgerRepository <<@Injectable>> {
+    + register(ledgerEntries : TokenLedgerEntryRecord[], session : ClientSession) : Promise<void>
   }
 
-  class UnidadDeTrabajo <<@Injectable>> {
-    + ejecutar<T>(trabajo : (session : ClientSession) => Promise<T>) : Promise<T>
+  class UnitOfWork <<@Injectable>> {
+    + execute<T>(work : (session : ClientSession) => Promise<T>) : Promise<T>
   }
 
-  class PartidaRecord <<interface>>
-  class AsientoTokensRecord <<interface>>
+  class MatchRecord <<interface>>
+  class TokenLedgerEntryRecord <<interface>>
 
-  PartidaRepository ..> CondicionComando
-  PartidaRepository ..> PartidaRecord
-  AsientosTokensRepository ..> AsientoTokensRecord
+  MatchRepository ..> CommandCondition
+  MatchRepository ..> MatchRecord
+  TokenLedgerRepository ..> TokenLedgerEntryRecord
 }
 
-class ReglasPluginsModule <<composition root · @Global @Module>> {
-  + crearRegistroReglas(env = process.env) : RegistroReglas
-  + leerParametrosSistema(env = process.env) : ParametrosPartida
-  - parametrosApuntado(sistema : ParametrosPartida) : ParametrosApuntado
+class RulePluginsModule <<composition root · @Global @Module>> {
+  + createRuleRegistry(env = process.env) : RuleRegistry
+  + readSystemParameters(env = process.env) : MatchParameters
+  - apuntadoParameters(system : MatchParameters) : ApuntadoParameters
 }
 
-ReglaClasicaPlugin ..|> ReglaJuegoPlugin
-ReglaApuntadoPlugin ..|> ReglaJuegoPlugin
-ReglaClasicaPlugin --> "1" IHandEvaluator : evaluador
-ReglaApuntadoPlugin --> "1" IHandEvaluator : evaluador
-ReglasPluginsModule ..> RegistroReglas : <<create>>
-ReglasPluginsModule ..> ReglaClasicaPlugin : <<create>>
-ReglasPluginsModule ..> ReglaApuntadoPlugin : <<create>>
-IHandEvaluator ..> Carta
-FuncEval ..> Carta
+ClassicRulePlugin ..|> GameRulePlugin
+ApuntadoRulePlugin ..|> GameRulePlugin
+ClassicRulePlugin --> "1" IHandEvaluator : evaluator
+ApuntadoRulePlugin --> "1" IHandEvaluator : evaluator
+RulePluginsModule ..> RuleRegistry : <<create>>
+RulePluginsModule ..> ClassicRulePlugin : <<create>>
+RulePluginsModule ..> ApuntadoRulePlugin : <<create>>
+IHandEvaluator ..> ContractCard
+HandEvaluatorModule ..> ContractCard
 
-TurnOrchestrator --> "1" RegistroReglas : registroReglas
-TurnOrchestrator --> "1" Barajador : barajador
-TurnOrchestrator --> "1" PartidaRepository : partidas
-TurnOrchestrator --> "1" AsientosTokensRepository : asientos
-TurnOrchestrator --> "1" UnidadDeTrabajo : unidadDeTrabajo
-TurnOrchestrator --> "1" ParametrosPartida : parametros
-TurnOrchestrator ..> Comandos : <<use>>
-TurnOrchestrator ..> Vistas : <<use>>
-TurnOrchestrator ..> PartidaActualizadaEvent : <<create / publish>>
-TurnOrchestrator ..> ReglaJuegoPlugin : <<use>>
-ContextoRegla --> "1" ReglaJuegoPlugin : regla
-Comandos ..> ReglaJuegoPlugin : <<use>>
-CartasPartida ..> Carta : <<traduce>>
-Mapper ..> PartidaRecord
+TurnOrchestrator --> "1" RuleRegistry : ruleRegistry
+TurnOrchestrator --> "1" Shuffler : shuffler
+TurnOrchestrator --> "1" MatchRepository : matches
+TurnOrchestrator --> "1" TokenLedgerRepository : ledger
+TurnOrchestrator --> "1" UnitOfWork : unitOfWork
+TurnOrchestrator --> "1" MatchParameters : parameters
+TurnOrchestrator ..> MatchCommandsModule : <<use>>
+TurnOrchestrator ..> MatchViewsModule : <<use>>
+TurnOrchestrator ..> MatchUpdatedEvent : <<create / publish>>
+TurnOrchestrator ..> GameRulePlugin : <<use>>
+RuleContext --> "1" GameRulePlugin : rule
+MatchCommandsModule ..> GameRulePlugin : <<use>>
+MatchCardsModule ..> ContractCard : <<traduce>>
+Mapper ..> MatchRecord
 
 legend right
   + público · - privado · «utility»: módulo de funciones (+ exportada, - interna) · sin miembros # en el MVP
-  Solo ReglasPluginsModule conoce los plug-ins concretos; el núcleo depende del contrato (DIP).
+  Solo RulePluginsModule conoce los plug-ins concretos; el núcleo depende del contrato (DIP).
 endlegend
 @enduml

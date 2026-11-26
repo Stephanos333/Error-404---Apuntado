@@ -7,6 +7,49 @@
 title Sistema Apuntado · Diagrama de despliegue del MVP (UML 2.5)\n<size:11>Entregable 3 · topología física del docker compose «apuntado» y su variante en la nube</size>
 
 skinparam shadowing false
+' Estilo neutro (equivalente al tema por defecto de PlantUML moderno)
+skinparam backgroundColor #FFFFFF
+skinparam TitleFontStyle bold
+skinparam TitleFontSize 14
+skinparam ArrowColor #181818
+skinparam ArrowFontColor #000000
+skinparam NoteBackgroundColor #FEFFDD
+skinparam NoteBorderColor #181818
+skinparam LegendBackgroundColor #DDDDDD
+skinparam LegendBorderColor #181818
+skinparam ParticipantBackgroundColor #E2E2F0
+skinparam ParticipantBorderColor #181818
+skinparam ActorBackgroundColor #E2E2F0
+skinparam ActorBorderColor #181818
+skinparam DatabaseBackgroundColor #E2E2F0
+skinparam DatabaseBorderColor #181818
+skinparam SequenceLifeLineBorderColor #181818
+skinparam SequenceGroupBorderColor #181818
+skinparam SequenceGroupHeaderFontStyle bold
+skinparam SequenceDividerBackgroundColor #EEEEEE
+skinparam SequenceDividerBorderColor #181818
+skinparam SequenceReferenceBorderColor #181818
+skinparam ClassBackgroundColor #F1F1F1
+skinparam ClassBorderColor #181818
+skinparam ClassHeaderBackgroundColor #F1F1F1
+skinparam InterfaceBackgroundColor #F1F1F1
+skinparam InterfaceBorderColor #181818
+skinparam PackageBorderColor #181818
+skinparam PackageBackgroundColor #FFFFFF
+skinparam NodeBackgroundColor #FFFFFF
+skinparam NodeBorderColor #181818
+skinparam ArtifactBackgroundColor #F1F1F1
+skinparam ArtifactBorderColor #181818
+skinparam ComponentBackgroundColor #F1F1F1
+skinparam ComponentBorderColor #181818
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #181818
+skinparam QueueBackgroundColor #F1F1F1
+skinparam QueueBorderColor #181818
+skinparam RectangleBorderColor #181818
+skinparam UsecaseBorderColor #181818
+skinparam StorageBorderColor #181818
+skinparam StorageBackgroundColor #F1F1F1
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
 skinparam nodesep 40
@@ -44,46 +87,46 @@ node "Servidor Web y API\nHost Docker · docker compose (proyecto «apuntado»)\
 
   node "Contenedor backend\nnode:20.18-alpine · usuario node\nescucha :3000 (también publicado en el host :3000)" <<executionEnvironment>> as API {
     artifact "dist/src/main.js\nNestJS 10 · REST /api · Socket.IO /game · Swagger /docs" as MAIN
-    artifact "dist/plugins/clasica\n@apuntado/plugin-clasica 1.0.0" as P1
+    artifact "dist/plugins/classic\n@apuntado/plugin-classic 1.0.0" as P1
     artifact "dist/plugins/apuntado\n@apuntado/plugin-apuntado 1.0.0" as P2
   }
 
   node "Contenedor mongo-init\nmongo:7.0 · tarea única (restart: no)" <<executionEnvironment>> as INIT {
-    artifact "docker/mongo/init.sh\ncrear-colecciones.mongodb.js\nseed-disenos-carta.js" as INITA
+    artifact "docker/mongo/init.sh\nmigrate-english-contracts.js\ncreate-collections.mongodb.js\nseed-card-designs.js" as INITA
   }
 }
 
 ' ---------------------------------------------------------------- Base de datos
 node "Servidor de Base de Datos" <<device>> as DBS {
   node "Contenedor mongodb\nmongo:7.0 · mongod ~--replSet rs0 ~--bind_ip_all\nescucha :27017" <<executionEnvironment>> as MONGO {
-    database "Base «apuntado» · replica set rs0 (PRIMARY)\npartidas · asientos_tokens · User · Game · Player · Card-design\nvalidadores $jsonSchema (strict) e índices únicos" as DB
+    database "Base «apuntado» · replica set rs0 (PRIMARY)\nmatches · token_ledger · users · games · players · card-designs\nvalidadores $jsonSchema (strict) e índices únicos" as DB
   }
   storage "Volumen Docker mongo-data\n(montado en /data/db)" as VOL
 }
 
 ' ---------------------------------------------------------------- Despliegue (manifestación)
-MAIN ..> P1 : <<import>>\n(registro estático en\nReglasPluginsModule)
+MAIN ..> P1 : <<import>>\n(registro estático en\nRulePluginsModule)
 MAIN ..> P2 : <<import>>
 
 ' ---------------------------------------------------------------- Rutas de comunicación
 NAV --> NGX : <<HTTP / HTTPS>>\nlocal: http://localhost:5173 · nube: https :443\nGET / · /assets/* (descarga de la SPA)\nREST JSON /api/* · Authorization: Bearer JWT
-NAV <--> NGX : <<WebSocket · Socket.IO>>\nlocal: ws:~// · nube: wss:~// (TLS)\n/socket.io/ · namespace /game · JWT en el handshake\nsalas partida:{gameId} y usuario:{userId}
+NAV <--> NGX : <<WebSocket · Socket.IO>>\nlocal: ws:~// · nube: wss:~// (TLS)\n/socket.io/ · namespace /game · JWT en el handshake\nsalas match:{gameId} y user:{userId}
 NGX --> API : <<HTTP/1.1 · proxy_pass>>\nhttp://backend:3000 (red interna)\n/api/ · /docs\n/socket.io/ con Upgrade: websocket\nproxy_read_timeout 3600 s
 API --> MONGO : <<Driver MongoDB · TCP>>\nmongodb://mongodb:27017/apuntado?replicaSet=rs0\nMongoose 8 + colecciones nativas\ntransacciones: snapshot · w: majority · primary
-INIT --> MONGO : <<mongosh · TCP :27017>>\nvalidadores, índices y semilla\n(idempotente)
+INIT --> MONGO : <<mongosh · TCP :27017>>\nmigración, validadores, índices\ny semilla (idempotente)
 MONGO --> VOL : <<persistencia>>
 
 ' ---------------------------------------------------------------- Notas
 note right of API
   <b>GameSocket</b> (gateway Socket.IO, namespace /game)
   en GAME_CONNECTION_EVENT hace socket.join([
-    "partida:{gameId}",   ← solo vista pública
-    "usuario:{userId}"    ← solo la mano propia (R04)
+    "match:{gameId}",   ← solo vista pública
+    "user:{userId}"    ← solo la mano propia (R04)
   ])
   Las notificaciones salen después del commit (ADR-05).
 end note
 
-note bottom of HOST
+note as NARRANQUE
   <b>Orden de arranque</b> (healthcheck + depends_on):
   1. mongodb healthy (rs.status().myState = PRIMARY)
   2. mongo-init termina con código 0 (service_completed_successfully)

@@ -227,11 +227,11 @@ export class TurnOrchestrator {
 	 * error, or with idempotent success if the same `commandId` was already applied.
 	 */
 	private async resolveConflict(command: TurnCommand, base: Match): Promise<CommandResult> {
-		const actual = await this.load(command.matchId);
-		if (actual.recentCommands.includes(command.commandId)) return { applied: false, match: actual };
-		const round = actual.currentRound;
+		const latest = await this.load(command.matchId);
+		if (latest.recentCommands.includes(command.commandId)) return { applied: false, match: latest };
+		const round = latest.currentRound;
 		const roundChanged = !round || round.number !== base.currentRound?.number || !['IN_TURNS', 'EXTRA_ROUND'].includes(round.status);
-		if (actual.status !== 'IN_PROGRESS' || roundChanged) throw new MatchConflictException(M.ROUND_ALREADY_CLOSED);
+		if (latest.status !== 'IN_PROGRESS' || roundChanged) throw new MatchConflictException(M.ROUND_ALREADY_CLOSED);
 		if (round.turn.playerId !== command.userId) throw new MatchConflictException(M.NOT_YOUR_TURN);
 		throw new MatchConflictException(M.STALE_VERSION);
 	}
@@ -332,9 +332,9 @@ export class TurnOrchestrator {
 
 	private async load(matchId: string): Promise<Match> {
 		if (!Types.ObjectId.isValid(matchId)) throw new MatchNotFoundException();
-		const registry = await this.matches.findById(new Types.ObjectId(matchId));
-		if (!registry) throw new MatchNotFoundException();
-		return toDomain(registry);
+		const record = await this.matches.findById(new Types.ObjectId(matchId));
+		if (!record) throw new MatchNotFoundException();
+		return toDomain(record);
 	}
 
 	/** Publishes the domain events (only after the commit). */

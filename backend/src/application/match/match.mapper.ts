@@ -26,19 +26,19 @@ export function toRecord(match: Match): MatchRecord {
 
 /**
  * Translates the persisted document into the domain match.
- * @param {MatchRecord} registry The document.
+ * @param {MatchRecord} record The document.
  * @returns {Match} The domain match.
  */
-export function toDomain(registry: MatchRecord): Match {
-	const base = registry as unknown as Match;
+export function toDomain(record: MatchRecord): Match {
+	const base = record as unknown as Match;
 	return {
 		...base,
-		_id: registry._id.toHexString(),
-		hostId: registry.hostId.toHexString(),
-		players: registry.players.map((j) => ({ ...(j as unknown as Match['players'][number]), userId: j.userId.toHexString() })),
+		_id: record._id.toHexString(),
+		hostId: record.hostId.toHexString(),
+		players: record.players.map((j) => ({ ...(j as unknown as Match['players'][number]), userId: j.userId.toHexString() })),
 		pot: {
-			total: registry.pot.total,
-			contributions: registry.pot.contributions.map((a) => ({
+			total: record.pot.total,
+			contributions: record.pot.contributions.map((a) => ({
 				...(a as unknown as Match['pot']['contributions'][number]),
 				userId: a.userId.toHexString(),
 				ledgerEntryId: a.ledgerEntryId.toHexString(),
