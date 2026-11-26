@@ -122,7 +122,7 @@ const RANK_VALUE: Record<CardRank, number> = {
 export type MeldKind = 'SET' | 'RUN';
 
 /**
- * Same rule as the backend evaluator (`EvaluadorManos`, `CON_VUELTA` policy), used only to
+ * Same rule as the backend evaluator (`HandEvaluator`, `WITH_WRAP` policy), used only to
  * give feedback before closing:
  * - a set: same rank, at most two copies of the same card (two decks);
  * - a run: same suit, distinct consecutive ranks; it may wrap from K to A (Q-K-A, K-A-2).
@@ -188,4 +188,17 @@ export function compareVersion(current: number | undefined, received: number): '
     if (current === undefined || received === current + 1 || received === current) return 'APPLY';
     if (received < current) return 'IGNORE';
     return 'REFRESH';
+}
+
+/**
+ * Cards that would count as penalty points: the loose ones plus every card of a group that is not
+ * a meld. Same rule as the backend (`HandEvaluator.unmatchedPoints`): an incomplete or invalid
+ * group does not protect its cards.
+ * @param {MatchCard[][]} groups The hand organization.
+ * @param {MatchCard[]} loose The cards outside the groups.
+ * @returns The unmatched cards and how many of them sit in groups that are not melds.
+ */
+export function unmatchedCards(groups: MatchCard[][], loose: MatchCard[]): { cards: MatchCard[]; inInvalidGroups: number } {
+    const inInvalidGroups: MatchCard[] = groups.filter((g) => g.length > 0 && meldKind(g) === null).flat();
+    return {cards: [...inInvalidGroups, ...loose], inInvalidGroups: inInvalidGroups.length};
 }

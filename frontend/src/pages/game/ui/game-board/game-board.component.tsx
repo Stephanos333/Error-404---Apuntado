@@ -10,7 +10,7 @@ import {PaperTheme} from '../../../../config/app.theme.tsx';
 import {MatchCard, PrivateHandView, PublicMatchView} from '../../../../types/match.type.ts';
 import {DrawIntent} from '../../../../types/services/match.ts';
 import {CommandResult, MatchClient} from '../../../../utils/match/match.client.ts';
-import {cardImage, cardKey, closeShape, HandSort, leftoversOf, meldKind, points, reconcileGroups, sortCards} from '../../../../utils/match/match.utils.ts';
+import {cardImage, cardKey, closeShape, HandSort, leftoversOf, meldKind, points, reconcileGroups, sortCards, unmatchedCards} from '../../../../utils/match/match.utils.ts';
 
 /** Maximum groups the backend accepts in the hand organization. */
 const MAX_GROUPS = 4;
@@ -223,6 +223,8 @@ export function GameBoardComponent(props: {
     const {title, detail} = status();
     const closeLabel: string = closePreview.shape === 'KNOCK' ? 'Tocar' : closePreview.shape === 'WIN_4_3_3' || !isApuntado ? 'Cerrar 4-3-3' : 'Cerrar o tocar';
     const looseCount: number = loose.length;
+    /** Points that would count against the player: loose cards plus groups that are not melds. */
+    const unmatched = unmatchedCards(currentGroups, loose);
 
     /** Draws a card of the hand. */
     const renderCard = (c: MatchCard, onClick: (() => void) | undefined, extraClass: string = '', title?: string): JSX.Element => {
@@ -343,7 +345,10 @@ export function GameBoardComponent(props: {
 
                                 <div className='board-loose-head'>
                                     <span className='board-loose-info'>
-                                        Sueltas: <span className='num'>{looseCount}</span> {looseCount === 1 ? 'carta' : 'cartas'}, <span className='num'>{points(loose)}</span> pts
+                                        Sueltas: <span className='num'>{looseCount}</span> {looseCount === 1 ? 'carta' : 'cartas'} · Sin combinar: <span className='num'>{points(unmatched.cards)}</span> pts
+                                        {unmatched.inInvalidGroups > 0
+                                            ? <span className='board-loose-note'> (incluye {unmatched.inInvalidGroups} {unmatched.inInvalidGroups === 1 ? 'carta' : 'cartas'} de grupos no válidos)</span>
+                                            : <></>}
                                     </span>
                                     <SegmentedComponent
                                         label='Ordenar sueltas'
